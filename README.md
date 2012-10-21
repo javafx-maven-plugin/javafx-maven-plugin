@@ -46,7 +46,7 @@ To make this happen, add the following to your pom.xml:
     <plugin>
         <groupId>com.zenjava</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
         <executions>
             <execution>
                 <phase>package</phase>
@@ -67,7 +67,7 @@ Additionally, the plugin can be used to build native distributions:
     <plugin>
         <groupId>com.zenjava</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
         <executions>
             <execution>
                 <phase>package</phase>

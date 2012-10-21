@@ -16,7 +16,6 @@ package com.zenjava.javafx.maven.plugin;
  * limitations under the License.
  */
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
@@ -26,15 +25,13 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
  * @goal package
  * @phase package
+ * @requiresDependencyResolution
  */
 public class JavaFxPackagerMojo extends AbstractMojo {
 
@@ -95,6 +92,7 @@ public class JavaFxPackagerMojo extends AbstractMojo {
         getLog().info("Assembling JavaFX distributable to '" + javafxBuildDir + "'");
 
         // unpack project dependencies into a directory the JavaFX tools can use
+
         unpackDependencies();
 
 
@@ -138,54 +136,12 @@ public class JavaFxPackagerMojo extends AbstractMojo {
     }
 
 
-    // This would be more powerful/reliable but doesn't seem to work.
-//    protected void unpackDependencies() throws MojoExecutionException, MojoFailureException {
-//
-//        String baseDir = project.getBuild().getDirectory();
-//        String subDir = "jfx-dependencies";
-//
-//        getLog().info("Unpacking module dependendencies to '" + baseDir + "/" + subDir + "'");
-//
-//        executeMojo(
-//                plugin(
-//                        groupId("org.apache.maven.plugins"),
-//                        artifactId("maven-dependency-plugin"),
-//                        version("2.0")
-//                ),
-//                goal("unpack-dependencies"),
-//                configuration(
-//                        element(name("outputDirectory"), "${project.build.directory}/" + subDir)
-//                ),
-//                executionEnvironment(
-//                        project,
-//                        session,
-//                        pluginManager
-//                )
-//        );
-//    }
-
     protected void unpackDependencies() throws MojoExecutionException, MojoFailureException {
 
-        Set<Artifact> artifacts = project.getDependencyArtifacts();
-        List<Element> artifactItemsList = new ArrayList<Element>();
+        String baseDir = project.getBuild().getDirectory();
+        String subDir = "jfx-dependencies";
 
-        for (Artifact artifact : artifacts) {
-            if (!"test".equals(artifact.getScope()) && !"provided".equals(artifact.getScope())) {
-
-                getLog().info("Including dependency '" + artifact + "' in JavaFX bundle");
-                artifactItemsList.add(
-                        element("artifactItem",
-                                element("groupId", artifact.getGroupId()),
-                                element("artifactId", artifact.getArtifactId()),
-                                element("version", artifact.getVersion())
-                        )
-                );
-
-            }
-        }
-
-        Element[] artifactItems = new Element[artifactItemsList.size()];
-        artifactItemsList.toArray(artifactItems);
+        getLog().info("Unpacking module dependendencies to '" + baseDir + "/" + subDir + "'");
 
         executeMojo(
                 plugin(
@@ -193,10 +149,9 @@ public class JavaFxPackagerMojo extends AbstractMojo {
                         artifactId("maven-dependency-plugin"),
                         version("2.0")
                 ),
-                goal("unpack"),
+                goal("unpack-dependencies"),
                 configuration(
-                        element(name("outputDirectory"), "${project.build.directory}/jfx-dependencies"),
-                        element(name("artifactItems"), artifactItems)
+                        element(name("outputDirectory"), "${project.build.directory}/" + subDir)
                 ),
                 executionEnvironment(
                         project,
@@ -205,5 +160,4 @@ public class JavaFxPackagerMojo extends AbstractMojo {
                 )
         );
     }
-
 }
