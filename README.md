@@ -83,21 +83,6 @@ Additionally, the plugin can be used to build native distributions:
     </plugin>
 ```
 
-The plugin uses several settings from your POM to determine attributes of the final bundle, in particular:
-
-- name: is used to determine the display name used for the installation package
-- organization: is used to determine the display name used for the installation package
-- finalName: is used to determine the name of the bundle produced
-
-e.g. for best results you should add some config like this to the your POM:
-
-``` xml
-    <name>JFX and JEE Sample 4</name>
-    <organization>
-        <name>Zen Java</name>
-    </organization>
-```
-
 
 Support
 =======
