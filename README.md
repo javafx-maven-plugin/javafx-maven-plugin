@@ -51,7 +51,7 @@ To make this happen, add the following to your pom.xml:
             <execution>
                 <phase>package</phase>
                 <goals>
-                    <goal>javafx</goal>
+                    <goal>package</goal>
                 </goals>
             </execution>
         </executions>
@@ -72,7 +72,7 @@ Additionally, the plugin can be used to build native distributions:
             <execution>
                 <phase>package</phase>
                 <goals>
-                    <goal>javafx</goal>
+                    <goal>package</goal>
                 </goals>
             </execution>
         </executions>
