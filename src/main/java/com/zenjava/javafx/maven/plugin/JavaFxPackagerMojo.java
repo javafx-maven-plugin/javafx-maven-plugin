@@ -16,9 +16,9 @@ package com.zenjava.javafx.maven.plugin;
  * limitations under the License.
  */
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Build;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -28,6 +28,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
@@ -85,6 +86,7 @@ public class JavaFxPackagerMojo extends AbstractMojo {
      */
     protected BuildPluginManager pluginManager;
 
+
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         Build build = project.getBuild();
@@ -128,48 +130,54 @@ public class JavaFxPackagerMojo extends AbstractMojo {
         // build native packages (if required)
 
         jfxToolsWrapper.generateDeploymentPackages(javafxBuildDir, jarName, bundleType,
-                project.getBuild().getFinalName(), mainClass);
+                project.getBuild().getFinalName(),
+                project.getName(),
+                project.getVersion(),
+                project.getOrganization() != null ? project.getOrganization().getName() : "Unknown JavaFX Developer",
+                mainClass);
     }
+
+
+    // This would be more powerful/reliable but doesn't seem to work.
+//    protected void unpackDependencies() throws MojoExecutionException, MojoFailureException {
+//
+//        String baseDir = project.getBuild().getDirectory();
+//        String subDir = "jfx-dependencies";
+//
+//        getLog().info("Unpacking module dependendencies to '" + baseDir + "/" + subDir + "'");
+//
+//        executeMojo(
+//                plugin(
+//                        groupId("org.apache.maven.plugins"),
+//                        artifactId("maven-dependency-plugin"),
+//                        version("2.0")
+//                ),
+//                goal("unpack-dependencies"),
+//                configuration(
+//                        element(name("outputDirectory"), "${project.build.directory}/" + subDir)
+//                ),
+//                executionEnvironment(
+//                        project,
+//                        session,
+//                        pluginManager
+//                )
+//        );
+//    }
 
     protected void unpackDependencies() throws MojoExecutionException, MojoFailureException {
 
-        String baseDir = project.getBuild().getDirectory();
-        String subDir = "jfx-dependencies";
-
-        getLog().info("Unpacking module dependendencies to '" + baseDir + "/" + subDir + "'");
-
-        executeMojo(
-                plugin(
-                        groupId("org.apache.maven.plugins"),
-                        artifactId("maven-dependency-plugin"),
-                        version("2.0")
-                ),
-                goal("unpack-dependencies"),
-                configuration(
-                        element(name("outputDirectory"), "${project.build.directory}/" + subDir)
-                ),
-                executionEnvironment(
-                        project,
-                        session,
-                        pluginManager
-                )
-        );
-    }
-
-    protected void unpackDependenciesx() throws MojoExecutionException, MojoFailureException {
-
-        List<Dependency> dependencies = project.getDependencies();
+        Set<Artifact> artifacts = project.getDependencyArtifacts();
         List<Element> artifactItemsList = new ArrayList<Element>();
 
-        for (Dependency dependency : dependencies) {
-            if (!"test".equals(dependency.getScope()) && !"provided".equals(dependency.getScope())) {
+        for (Artifact artifact : artifacts) {
+            if (!"test".equals(artifact.getScope()) && !"provided".equals(artifact.getScope())) {
 
-                getLog().info("Including dependency '" + dependency + "' in JavaFX bundle");
+                getLog().info("Including dependency '" + artifact + "' in JavaFX bundle");
                 artifactItemsList.add(
                         element("artifactItem",
-                                element("groupId", dependency.getGroupId()),
-                                element("artifactId", dependency.getArtifactId()),
-                                element("version", dependency.getVersion())
+                                element("groupId", artifact.getGroupId()),
+                                element("artifactId", artifact.getArtifactId()),
+                                element("version", artifact.getVersion())
                         )
                 );
 

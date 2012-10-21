@@ -6,7 +6,7 @@ It provides a wrapper around the JavaFX packaging tools which are provided as pa
 ANT tasks that come with JavaFX).
 
 
-Worth Noting
+Setting Up
 ============
 
 You must have a valid JDK installed with a valid JavaFX installation included in it. Due to legal reasons (i.e. Oracle
@@ -21,6 +21,18 @@ happens) will remove this need eventually.
 
 Usage
 =============
+
+The Plugin is currently available via the Zen Java Maven repository. To use it, add this to your POM:
+
+``` xml
+    <pluginRepositories>
+        <pluginRepository>
+            <id>zen-java</id>
+            <name>Zen Java Maven Repo</name>
+            <url>http://zenjava.com/maven-repo/</url>
+        </pluginRepository>
+    </pluginRepositories>
+```
 
 By default, the plugin will build an executable JAR (i.e. one you can double click to launch, assuming you already have
 a JRE installed on your system) for your JavaFX application that contains all runtime dependencies within it.
@@ -66,6 +78,21 @@ Additionally, the plugin can be used to build native distributions:
             <bundleType>ALL|IMAGE|INSTALLER|NONE</bundleType>
         </configuration>
     </plugin>
+```
+
+The plugin uses several settings from your POM to determine attributes of the final bundle, in particular:
+
+- name: is used to determine the display name used for the installation package
+- organization: is used to determine the display name used for the installation package
+- finalName: is used to determine the name of the bundle produced
+
+e.g. for best results you should add some config like this to the your POM:
+
+``` xml
+    <name>JFX and JEE Sample 4</name>
+    <organization>
+        <name>Zen Java</name>
+    </organization>
 ```
 
 

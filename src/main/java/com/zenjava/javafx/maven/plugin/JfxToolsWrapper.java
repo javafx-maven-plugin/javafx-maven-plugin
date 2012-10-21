@@ -70,21 +70,28 @@ public class JfxToolsWrapper {
         invoke(packagerLib, "packageAsJar", params);
     }
 
-    public void generateDeploymentPackages(File outputDir, String appJar, String bundleType, String appName, String mainClass)
+    public void generateDeploymentPackages(File outputDir, String appJar, String bundleType,
+                                           String appDistributionName, String appName, String version, String vendor,
+                                           String mainClass)
             throws MojoExecutionException {
 
         Object deployParams = newInstance(deployParamsClass);
         invoke(deployParams, "setOutdir", outputDir);
-        invoke(deployParams, "setOutfile", appName);
+        invoke(deployParams, "setOutfile", appDistributionName);
         invoke(deployParams, "setApplicationClass", mainClass);
         invoke(deployParams, "setVerbose", new Class[] { Boolean.TYPE }, verbose);
 
-        Object bundleTypeEnum = invokeStatic(bundleTypeClass, "valueOf", bundleType);
-        invoke(deployParams, "setBundleType", bundleTypeEnum);
         invoke(deployParams, "addResource", outputDir, appJar);
 
-//        System.out.println(ReflectionToStringBuilder.reflectionToString(deployParams));
-//        System.out.println(ReflectionToStringBuilder.reflectionToString(invoke(deployParams, "getBundleParams")));
+        Object bundleTypeEnum = invokeStatic(bundleTypeClass, "valueOf", bundleType);
+        invoke(deployParams, "setBundleType", bundleTypeEnum);
+
+        // Installer seems to crash with this stuff on ...
+        //Object bundleParams = invoke(deployParams, "getBundleParams");
+        //invoke(bundleParams, "setName", appDistributionName);
+        //invoke(bundleParams, "setApplicationVersion", version);
+        //invoke(bundleParams, "setDisplayName", appName);
+        //invoke(bundleParams, "setVendor", vendor);
 
         invoke(packagerLib, "generateDeploymentPackages", deployParams);
     }
