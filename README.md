@@ -18,6 +18,11 @@ ugly. See http://www.zenjava.com/firstcontact/architecture/setup/install-javafx/
 fact that JavaFX loads it's DLLs in a way Maven can't handle. Co-bundling of JavaFX within the JRE (when it finally
 happens) will remove this need eventually.
 
+To build native installers with this plugin, you need to also install the relevant native installer library used by
+JavaFX for your OS (e.g. on Windows, install WiX). See the JavaFX installation steps for info on this:
+
+    https://blogs.oracle.com/talkingjavadeployment/entry/native_packaging_for_javafx
+
 
 Usage
 =============
