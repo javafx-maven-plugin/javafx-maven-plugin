@@ -1,7 +1,7 @@
 package com.zenjava.javafx.maven.plugin;
 
 /*
- * Copyright 2001-2005 The Apache Software Foundation.
+ * Copyright 2012 Daniel Zwolenski.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import java.util.List;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
- * @goal javafx
+ * @goal package
  * @phase package
  */
 public class JavaFxPackagerMojo extends AbstractMojo {
