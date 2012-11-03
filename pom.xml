@@ -5,7 +5,7 @@
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>JavaFX Maven Plugin Mojo</name>
     <url>http://zenjava.com/maven-repo</url>
 
@@ -32,7 +32,7 @@
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-                    <goalPrefix>javafx</goalPrefix>
+                    <goalPrefix>jfx</goalPrefix>
                 </configuration>
             </plugin>
 

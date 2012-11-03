@@ -105,7 +105,7 @@ public class JavaFxPackagerMojo extends AbstractMojo {
 
         if (!jfxToolsJar.exists()) {
             throw new MojoFailureException("Unable to find JavaFX tools JAR file at '"
-                    + jfxToolsJar + "'. Is your JAVA_HOME set to a JDK with JavaFX installed?");
+                    + jfxToolsJar + "'. Is your JAVA_HOME set to a JDK with JavaFX installed (must be Java 1.7.0 update 9 or higher)?");
         }
 
         JfxToolsWrapper jfxToolsWrapper = new JfxToolsWrapper(jfxToolsJar, verbose);
