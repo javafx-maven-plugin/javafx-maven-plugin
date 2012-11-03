@@ -5,6 +5,8 @@ The JavaFX Maven Plugin provides a way to to assemble distributable bundles for 
 It provides a wrapper around the JavaFX packaging tools which are provided as part of the JavaFX installation (i.e. the
 ANT tasks that come with JavaFX).
 
+Currently this plugin can build executable JARs and also native installers (MSI, EXE, RPM, DMG). It does not currently build Applets or JNLP bundles.
+
 
 Setting Up
 ============
