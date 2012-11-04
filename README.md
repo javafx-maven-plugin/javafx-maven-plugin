@@ -5,23 +5,48 @@ The JavaFX Maven Plugin provides a way to to assemble distributable bundles for 
 It provides a wrapper around the JavaFX packaging tools which are provided as part of the JavaFX installation (i.e. the
 ANT tasks that come with JavaFX).
 
-Currently this plugin can build executable JARs and also native installers (MSI, EXE, RPM, DMG). It does not currently build Applets or JNLP bundles.
+Currently this plugin can build self-contained, executable JARs and also native installers (MSI, EXE, RPM, DMG). It
+does not currently build Applets or JNLP bundles.
+
+Additionally the JavaFX Maven Plugin provides a command to "fix" the JRE to include JavaFX on the JDK classpath of your 
+development environment. This a work around for the problems around JFX not being on the classpath by default. 
 
 
 Setting Up
 ============
 
-You must have a valid JDK installed with a valid JavaFX installation included in it. Due to legal reasons (i.e. Oracle
+You must have a valid JDK installed with a valid JavaFX installation included in it (i.e. *Java 1.7.0 update 9* or higher). Due to legal reasons (i.e. Oracle
 licensing restrictions) it was not possible to include the tools directly within this plugin so the plugin instead
 searches for the tools within the JDK installation (found via the JAVA_HOME setting).
 
-Additionally you must manually setup JavaFX to be on your system's Java path. There are several options, all of them
-ugly. See http://www.zenjava.com/firstcontact/architecture/setup/install-javafx/ for one option. This one is due to the
-fact that JavaFX loads it's DLLs in a way Maven can't handle. Co-bundling of JavaFX within the JRE (when it finally
-happens) will remove this need eventually.
-
 To build native installers with this plugin, you need to also install the relevant native installer library used by
 JavaFX for your OS (e.g. on Windows, install WiX). See the JavaFX installation steps for info on this: https://blogs.oracle.com/talkingjavadeployment/entry/native_packaging_for_javafx
+
+
+Fixing the JRE
+===============
+
+There is a (big) flaw in the current approach used by Oracle to co-bundle JavaFX in with the JDK. When you install 
+the JDK it now also installs JavaFX, however (for reasons of politics and red tape), JavaFX is NOT added to the 
+classpath.
+
+Oracle plans to fix this (hopefully by Java 8) but until then it is necessary to manually update the JRE classpath of
+your local JDK so that JavaFX is available to your application. 
+
+To "fix" your classpath, create your Maven project as per the *Usage* section below and then use the command line to run the
+following command: 
+
+```
+   mvn jfx:fix-classpath
+```
+
+This will copy the JavaFX runtime JAR (jfxrt.jar) into the extensions directory of the 
+
+Note: the obvious idea of adding JavaFX as a standard Maven dependency does not work due to the native file loading 
+approach used by JFX. Search the OTN forums for more information on this. Oracle has no plans to fix this loading issue
+and the co-bundling fix for Java 8 will make this unnecesary anyway (you won't want, or need a Maven dependency for 
+JavaFX since it will be on the classpath by default, much like Swing and the Java Collections API).  
+
 
 
 Usage
@@ -80,7 +105,13 @@ Additionally, the plugin can be used to build native distributions:
         </executions>
         <configuration>
             <mainClass>[put your application main class here]</mainClass>
+
+            <!-- 
+            These mysterious parameters are from the JFX core packaging library. 
+            Using a bundle type of ALL seems to be the best for producing native installers 
+            -->  
             <bundleType>ALL|IMAGE|INSTALLER|NONE</bundleType>
+
         </configuration>
     </plugin>
 ```
@@ -89,16 +120,18 @@ Additionally, the plugin can be used to build native distributions:
 Support
 =======
 
-This plugin is currently very basic. It works for creating standard JAR and native distributables but it does not handle
-any complex configuration for these, or support JNLP or Applet deployment.
+This plugin is currently basic. It works for creating standard executable JARs and native distributables but provides only the basic
+configuration for these. It does not support JNLP or Applet deployment.
 
-The core framework is there for this and it would not be difficult to extend the plugin to cover these cases, however
-I have no intention of doing this. If you have a need for such features you should get in contact with me to find out
-how you can contribute.
+Currently I am waiting for the JFX tools to be open sourced before developing this any further. I make no guarantees
+that I will do any further work on this. If the core packaging tools are open sourced in a way to make them usable
+I will likely enhance the native packaging but I am unlikely to improve Applet or JNLP support. If anyone would like
+to contribute functionality for these, please contact me. 
 
 Likewise, I am not intending to provide on-going support for this plugin. It is available as-is. If future releases of
-JavaFX change the way the packaging tools work then this plugin is likely to break. Again, I am happy to help
-contributors get started should anyone want to do this work in the future.
+JavaFX change the way the packaging tools work then this plugin is likely to break. I may, or may not, fix these issues, 
+it will largely depend on whether I am working with JavaFX or not at the time. Again, I am happy to help contributors 
+get started should anyone want to do this work in the future.
 
 
 License
