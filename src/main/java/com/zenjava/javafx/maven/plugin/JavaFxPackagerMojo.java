@@ -93,7 +93,7 @@ public class JavaFxPackagerMojo extends AbstractMojo {
 
         // unpack project dependencies into a directory the JavaFX tools can use
 
-        unpackDependencies();
+        File dependenciesDir = unpackDependencies();
 
 
         // find the JavaFX tools library from within the JDK
@@ -122,7 +122,7 @@ public class JavaFxPackagerMojo extends AbstractMojo {
         File outputFile = new File(javafxBuildDir, jarName);
         getLog().info("Packaging to JavaFX JAR file: " + outputFile);
         getLog().info("Using main class '" + mainClass + "'");
-        jfxToolsWrapper.packageAsJar(outputFile, classesDir, mainClass);
+        jfxToolsWrapper.packageAsJar(outputFile, classesDir, dependenciesDir, mainClass);
 
 
         // build native packages (if required)
@@ -136,12 +136,13 @@ public class JavaFxPackagerMojo extends AbstractMojo {
     }
 
 
-    protected void unpackDependencies() throws MojoExecutionException, MojoFailureException {
+    protected File unpackDependencies() throws MojoExecutionException, MojoFailureException {
 
         String baseDir = project.getBuild().getDirectory();
         String subDir = "jfx-dependencies";
+        File targetDir = new File(baseDir, subDir);
 
-        getLog().info("Unpacking module dependendencies to '" + baseDir + "/" + subDir + "'");
+        getLog().info("Unpacking module dependendencies to: " + targetDir);
 
         executeMojo(
                 plugin(
@@ -159,5 +160,7 @@ public class JavaFxPackagerMojo extends AbstractMojo {
                         pluginManager
                 )
         );
+
+        return targetDir;
     }
 }

@@ -59,12 +59,13 @@ public class JfxToolsWrapper {
         invokeStatic(logClass, "setLogger", logger);
     }
 
-    public void packageAsJar(File outputFile, File classesDir, String mainClass) throws MojoExecutionException {
+    public void packageAsJar(File outputFile, File classesDir, File dependenciesDir, String mainClass) throws MojoExecutionException {
 
         Object params = newInstance(createJarParamsClass);
         invoke(params, "setOutdir", outputFile.getParentFile());
         invoke(params, "setOutfile", outputFile.getName());
         invoke(params, "addResource", classesDir, "");
+        invoke(params, "addResource", dependenciesDir, "");
         invoke(params, "setApplicationClass", mainClass);
 
         invoke(packagerLib, "packageAsJar", params);
