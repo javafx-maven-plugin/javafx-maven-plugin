@@ -73,7 +73,7 @@ To make this happen, add the following to your pom.xml:
     <plugin>
         <groupId>com.zenjava</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
         <executions>
             <execution>
                 <phase>package</phase>
