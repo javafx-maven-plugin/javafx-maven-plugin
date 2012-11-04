@@ -23,6 +23,16 @@ To build native installers with this plugin, you need to also install the releva
 JavaFX for your OS (e.g. on Windows, install WiX). See the JavaFX installation steps for info on this: https://blogs.oracle.com/talkingjavadeployment/entry/native_packaging_for_javafx
 
 
+Example Project
+===============
+
+To make getting started easier I have created a small, but complete example project with a fully configured POM:
+
+    https://github.com/zonski/hello-javafx-maven-example/blob/master/README.md
+
+You can download this and use it as a kick-starter template, or you can follow the steps below. 
+
+
 Fixing the JRE
 ===============
 
