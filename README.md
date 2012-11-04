@@ -28,7 +28,7 @@ Example Project
 
 To make getting started easier I have created a small, but complete example project with a fully configured POM:
 
-    https://github.com/zonski/hello-javafx-maven-example/blob/master/README.md
+https://github.com/zonski/hello-javafx-maven-example/blob/master/README.md
 
 You can download this and use it as a kick-starter template, or you can follow the steps below. 
 
