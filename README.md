@@ -94,7 +94,7 @@ Additionally, the plugin can be used to build native distributions:
     <plugin>
         <groupId>com.zenjava</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
         <executions>
             <execution>
                 <phase>package</phase>
