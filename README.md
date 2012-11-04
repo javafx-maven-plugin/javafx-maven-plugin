@@ -50,7 +50,7 @@ following command:
    mvn jfx:fix-classpath
 ```
 
-This will copy the JavaFX runtime JAR (jfxrt.jar) into the extensions directory of the 
+This will copy the JavaFX runtime JAR (jfxrt.jar) into the extensions directory of the JRE.
 
 Note: the obvious idea of adding JavaFX as a standard Maven dependency does not work due to the native file loading 
 approach used by JFX. Search the OTN forums for more information on this. Oracle has no plans to fix this loading issue
