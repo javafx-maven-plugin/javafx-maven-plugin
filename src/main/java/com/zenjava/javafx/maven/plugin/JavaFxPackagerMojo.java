@@ -25,6 +25,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.codehaus.plexus.util.FileUtils;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
@@ -143,6 +147,12 @@ public class JavaFxPackagerMojo extends AbstractMojo {
         File targetDir = new File(baseDir, subDir);
 
         getLog().info("Unpacking module dependendencies to: " + targetDir);
+
+        try {
+            FileUtils.forceMkdir( targetDir );
+        } catch( IOException ex ) {
+            throw new MojoFailureException( "Unable to create " + targetDir, ex );
+        }
 
         executeMojo(
                 plugin(
