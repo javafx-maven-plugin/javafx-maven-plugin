@@ -124,6 +124,9 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <mavenExecutorId>forked-path</mavenExecutorId>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
