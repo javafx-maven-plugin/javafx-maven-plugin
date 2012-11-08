@@ -1,5 +1,3 @@
-package com.zenjava.javafx.maven.plugin;
-
 /*
  * Copyright 2012 Daniel Zwolenski.
  *
@@ -15,6 +13,7 @@ package com.zenjava.javafx.maven.plugin;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.zenjava.javafx.maven.plugin;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
