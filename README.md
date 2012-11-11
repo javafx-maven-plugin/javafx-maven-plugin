@@ -40,7 +40,8 @@ the JDK it now also installs JavaFX, however (for reasons of politics and red ta
 classpath.
 
 Oracle plans to fix this (hopefully by Java 8) but until then it is necessary to manually update the JRE classpath of
-your local JDK so that JavaFX is available to your application. 
+your local JDK so that JavaFX is available to your application. See this discussion for more information: 
+http://mail.openjdk.java.net/pipermail/openjfx-dev/2012-October/004072.html
 
 To "fix" your classpath, create your Maven project as per the *Usage* section below and then use the command line to run the
 following command: 
@@ -61,7 +62,7 @@ JavaFX since it will be on the classpath by default, much like Swing and the Jav
 Usage
 =============
 
-The Plugin is currently available in the Central Maven repository. 
+The JavaFX Maven Plugin is available in the Central Maven repository. 
 
 By default, the plugin will build an executable JAR (i.e. one you can double click to launch, assuming you already have
 a JRE installed on your system) for your JavaFX application that contains all runtime dependencies within it.
