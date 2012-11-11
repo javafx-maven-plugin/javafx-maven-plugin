@@ -15,9 +15,8 @@ development environment. This a work around for the problems around JFX not bein
 Setting Up
 ============
 
-You must have a valid JDK installed with a valid JavaFX installation included in it (i.e. *Java 1.7.0 update 9* or higher). Due to legal reasons (i.e. Oracle
-licensing restrictions) it was not possible to include the tools directly within this plugin so the plugin instead
-searches for the tools within the JDK installation (found via the JAVA_HOME setting).
+You must have a valid JDK installed with a valid JavaFX installation included in it (i.e. *Java 1.7.0 update 9* or 
+higher). This plugin uses the tools within the JDK installation (found via the JAVA_HOME setting).
 
 To build native installers with this plugin, you need to also install the relevant native installer library used by
 JavaFX for your OS (e.g. on Windows, install WiX). See the JavaFX installation steps for info on this: https://blogs.oracle.com/talkingjavadeployment/entry/native_packaging_for_javafx
@@ -33,8 +32,8 @@ https://github.com/zonski/hello-javafx-maven-example
 You can download this and use it as a kick-starter template, or you can follow the steps below. 
 
 
-Fixing the JRE
-===============
+Fixing the JRE Classpath
+============================
 
 There is a (big) flaw in the current approach used by Oracle to co-bundle JavaFX in with the JDK. When you install 
 the JDK it now also installs JavaFX, however (for reasons of politics and red tape), JavaFX is NOT added to the 
@@ -62,17 +61,7 @@ JavaFX since it will be on the classpath by default, much like Swing and the Jav
 Usage
 =============
 
-The Plugin is currently available via the Zen Java Maven repository. To use it, add this to your POM:
-
-``` xml
-    <pluginRepositories>
-        <pluginRepository>
-            <id>zen-java</id>
-            <name>Zen Java Maven Repo</name>
-            <url>http://zenjava.com/maven-repo/</url>
-        </pluginRepository>
-    </pluginRepositories>
-```
+The Plugin is currently available in the Central Maven repository. 
 
 By default, the plugin will build an executable JAR (i.e. one you can double click to launch, assuming you already have
 a JRE installed on your system) for your JavaFX application that contains all runtime dependencies within it.
