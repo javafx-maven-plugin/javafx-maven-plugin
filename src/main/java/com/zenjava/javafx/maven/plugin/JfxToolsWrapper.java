@@ -64,7 +64,9 @@ public class JfxToolsWrapper {
         invoke(params, "setOutdir", outputFile.getParentFile());
         invoke(params, "setOutfile", outputFile.getName());
         invoke(params, "addResource", classesDir, "");
-        invoke(params, "addResource", dependenciesDir, "");
+        if( dependenciesDir.exists() ) {
+            invoke( params, "addResource", dependenciesDir, "" );
+        }
         invoke(params, "setApplicationClass", mainClass);
 
         invoke(packagerLib, "packageAsJar", params);
