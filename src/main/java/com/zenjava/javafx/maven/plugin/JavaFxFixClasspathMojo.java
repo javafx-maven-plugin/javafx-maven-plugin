@@ -29,6 +29,7 @@ import java.nio.file.StandardCopyOption;
 /**
  * @goal fix-classpath
  * @phase validate
+ * @requiresProject false
  */
 public class JavaFxFixClasspathMojo extends AbstractMojo {
 

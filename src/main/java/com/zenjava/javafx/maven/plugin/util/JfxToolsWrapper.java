@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.zenjava.javafx.maven.plugin;
+package com.zenjava.javafx.maven.plugin.util;
 
 import org.apache.maven.plugin.MojoExecutionException;
 
@@ -96,6 +96,10 @@ public class JfxToolsWrapper {
         //invoke(bundleParams, "setVendor", vendor);
 
         invoke(packagerLib, "generateDeploymentPackages", deployParams);
+
+        // delete the JNLP and webstart generated files as we didn't ask for them
+        new File(outputDir, appDistributionName + ".html").delete();
+        new File(outputDir, appDistributionName + ".jnlp").delete();
     }
 
 
