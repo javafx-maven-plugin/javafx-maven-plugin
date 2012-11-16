@@ -17,6 +17,7 @@ package com.zenjava.javafx.maven.plugin;
 
 import com.zenjava.javafx.deploy.webstart.WebstartBundleConfig;
 import com.zenjava.javafx.deploy.webstart.WebstartBundler;
+import com.zenjava.javafx.maven.plugin.config.NativeConfig;
 import com.zenjava.javafx.maven.plugin.config.WebstartConfig;
 import com.zenjava.javafx.maven.plugin.util.JfxToolsWrapper;
 import com.zenjava.javafx.maven.plugin.util.MavenLog;
@@ -36,7 +37,6 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
  * @goal package
- * @phase package
  * @requiresDependencyResolution
  */
 public class JavaFxPackagerMojo extends AbstractMojo {
@@ -53,9 +53,9 @@ public class JavaFxPackagerMojo extends AbstractMojo {
     private String mainClass;
 
     /**
-     * @parameter expression="${bundleType}" default-value="NONE"
+     * @parameter expression="${jarFileName}"
      */
-    private String bundleType;
+    private String jarFileName;
 
     /**
      * @parameter expression="${verbose}" default-value="false"
@@ -63,9 +63,14 @@ public class JavaFxPackagerMojo extends AbstractMojo {
     private Boolean verbose;
 
    /**
-     * @parameter expression="${webstart}"
+     * @parameter
      */
-    private WebstartConfig webstartConfig;
+    private WebstartConfig webstart;
+
+   /**
+     * @parameter
+     */
+    private NativeConfig nativeInstallers;
 
     /**
      * The Maven Project Object
@@ -130,7 +135,10 @@ public class JavaFxPackagerMojo extends AbstractMojo {
             throw new MojoFailureException("Build directory '" + classesDir + "' does not exist. You need to run the 'compile' phase first.");
         }
 
-        String jarName = build.getFinalName() + "-jfx.jar";
+        String jarName = this.jarFileName;
+        if (jarName == null) {
+            jarName = build.getFinalName() + "-jfx.jar";
+        }
         File outputFile = new File(workingDir, jarName);
         getLog().info("Packaging to JavaFX JAR file: " + outputFile);
         getLog().info("Using main class '" + mainClass + "'");
@@ -141,28 +149,28 @@ public class JavaFxPackagerMojo extends AbstractMojo {
 
     protected void buildWebstartBundle(File jarFile) throws MojoFailureException, MojoExecutionException {
 
-        if (webstartConfig != null && webstartConfig.isBuildWebstartBundle()) {
+        if (webstart != null && webstart.isBuildWebstartBundle()) {
 
             Build build = project.getBuild();
 
             WebstartBundleConfig config = new WebstartBundleConfig();
 
-            String dirName = webstartConfig.getOutputDir() != null ? webstartConfig.getOutputDir() : "webstart";
+            String dirName = webstart.getOutputDir() != null ? webstart.getOutputDir() : "webstart";
             File outputDir = new File(build.getDirectory(), dirName);
             config.setOutputDir(outputDir);
 
-            config.setJnlpFileName(webstartConfig.getJnlpFileName() != null ? webstartConfig.getJnlpFileName() : "launch.jnlp");
+            config.setJnlpFileName(webstart.getJnlpFileName() != null ? webstart.getJnlpFileName() : "launch.jnlp");
 
-            config.setJnlpTemplate(webstartConfig.getJnlpTemplate());
+            config.setJnlpTemplate(webstart.getJnlpTemplate());
 
-            String title = webstartConfig.getTitle() != null ? webstartConfig.getTitle() : project.getName();
+            String title = webstart.getTitle() != null ? webstart.getTitle() : project.getName();
             if (title != null) {
                 config.setTitle(title);
             } else {
                 throw new MojoFailureException("A 'title' must be set to generate a webstart bundle");
             }
 
-            String vendor = webstartConfig.getVendor();
+            String vendor = webstart.getVendor();
             if (vendor == null) {
                 if (project.getOrganization() != null && project.getOrganization().getName() != null) {
                     vendor = project.getOrganization().getName();
@@ -172,9 +180,9 @@ public class JavaFxPackagerMojo extends AbstractMojo {
             }
             config.setVendor(vendor);
 
-            config.setDescription(webstartConfig.getDescription() != null ? webstartConfig.getDescription() : project.getDescription());
+            config.setDescription(webstart.getDescription() != null ? webstart.getDescription() : project.getDescription());
 
-            String mainClass = webstartConfig.getMainClass();
+            String mainClass = webstart.getMainClass();
             if (mainClass == null) {
                 if (this.mainClass != null) {
                     mainClass = this.mainClass;
@@ -184,19 +192,58 @@ public class JavaFxPackagerMojo extends AbstractMojo {
             }
             config.setMainClass(mainClass);
 
-            config.setJarFile(jarFile.getName());
+            String homepage = webstart.getHomepage();
+            if (vendor == null) {
+                if (project.getOrganization() != null && project.getOrganization().getUrl() != null) {
+                    homepage = project.getOrganization().getUrl();
+                }
+            }
+            config.setHomepage(homepage);
 
-            if (webstartConfig.isBuildHtmlFile()) {
+            if (webstart.getIcon() != null) {
+                config.setIcon(webstart.getIcon());
+            } else {
+                // todo look for one in project structure
+            }
+
+            if (webstart.getSplashImage() != null) {
+                config.setSplashImage(webstart.getSplashImage());
+            } else {
+                // todo look for one in project structure
+            }
+
+            config.setOfflineAllowed(webstart.isOfflineAllowed());
+
+            if (webstart.getJreVersion() != null) {
+                config.setJreVersion(webstart.getJreVersion());
+            }
+
+            if (webstart.getJreArgs() != null) {
+                config.setJreArgs(webstart.getJreArgs());
+            }
+
+            if (webstart.getJfxVersion() != null) {
+                config.setJreVersion(webstart.getJfxVersion());
+            }
+
+            String jarFileName = webstart.getJarFileName();
+            if (jarFileName == null) {
+                jarFileName = jarFile.getName();
+            }
+            config.setJarResources(jarFileName);
+
+
+            if (webstart.isBuildHtmlFile()) {
                 config.setBuildHtmlFile(true);
-                config.setHtmlFileName(webstartConfig.getHtmlFileName() != null ? webstartConfig.getHtmlFileName() : "index.html");
-                config.setHtmlTemplate(webstartConfig.getHtmlTemplate());
+                config.setHtmlFileName(webstart.getHtmlFileName() != null ? webstart.getHtmlFileName() : "index.html");
+                config.setHtmlTemplate(webstart.getHtmlTemplate());
             }
 
             WebstartBundler bundler = new WebstartBundler(new MavenLog(getLog()));
             bundler.bundle(config);
 
             try {
-                FileUtils.copyFileToDirectory(jarFile, outputDir);
+                FileUtils.copyFile(jarFile, new File(outputDir, jarFileName));
             } catch (IOException e) {
                 throw new MojoExecutionException("Failed to copy JAR file into webstart directory", e);
             }
@@ -205,12 +252,15 @@ public class JavaFxPackagerMojo extends AbstractMojo {
 
     protected void buildNativeBundles(File outputDir, File jarFile, JfxToolsWrapper jfxTools) throws MojoExecutionException {
 
-        jfxTools.generateDeploymentPackages(outputDir, jarFile.getName(), bundleType,
+        if (nativeInstallers != null && nativeInstallers.isBuildNativeBundles()) {
+
+            jfxTools.generateDeploymentPackages(outputDir, jarFile.getName(), nativeInstallers.getBundleType(),
                 project.getBuild().getFinalName(),
                 project.getName(),
                 project.getVersion(),
                 project.getOrganization() != null ? project.getOrganization().getName() : "Unknown JavaFX Developer",
                 mainClass);
+        }
     }
 
 

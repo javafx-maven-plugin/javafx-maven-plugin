@@ -18,7 +18,8 @@ public class WebstartConfig {
     private boolean offlineAllowed;
     private String jreVersion;
     private String jreArgs;
-    private String jarFile;
+    private String jfxVersion;
+    private String jarFileName;
     private String mainClass;
 
     private boolean buildHtmlFile;
@@ -134,12 +135,20 @@ public class WebstartConfig {
         this.jreArgs = jreArgs;
     }
 
-    public String getJarFile() {
-        return jarFile;
+    public String getJfxVersion() {
+        return jfxVersion;
     }
 
-    public void setJarFile(String jarFile) {
-        this.jarFile = jarFile;
+    public void setJfxVersion(String jfxVersion) {
+        this.jfxVersion = jfxVersion;
+    }
+
+    public String getJarFileName() {
+        return jarFileName;
+    }
+
+    public void setJarFileName(String jarFileName) {
+        this.jarFileName = jarFileName;
     }
 
     public String getMainClass() {
