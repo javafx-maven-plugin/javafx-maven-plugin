@@ -18,6 +18,7 @@ package com.zenjava.javafx.maven.plugin;
 import com.zenjava.javafx.deploy.webstart.WebstartBundleConfig;
 import com.zenjava.javafx.deploy.webstart.WebstartBundler;
 import com.zenjava.javafx.maven.plugin.config.NativeConfig;
+import com.zenjava.javafx.maven.plugin.config.SignJarConfig;
 import com.zenjava.javafx.maven.plugin.config.WebstartConfig;
 import com.zenjava.javafx.maven.plugin.util.JfxToolsWrapper;
 import com.zenjava.javafx.maven.plugin.util.MavenLog;
@@ -61,6 +62,11 @@ public class JavaFxPackagerMojo extends AbstractMojo {
      * @parameter expression="${verbose}" default-value="false"
      */
     private Boolean verbose;
+
+   /**
+     * @parameter
+     */
+    private SignJarConfig signJar;
 
    /**
      * @parameter
@@ -122,6 +128,7 @@ public class JavaFxPackagerMojo extends AbstractMojo {
         JfxToolsWrapper jfxTools = new JfxToolsWrapper(jfxToolsJar, verbose);
 
         File jarFile = buildExecutableJar(outputDir, dependenciesDir, jfxTools);
+        signJar(jarFile, jfxTools);
         buildWebstartBundle(jarFile);
         buildNativeBundles(outputDir, jarFile, jfxTools);
     }
@@ -147,9 +154,51 @@ public class JavaFxPackagerMojo extends AbstractMojo {
         return outputFile;
     }
 
+    protected void signJar(File jarFile, JfxToolsWrapper jfxTools) throws MojoFailureException, MojoExecutionException {
+
+        if (signJar != null && signJar.isSignJar()) {
+
+            getLog().info("Signing JAR file '" + jarFile + "'");
+
+            File keyStore = signJar.getKeyStore();
+            if (keyStore == null) {
+                keyStore = new File(project.getBasedir(), "src/main/deploy/keystore.jks");
+            }
+            if (!keyStore.exists()) {
+                throw new MojoFailureException("Unable to find a key store for signing, place one in 'src/main/deploy/keystore.jks' or override the 'keyStore' setting");
+            }
+
+            String alias = signJar.getAlias();
+            if (alias == null) {
+                throw new MojoFailureException("An 'alias' for the keystore must be specified to sign the JAR file");
+            }
+
+            String storePassword = signJar.getStorePassword();
+            if (storePassword == null) {
+                throw new MojoFailureException("A 'storePassword' for the keystore must be specified to sign the JAR file");
+            }
+
+            String keyPassword = signJar.getKeyPassword();
+            if (keyPassword == null) {
+                getLog().debug("No 'keyPassword' specified, using 'storePassword' for this value");
+                keyPassword = storePassword;
+            }
+
+            String storeType = signJar.getStoreType();
+            if (storeType == null) {
+                storeType = "jks";
+            }
+
+            jfxTools.signJar(jarFile, keyStore, alias, storePassword, keyPassword, storeType);
+        }
+    }
+
     protected void buildWebstartBundle(File jarFile) throws MojoFailureException, MojoExecutionException {
 
         if (webstart != null && webstart.isBuildWebstartBundle()) {
+
+            getLog().info("Building Webstart bundle");
+
 
             Build build = project.getBuild();
 
@@ -226,6 +275,8 @@ public class JavaFxPackagerMojo extends AbstractMojo {
                 config.setJreVersion(webstart.getJfxVersion());
             }
 
+            config.setRequiresAllPermissions(webstart.isRequiresAllPermissions());
+
             String jarFileName = webstart.getJarFileName();
             if (jarFileName == null) {
                 jarFileName = jarFile.getName();
@@ -253,6 +304,8 @@ public class JavaFxPackagerMojo extends AbstractMojo {
     protected void buildNativeBundles(File outputDir, File jarFile, JfxToolsWrapper jfxTools) throws MojoExecutionException {
 
         if (nativeInstallers != null && nativeInstallers.isBuildNativeBundles()) {
+
+            getLog().info("Building Native Installers");
 
             jfxTools.generateDeploymentPackages(outputDir, jarFile.getName(), nativeInstallers.getBundleType(),
                 project.getBuild().getFinalName(),

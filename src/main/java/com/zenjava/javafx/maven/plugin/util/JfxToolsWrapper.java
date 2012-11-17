@@ -37,6 +37,7 @@ public class JfxToolsWrapper {
 
     private Class packagerLibClass;
     private Class createJarParamsClass;
+    private Class signJarParamsClass;
     private Class deployParamsClass;
     private Class bundleTypeClass;
     private Object packagerLib;
@@ -47,6 +48,7 @@ public class JfxToolsWrapper {
         ClassLoader jfxToolsClassloader = loadClassLoader(jfxToolsJar);
         packagerLibClass = loadClass(jfxToolsClassloader, "PackagerLib");
         createJarParamsClass = loadClass(jfxToolsClassloader, "CreateJarParams");
+        signJarParamsClass = loadClass(jfxToolsClassloader, "SignJarParams");
         deployParamsClass = loadClass(jfxToolsClassloader, "DeployParams");
         bundleTypeClass = loadClass(jfxToolsClassloader, "bundlers.Bundler$BundleType");
         packagerLib = newInstance(packagerLibClass);
@@ -70,6 +72,21 @@ public class JfxToolsWrapper {
         invoke(params, "setApplicationClass", mainClass);
 
         invoke(packagerLib, "packageAsJar", params);
+    }
+
+    public void signJar(File jarFile, File keyStore, String alias, String storePass, String keyPass, String storeType)
+            throws MojoExecutionException {
+
+        Object params = newInstance(signJarParamsClass);
+        invoke(params, "setKeyStore", keyStore);
+        invoke(params, "setAlias", alias);
+        invoke(params, "setStorePass", storePass);
+        invoke(params, "setKeyPass", keyPass);
+        invoke(params, "setStoreType", storeType);
+        invoke(params, "addResource", jarFile.getParentFile(), jarFile.getName());
+
+        invoke(packagerLib, "signJar", params);
+
     }
 
     public void generateDeploymentPackages(File outputDir, String appJar, String bundleType,

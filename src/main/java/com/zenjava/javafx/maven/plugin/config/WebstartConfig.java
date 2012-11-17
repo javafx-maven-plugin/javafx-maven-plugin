@@ -20,6 +20,7 @@ public class WebstartConfig {
     private String jreArgs;
     private String jfxVersion;
     private String jarFileName;
+    private boolean requiresAllPermissions;
     private String mainClass;
 
     private boolean buildHtmlFile;
@@ -181,5 +182,13 @@ public class WebstartConfig {
 
     public void setHtmlFileName(String htmlFileName) {
         this.htmlFileName = htmlFileName;
+    }
+
+    public boolean isRequiresAllPermissions() {
+        return requiresAllPermissions;
+    }
+
+    public void setRequiresAllPermissions(boolean requiresAllPermissions) {
+        this.requiresAllPermissions = requiresAllPermissions;
     }
 }
