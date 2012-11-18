@@ -24,7 +24,7 @@ public class WebstartConfig {
     private String mainClass;
 
     private boolean buildHtmlFile;
-    private String htmlTemplate;
+    private File htmlTemplate;
     private String htmlFileName;
 
     public WebstartConfig() {
@@ -168,11 +168,11 @@ public class WebstartConfig {
         this.buildHtmlFile = buildHtmlFile;
     }
 
-    public String getHtmlTemplate() {
+    public File getHtmlTemplate() {
         return htmlTemplate;
     }
 
-    public void setHtmlTemplate(String htmlTemplate) {
+    public void setHtmlTemplate(File htmlTemplate) {
         this.htmlTemplate = htmlTemplate;
     }
 

@@ -210,7 +210,14 @@ public class JavaFxPackagerMojo extends AbstractMojo {
 
             config.setJnlpFileName(webstart.getJnlpFileName() != null ? webstart.getJnlpFileName() : "launch.jnlp");
 
-            config.setJnlpTemplate(webstart.getJnlpTemplate());
+            File jnlpTemplate = webstart.getJnlpTemplate();
+            if (jnlpTemplate == null) {
+                File file = new File(project.getBasedir(), "src/main/deploy/jnlp-template.vm");
+                if (file.exists()) {
+                    jnlpTemplate = file;
+                }
+            }
+            config.setJnlpTemplate(jnlpTemplate);
 
             String title = webstart.getTitle() != null ? webstart.getTitle() : project.getName();
             if (title != null) {
@@ -287,7 +294,15 @@ public class JavaFxPackagerMojo extends AbstractMojo {
             if (webstart.isBuildHtmlFile()) {
                 config.setBuildHtmlFile(true);
                 config.setHtmlFileName(webstart.getHtmlFileName() != null ? webstart.getHtmlFileName() : "index.html");
-                config.setHtmlTemplate(webstart.getHtmlTemplate());
+
+                File htmlTemplate = webstart.getHtmlTemplate();
+                if (htmlTemplate == null) {
+                    File file = new File(project.getBasedir(), "src/main/deploy/webstart-html-template.vm");
+                    if (file.exists()) {
+                        htmlTemplate = file;
+                    }
+                }
+                config.setHtmlTemplate(htmlTemplate);
             }
 
             WebstartBundler bundler = new WebstartBundler(new MavenLog(getLog()));
