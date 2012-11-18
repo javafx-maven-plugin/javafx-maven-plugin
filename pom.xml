@@ -60,7 +60,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/zonski/javafx-maven-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:zonski/javafx-maven-plugin.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:zonski/javafx-maven-plugin.git</developerConnection>
         <url>https://github.com/zonski/javafx-maven-plugin.git</url>
     </scm>
 
