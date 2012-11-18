@@ -1,7 +1,7 @@
 JavaFX Maven Plugin
 ===================
 
-The JavaFX Maven Plugin provides a way to to assemble distribution bundles for JavaFX applications (2.2+) from within Maven.
+The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (2.2+) from within Maven.
  
 For information about this plugin including how to configure your POM, please refer to the main wiki page: 
 
