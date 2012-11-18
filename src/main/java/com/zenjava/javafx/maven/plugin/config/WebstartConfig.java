@@ -13,8 +13,8 @@ public class WebstartConfig {
     private String vendor;
     private String description;
     private String homepage;
-    private String icon;
-    private String splashImage;
+    private File icon;
+    private File splashImage;
     private boolean offlineAllowed;
     private String jreVersion;
     private String jreArgs;
@@ -96,19 +96,19 @@ public class WebstartConfig {
         this.homepage = homepage;
     }
 
-    public String getIcon() {
+    public File getIcon() {
         return icon;
     }
 
-    public void setIcon(String icon) {
+    public void setIcon(File icon) {
         this.icon = icon;
     }
 
-    public String getSplashImage() {
+    public File getSplashImage() {
         return splashImage;
     }
 
-    public void setSplashImage(String splashImage) {
+    public void setSplashImage(File splashImage) {
         this.splashImage = splashImage;
     }
 

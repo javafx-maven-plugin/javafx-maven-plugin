@@ -256,16 +256,28 @@ public class JavaFxPackagerMojo extends AbstractMojo {
             }
             config.setHomepage(homepage);
 
-            if (webstart.getIcon() != null) {
-                config.setIcon(webstart.getIcon());
-            } else {
-                // todo look for one in project structure
+            File icon = webstart.getIcon();
+            if (icon == null) {
+                File file = new File(project.getBasedir(), "src/main/deploy/icon.png");
+                if (file.exists()) {
+                    icon = file;
+                }
+            }
+            if (icon != null) {
+                getLog().debug("Using icon file at '" + icon + "'");
+                config.setIcon(icon.getName());
             }
 
-            if (webstart.getSplashImage() != null) {
-                config.setSplashImage(webstart.getSplashImage());
-            } else {
-                // todo look for one in project structure
+            File splashImage = webstart.getSplashImage();
+            if (splashImage == null) {
+                File file = new File(project.getBasedir(), "src/main/deploy/splash.jpg");
+                if (file.exists()) {
+                    splashImage = file;
+                }
+            }
+            if (splashImage != null) {
+                getLog().debug("Using splash image file at '" + splashImage + "'");
+                config.setSplashImage(splashImage.getName());
             }
 
             config.setOfflineAllowed(webstart.isOfflineAllowed());
@@ -312,6 +324,22 @@ public class JavaFxPackagerMojo extends AbstractMojo {
                 FileUtils.copyFile(jarFile, new File(outputDir, jarFileName));
             } catch (IOException e) {
                 throw new MojoExecutionException("Failed to copy JAR file into webstart directory", e);
+            }
+
+            if (icon != null && icon.exists()) {
+                try {
+                    FileUtils.copyFile(icon, new File(outputDir, icon.getName()));
+                } catch (IOException e) {
+                    throw new MojoExecutionException("Failed to copy application icon file into webstart directory", e);
+                }
+            }
+
+            if (splashImage != null && splashImage.exists()) {
+                try {
+                    FileUtils.copyFile(splashImage, new File(outputDir, splashImage.getName()));
+                } catch (IOException e) {
+                    throw new MojoExecutionException("Failed to copy splash screen image file into webstart directory", e);
+                }
             }
         }
     }
