@@ -31,7 +31,7 @@ import java.nio.file.StandardCopyOption;
  * @phase validate
  * @requiresProject false
  */
-public class JavaFxFixClasspathMojo extends AbstractMojo {
+public class FixClasspathMojo extends AbstractMojo {
 
     /**
      * @parameter expression="${java.home}"
