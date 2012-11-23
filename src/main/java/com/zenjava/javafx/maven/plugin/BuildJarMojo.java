@@ -57,7 +57,7 @@ public class BuildJarMojo extends AbstractJfxPackagingMojo {
                 plugin(
                         groupId("org.apache.maven.plugins"),
                         artifactId("maven-dependency-plugin"),
-                        version("2.0")
+                        version("2.5.1")
                 ),
                 goal("unpack-dependencies"),
                 configuration(

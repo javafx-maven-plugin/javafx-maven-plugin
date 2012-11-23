@@ -18,10 +18,10 @@ package com.zenjava.javafx.maven.plugin;
 import com.zenjava.javafx.deploy.webstart.WebstartBundleConfig;
 import com.zenjava.javafx.deploy.webstart.WebstartBundler;
 import com.zenjava.javafx.maven.plugin.util.MavenLog;
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +34,9 @@ import java.io.IOException;
 public class BuildWebstartMojo extends AbstractJfxPackagingMojo {
 
     /**
-     * @parameter default-value="webstart"
+     * @parameter
      */
-    private String webstartOutputDir;
+    private File webstartOutputDir;
 
     /**
      * @parameter default-value="launch.jnlp"
@@ -123,7 +123,10 @@ public class BuildWebstartMojo extends AbstractJfxPackagingMojo {
 
         WebstartBundleConfig config = new WebstartBundleConfig();
 
-        File outputDir = new File(build.getDirectory(), webstartOutputDir);
+        File outputDir = webstartOutputDir;
+        if (outputDir == null) {
+            outputDir = new File(build.getDirectory(), "webstart");
+        }
         config.setOutputDir(outputDir);
 
         config.setJnlpFileName(jnlpFileName);
@@ -205,14 +208,14 @@ public class BuildWebstartMojo extends AbstractJfxPackagingMojo {
         bundle(config);
 
         try {
-            FileUtils.copyFile(targetJarFile, new File(outputDir, jarFileName));
+            FileUtils.copyFileIfModified(targetJarFile, new File(outputDir, jarFileName));
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to copy JAR file into webstart directory", e);
         }
 
         if (icon != null && icon.exists()) {
             try {
-                FileUtils.copyFile(icon, new File(outputDir, icon.getName()));
+                FileUtils.copyFileIfModified(icon, new File(outputDir, icon.getName()));
             } catch (IOException e) {
                 throw new MojoExecutionException("Failed to copy application icon file into webstart directory", e);
             }
@@ -220,7 +223,7 @@ public class BuildWebstartMojo extends AbstractJfxPackagingMojo {
 
         if (splashImage != null && splashImage.exists()) {
             try {
-                FileUtils.copyFile(splashImage, new File(outputDir, splashImage.getName()));
+                FileUtils.copyFileIfModified(splashImage, new File(outputDir, splashImage.getName()));
             } catch (IOException e) {
                 throw new MojoExecutionException("Failed to copy splash screen image file into webstart directory", e);
             }
