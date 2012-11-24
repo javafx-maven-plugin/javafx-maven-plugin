@@ -15,7 +15,9 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import com.zenjava.javafx.deploy.ApplicationProfile;
 import com.zenjava.javafx.maven.plugin.util.JfxToolsWrapper;
+import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -25,8 +27,19 @@ import java.io.File;
  * @goal build-native
  * @phase package
  * @execute goal="build-jar"
+ * @requiresDependencyResolution
  */
-public class BuildNativeMojo extends AbstractJfxPackagingMojo {
+public class BuildNativeMojo extends AbstractBundleMojo {
+
+    /**
+     * @parameter
+     */
+    protected String executableJarFileName;
+
+    /**
+     * @parameter
+     */
+    protected File nativeOutputDir;
 
     /**
      * @parameter expression="${jarFileName}" default-value="ALL"
@@ -37,11 +50,26 @@ public class BuildNativeMojo extends AbstractJfxPackagingMojo {
 
         getLog().info("Building Native Installers");
 
-        File targetJarFile = getTargetJarFile();
+        ApplicationProfile appProfile = getApplicationProfile();
+        Build build = project.getBuild();
+
+        File outputDir = nativeOutputDir;
+        if (outputDir == null) {
+            outputDir = new File(build.getDirectory());
+        }
+        //copyAllJarsAndUpdateProfile(outputDir, null, appProfile);
 
         JfxToolsWrapper jfxTools = getJfxToolsWrapper();
-        jfxTools.generateDeploymentPackages(targetJarFile.getParentFile(), targetJarFile.getName(), bundleType,
-                project.getBuild().getFinalName(),
+
+        String jarName = executableJarFileName;
+        if (jarName == null) {
+            jarName = build.getFinalName() + "-jfx.jar";
+        }
+
+        jfxTools.generateDeploymentPackages(outputDir,
+                new String[] { jarName },
+                bundleType,
+                build.getFinalName(),
                 project.getName(),
                 project.getVersion(),
                 project.getOrganization() != null ? project.getOrganization().getName() : "Unknown JavaFX Developer",

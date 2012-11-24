@@ -15,8 +15,9 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
-import com.zenjava.javafx.deploy.webstart.WebstartBundleConfig;
-import com.zenjava.javafx.deploy.webstart.WebstartBundler;
+import com.zenjava.javafx.deploy.ApplicationProfile;
+import com.zenjava.javafx.deploy.ApplicationTemplate;
+import com.zenjava.javafx.deploy.ApplicationTemplateProcessor;
 import com.zenjava.javafx.maven.plugin.util.MavenLog;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -29,9 +30,10 @@ import java.io.IOException;
 /**
  * @goal build-webstart
  * @phase package
- * @execute goal="build-jar"
+ * @execute phase="package"
+ * @requiresDependencyResolution
  */
-public class BuildWebstartMojo extends AbstractJfxPackagingMojo {
+public class BuildWebstartMojo extends AbstractBundleMojo {
 
     /**
      * @parameter
@@ -44,174 +46,98 @@ public class BuildWebstartMojo extends AbstractJfxPackagingMojo {
     private String jnlpFileName;
 
     /**
+     * @parameter default-value="lib"
+     */
+    private String webstartLibDir;
+
+    /**
      * @parameter
      */
     private File jnlpTemplate;
 
-    /**
-     * @parameter expression="${project.name}"
-     * @required
-     */
-    private String title;
-
-    /**
-     * @parameter expression="${project.organization.name}"
-     * @required
-     */
-    private String vendor;
-
-    /**
-     * @parameter expression="${project.description}"
-     */
-    private String description;
-
-    /**
-     * @parameter expression="${project.organization.url}"
-     */
-    private String homepage;
-
-    /**
-     * @parameter
-     */
-    private File icon;
-
-    /**
-     * @parameter
-     */
-    private File splashImage;
-
-    /**
-     * @parameter
-     */
-    private boolean offlineAllowed;
-
-    /**
-     * @parameter
-     */
-    private String jreVersion;
-
-    /**
-     * @parameter
-     */
-    private String jreArgs;
-
-    /**
-     * @parameter
-     */
-    private String jfxVersion;
 
     /**
      * @parameter default-value="true"
      */
-    private boolean buildHtmlFile;
+    private boolean buildWebstartHtmlFile;
 
     /**
      * @parameter
      */
-    private File htmlTemplate;
+    private File webstartHtmlTemplate;
 
     /**
      * @parameter default-value="index.html"
      */
-    private String htmlFileName;
+    private String webstartHtmlFileName;
 
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         Build build = project.getBuild();
-        File targetJarFile = getTargetJarFile();
-
-        WebstartBundleConfig config = new WebstartBundleConfig();
+        ApplicationProfile appProfile = getApplicationProfile();
+        ApplicationTemplateProcessor templateProcessor = new ApplicationTemplateProcessor(new MavenLog(getLog()));
 
         File outputDir = webstartOutputDir;
         if (outputDir == null) {
             outputDir = new File(build.getDirectory(), "webstart");
         }
-        config.setOutputDir(outputDir);
 
-        config.setJnlpFileName(jnlpFileName);
+        // copy runtime dependencies and HTML resources into target directory
 
-        File jnlpTemplate = this.jnlpTemplate;
-        if (jnlpTemplate == null) {
+        copyAllJarsAndUpdateProfile(outputDir, webstartLibDir, appProfile);
+
+        // if permissions have been requested then we need to sign the JAR file
+        if (permissions != null && permissions.length > 0) {
+
+            getLog().info("Permissions requested, signing JAR files for webstart bundle");
+            signJarFiles(outputDir);
+        }
+
+        // create the JNLP file
+
+        ApplicationTemplate jnlpTemplate;
+        if (this.jnlpTemplate == null) {
             File file = new File(project.getBasedir(), "src/main/deploy/jnlp-template.vm");
             if (file.exists()) {
-                jnlpTemplate = file;
+                jnlpTemplate = new ApplicationTemplate(file.getPath());
+            } else {
+                jnlpTemplate = ApplicationTemplate.DEFAULT_JNLP_TEMPLATE;
+            }
+        } else {
+            if (this.jnlpTemplate.exists()) {
+                jnlpTemplate = new ApplicationTemplate(this.jnlpTemplate.getPath());
+            } else {
+                throw new MojoFailureException("The specific JNLP template does not exist: " + this.jnlpTemplate);
             }
         }
-        config.setJnlpTemplate(jnlpTemplate);
-
-        config.setTitle(title);
-        config.setVendor(vendor);
-        config.setDescription(description);
-        config.setMainClass(mainClass);
-        config.setHomepage(homepage);
-
-        File icon = this.icon;
-        if (icon == null) {
-            File file = new File(project.getBasedir(), "src/main/deploy/icon.png");
-            if (file.exists()) {
-                icon = file;
-            }
-        }
-        if (icon != null) {
-            getLog().debug("Using icon file at '" + icon + "'");
-            config.setIcon(icon.getName());
-        }
-
-        File splashImage = this.splashImage;
-        if (splashImage == null) {
-            File file = new File(project.getBasedir(), "src/main/deploy/splash.jpg");
-            if (file.exists()) {
-                splashImage = file;
-            }
-        }
-        if (splashImage != null) {
-            getLog().debug("Using splash image file at '" + splashImage + "'");
-            config.setSplashImage(splashImage.getName());
-        }
-
-        config.setOfflineAllowed(offlineAllowed);
-
-        if (jreVersion != null) {
-            config.setJreVersion(jreVersion);
-        }
-
-        if (jreArgs != null) {
-            config.setJreArgs(jreArgs);
-        }
-
-        if (jfxVersion != null) {
-            config.setJreVersion(jfxVersion);
-        }
-
-        String jarFileName = this.jarFileName;
-        if (jarFileName == null) {
-            jarFileName = targetJarFile.getName();
-        }
-        config.setJarResources(jarFileName);
+        templateProcessor.processTemplate(jnlpTemplate, appProfile, new File(outputDir, jnlpFileName));
 
 
-        if (buildHtmlFile) {
-            config.setBuildHtmlFile(true);
-            config.setHtmlFileName(htmlFileName);
+        // create the HTML file
 
-            File htmlTemplate = this.htmlTemplate;
-            if (htmlTemplate == null) {
+        if (buildWebstartHtmlFile) {
+
+            ApplicationTemplate htmlTemplate;
+            if (this.webstartHtmlTemplate == null) {
                 File file = new File(project.getBasedir(), "src/main/deploy/webstart-html-template.vm");
                 if (file.exists()) {
-                    htmlTemplate = file;
+                    htmlTemplate = new ApplicationTemplate(file.getPath());
+                } else {
+                    htmlTemplate = ApplicationTemplate.DEFAULT_WEBSTART_HTML_TEMPLATE;
+                }
+            } else {
+                if (this.webstartHtmlTemplate.exists()) {
+                    htmlTemplate = new ApplicationTemplate(this.webstartHtmlTemplate.getPath());
+                } else {
+                    throw new MojoFailureException("The specific webstart HTML template does not exist: " + this.webstartHtmlTemplate);
                 }
             }
-            config.setHtmlTemplate(htmlTemplate);
+            templateProcessor.processTemplate(htmlTemplate, appProfile, new File(outputDir, webstartHtmlFileName));
         }
 
-        bundle(config);
 
-        try {
-            FileUtils.copyFileIfModified(targetJarFile, new File(outputDir, jarFileName));
-        } catch (IOException e) {
-            throw new MojoExecutionException("Failed to copy JAR file into webstart directory", e);
-        }
+        // copy any additional HTML resources into target directory
 
         if (icon != null && icon.exists()) {
             try {
@@ -228,11 +154,5 @@ public class BuildWebstartMojo extends AbstractJfxPackagingMojo {
                 throw new MojoExecutionException("Failed to copy splash screen image file into webstart directory", e);
             }
         }
-    }
-
-    protected void bundle(WebstartBundleConfig config) {
-
-        WebstartBundler bundler = new WebstartBundler(new MavenLog(getLog()));
-        bundler.bundle(config);
     }
 }

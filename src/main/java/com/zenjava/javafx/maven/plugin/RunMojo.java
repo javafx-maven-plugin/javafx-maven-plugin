@@ -28,7 +28,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * @execute phase="compile"
  * @requiresDependencyResolution
  */
-public class RunMojo extends AbstractJfxPackagingMojo {
+public class RunMojo extends AbstractBundleMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 

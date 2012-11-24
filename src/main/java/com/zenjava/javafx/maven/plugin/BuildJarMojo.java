@@ -16,6 +16,7 @@
 package com.zenjava.javafx.maven.plugin;
 
 import com.zenjava.javafx.maven.plugin.util.JfxToolsWrapper;
+import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -29,19 +30,30 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * @execute phase="compile"
  * @requiresDependencyResolution
  */
-public class BuildJarMojo extends AbstractJfxPackagingMojo {
+public class BuildJarMojo extends AbstractBundleMojo {
+
+    /**
+     * @parameter
+     */
+    protected String executableJarFileName;
+
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        File targetJarFile = getTargetJarFile();
-        getLog().info("Assembling JavaFX distributable to '" + targetJarFile + "'");
+        Build build = project.getBuild();
+
+        String jarName = executableJarFileName;
+        if (jarName == null) {
+            jarName = build.getFinalName() + "-jfx.jar";
+        }
+        File targetJarFile = new File(build.getDirectory(), jarName);
+        getLog().info("Assembling JavaFX executable JAR to '" + targetJarFile + "'");
 
         File dependenciesDir = unpackDependencies();
 
         JfxToolsWrapper jfxTools = getJfxToolsWrapper();
-        getLog().info("Assembling executable JavaFX JAR file to: " + targetJarFile);
         getLog().debug("Using main class '" + mainClass + "'");
-        File classesDir = new File(project.getBuild().getOutputDirectory());
+        File classesDir = new File(build.getOutputDirectory());
         jfxTools.packageAsJar(targetJarFile, classesDir, dependenciesDir, mainClass);
     }
 

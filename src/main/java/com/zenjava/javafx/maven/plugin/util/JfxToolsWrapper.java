@@ -74,7 +74,7 @@ public class JfxToolsWrapper {
         invoke(packagerLib, "packageAsJar", params);
     }
 
-    public void signJar(File jarFile, File keyStore, String alias, String storePass, String keyPass, String storeType)
+    public void signJarFiles(File keyStore, String alias, String storePass, String keyPass, String storeType, File... jarFiles)
             throws MojoExecutionException {
 
         Object params = newInstance(signJarParamsClass);
@@ -83,13 +83,16 @@ public class JfxToolsWrapper {
         invoke(params, "setStorePass", storePass);
         invoke(params, "setKeyPass", keyPass);
         invoke(params, "setStoreType", storeType);
-        invoke(params, "addResource", jarFile.getParentFile(), jarFile.getName());
+
+        for (File jarFile : jarFiles) {
+            invoke(params, "addResource", jarFile.getParentFile(), jarFile.getName());
+        }
 
         invoke(packagerLib, "signJar", params);
 
     }
 
-    public void generateDeploymentPackages(File outputDir, String appJar, String bundleType,
+    public void generateDeploymentPackages(File outputDir, String[] jarResources, String bundleType,
                                            String appDistributionName, String appName, String version, String vendor,
                                            String mainClass)
             throws MojoExecutionException {
@@ -100,7 +103,11 @@ public class JfxToolsWrapper {
         invoke(deployParams, "setApplicationClass", mainClass);
         invoke(deployParams, "setVerbose", new Class[] { Boolean.TYPE }, verbose);
 
-        invoke(deployParams, "addResource", outputDir, appJar);
+        if (jarResources != null && jarResources.length > 0) {
+            for (String jarResource : jarResources) {
+                invoke(deployParams, "addResource", outputDir, jarResource);
+            }
+        }
 
         Object bundleTypeEnum = invokeStatic(bundleTypeClass, "valueOf", bundleType);
         invoke(deployParams, "setBundleType", bundleTypeEnum);
