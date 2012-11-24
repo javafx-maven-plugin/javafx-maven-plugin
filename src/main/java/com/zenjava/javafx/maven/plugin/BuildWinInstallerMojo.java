@@ -70,6 +70,7 @@ public class BuildWinInstallerMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
+        throw new MojoFailureException("This feature is not implemented yet - use 'jfx:build-native' for now");
 
    }
 
