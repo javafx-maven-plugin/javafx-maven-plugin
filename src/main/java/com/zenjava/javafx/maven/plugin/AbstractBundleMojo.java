@@ -294,7 +294,7 @@ public abstract class AbstractBundleMojo extends AbstractMojo {
             keyStore = new File(project.getBasedir(), "/src/main/deploy/keystore.jks");
         }
         if (!keyStore.exists()) {
-            throw new MojoFailureException("No keystore file found at: " + keyStore);
+            throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
         }
 
         if (StringUtils.isEmpty(keyStoreAlias)) {

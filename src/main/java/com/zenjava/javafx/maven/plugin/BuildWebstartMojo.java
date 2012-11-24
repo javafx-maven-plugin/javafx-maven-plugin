@@ -57,7 +57,7 @@ public class BuildWebstartMojo extends AbstractBundleMojo {
 
 
     /**
-     * @parameter default-value="true"
+     * @parameter default-value="true" expression="${buildWebstartHtmlFile}"
      */
     private boolean buildWebstartHtmlFile;
 

@@ -42,7 +42,7 @@ public class BuildNativeMojo extends AbstractBundleMojo {
     protected File nativeOutputDir;
 
     /**
-     * @parameter expression="${jarFileName}" default-value="ALL"
+     * @parameter expression="${bundleType}" default-value="ALL"
      */
     private String bundleType;
 
