@@ -28,7 +28,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * @phase validate
  * @requiresDependencyResolution
  */
-public class GenerateKeyStoreMojo extends AbstractBundleMojo {
+public class GenerateKeystoreMojoOld extends AbstractBundleMojo {
 
     /**
      * @parameter default-value="false" expression="${overwriteKeyStore}"
