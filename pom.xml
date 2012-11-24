@@ -27,7 +27,7 @@
 
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3</version>
     <packaging>maven-plugin</packaging>
 
     <name>JavaFX Maven Plugin</name>
