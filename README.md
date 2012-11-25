@@ -11,6 +11,14 @@ For information about this plugin including licencing information and how to con
 Release Notes
 ================
 
+Version 1.3 (25-Nov-2012)
+
+* Split bundlers into separate Mojos giving developers more control
+* Webstart bundle now includes all JARs instead of working of the uber-JAR
+* Added BAT file bundle generation 
+* Added 'keystore' generation Mojo
+* Added 'run' Mojo to launch app via Maven
+
 Version 1.2 (19-Nov-2012)
 
 * JNLP bundle generation including templating (via javafx-deploy-lib)
