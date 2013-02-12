@@ -53,6 +53,11 @@ public abstract class AbstractBundleMojo extends AbstractMojo {
     protected File splashImage;
 
     /**
+     * @parameter default-value="launch.jnlp"
+     */
+    protected String jnlpFileName;
+
+    /**
      * @parameter
      */
     protected boolean offlineAllowed;
@@ -181,6 +186,7 @@ public abstract class AbstractBundleMojo extends AbstractMojo {
             appProfile.setSplashImage(splashImage.getName());
         }
 
+        appProfile.setJnlpFileName(jnlpFileName);
         appProfile.setOfflineAllowed(offlineAllowed);
 
         if (jreVersion != null) {

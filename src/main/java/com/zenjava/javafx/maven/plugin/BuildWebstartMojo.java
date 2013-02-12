@@ -41,11 +41,6 @@ public class BuildWebstartMojo extends AbstractBundleMojo {
     private File webstartOutputDir;
 
     /**
-     * @parameter default-value="launch.jnlp"
-     */
-    private String jnlpFileName;
-
-    /**
      * @parameter default-value="lib"
      */
     private String webstartLibDir;
