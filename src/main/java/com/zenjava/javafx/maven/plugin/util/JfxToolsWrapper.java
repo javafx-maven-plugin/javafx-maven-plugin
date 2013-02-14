@@ -60,7 +60,7 @@ public class JfxToolsWrapper {
         invokeStatic(logClass, "setLogger", logger);
     }
 
-    public void packageAsJar(File outputFile, File classesDir, File dependenciesDir, String mainClass) throws MojoExecutionException {
+    public void packageAsJar(File outputFile, File classesDir, File dependenciesDir, String mainClass, boolean css2bin) throws MojoExecutionException {
 
         Object params = newInstance(createJarParamsClass);
         invoke(params, "setOutdir", outputFile.getParentFile());
@@ -70,6 +70,7 @@ public class JfxToolsWrapper {
             invoke( params, "addResource", dependenciesDir, "" );
         }
         invoke(params, "setApplicationClass", mainClass);
+        invoke(params, "setCss2bin", css2bin);
 
         invoke(packagerLib, "packageAsJar", params);
     }
@@ -235,6 +236,29 @@ public class JfxToolsWrapper {
 
         try {
             return method.invoke(target, params);
+        } catch (SecurityException e) {
+            throw new MojoExecutionException("Security violation accessing JavaFX method '" + method.getName()
+                    + "'. It's possible this plugin is not compatible with the version of JavaFX you are using.", e);
+        } catch (IllegalAccessException e) {
+            throw new MojoExecutionException("Unable to access method '" + method.getName()
+                    + "'. It's possible this plugin is not compatible with the version of JavaFX you are using.", e);
+        } catch (IllegalArgumentException e) {
+            throw new MojoExecutionException("Signature on JavaFX method '" + method.getName()
+                    + "' did not match expectations. It's possible this plugin is not compatible with the version of JavaFX you are using.", e);
+        } catch (InvocationTargetException e) {
+            throw new MojoExecutionException("Invocation of JavaFX method '" + method.getName()
+                    + "' failed with an error. It's possible this plugin is not compatible with the version of JavaFX you are using.", e);
+        }
+    }
+
+    protected Object invoke(Object target, String methodName, boolean param) throws MojoExecutionException {
+
+        Class[] paramTypes = { boolean.class };
+
+        Method method = loadMethod(target.getClass(), methodName, paramTypes);
+
+        try {
+            return method.invoke(target, param);
         } catch (SecurityException e) {
             throw new MojoExecutionException("Security violation accessing JavaFX method '" + method.getName()
                     + "'. It's possible this plugin is not compatible with the version of JavaFX you are using.", e);
