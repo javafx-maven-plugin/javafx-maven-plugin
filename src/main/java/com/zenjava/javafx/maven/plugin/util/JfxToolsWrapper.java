@@ -43,9 +43,9 @@ public class JfxToolsWrapper {
     private Object packagerLib;
     private boolean verbose;
 
-    public JfxToolsWrapper(File jfxToolsJar, boolean verbose) throws MojoExecutionException {
+    public JfxToolsWrapper(File jfxToolsJar, File deployLib, boolean verbose) throws MojoExecutionException {
 
-        ClassLoader jfxToolsClassloader = loadClassLoader(jfxToolsJar);
+        ClassLoader jfxToolsClassloader = loadClassLoader(jfxToolsJar, deployLib);
         packagerLibClass = loadClass(jfxToolsClassloader, "PackagerLib");
         createJarParamsClass = loadClass(jfxToolsClassloader, "CreateJarParams");
         signJarParamsClass = loadClass(jfxToolsClassloader, "SignJarParams");
@@ -95,7 +95,7 @@ public class JfxToolsWrapper {
 
     public void generateDeploymentPackages(File outputDir, String[] jarResources, String bundleType,
                                            String appDistributionName, String appName, String version, String vendor,
-                                           String mainClass)
+                                           String mainClass, boolean needMenu, boolean needShortcut)
             throws MojoExecutionException {
 
         Object deployParams = newInstance(deployParamsClass);
@@ -103,6 +103,8 @@ public class JfxToolsWrapper {
         invoke(deployParams, "setOutfile", appDistributionName);
         invoke(deployParams, "setApplicationClass", mainClass);
         invoke(deployParams, "setVerbose", new Class[] { Boolean.TYPE }, verbose);
+        invoke(deployParams, "setNeedMenu", needMenu);
+        invoke(deployParams, "setNeedShortcut", needShortcut);
 
         if (jarResources != null && jarResources.length > 0) {
             for (String jarResource : jarResources) {
@@ -114,11 +116,12 @@ public class JfxToolsWrapper {
         invoke(deployParams, "setBundleType", bundleTypeEnum);
 
         // Installer seems to crash with this stuff on ...
-        //Object bundleParams = invoke(deployParams, "getBundleParams");
-        //invoke(bundleParams, "setName", appDistributionName);
-        //invoke(bundleParams, "setApplicationVersion", version);
-        //invoke(bundleParams, "setDisplayName", appName);
-        //invoke(bundleParams, "setVendor", vendor);
+        Object bundleParams = invoke(deployParams, "getBundleParams");
+        invoke(bundleParams, "setName", appDistributionName);
+        if (version != null) {
+            invoke(bundleParams, "setAppVersion", version);
+        }
+        invoke(bundleParams, "setVendor", vendor);
 
         invoke(packagerLib, "generateDeploymentPackages", deployParams);
 
@@ -131,10 +134,20 @@ public class JfxToolsWrapper {
 
     //-------------------------------------------------------------------------
 
-    protected ClassLoader loadClassLoader(File jfxToolsJar) throws MojoExecutionException {
+    protected ClassLoader loadClassLoader(File jfxToolsJar, File deployDir)
+            throws MojoExecutionException {
 
         try {
-            return new URLClassLoader(new URL[] {jfxToolsJar.toURI().toURL()});
+            if (deployDir != null) {
+                return new URLClassLoader(new URL[] {
+                        jfxToolsJar.toURI().toURL(),
+                        deployDir.toURI().toURL()
+                });
+            } else {
+                return new URLClassLoader(new URL[] {
+                        jfxToolsJar.toURI().toURL()
+                });
+            }
         } catch (MalformedURLException e) {
             throw new MojoExecutionException("JAVA_HOME did not resolve to a valid URL: " + jfxToolsJar, e);
         }

@@ -46,6 +46,25 @@ public class BuildNativeMojo extends AbstractBundleMojo {
      */
     private String bundleType;
 
+    /**
+     * @parameter default-value=false
+     */
+    protected boolean needShortcut;
+
+    /**
+     * @parameter default-value=false
+     */
+    protected boolean needMenu;
+
+
+    /**
+     * This must be a fairly traditional version string (like '1.34.5') with only numeric
+     * characters and dot separators, otherwise the JFX packaging tools bomb out.
+     *
+     * @parameter
+     */
+    private String nativeReleaseVersion;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building Native Installers");
@@ -71,9 +90,11 @@ public class BuildNativeMojo extends AbstractBundleMojo {
                 bundleType,
                 build.getFinalName(),
                 project.getName(),
-                project.getVersion(),
+                nativeReleaseVersion,
                 project.getOrganization() != null ? project.getOrganization().getName() : "Unknown JavaFX Developer",
-                mainClass);
+                mainClass,
+                needMenu,
+                needShortcut);
     }
 
 }

@@ -330,6 +330,9 @@ public abstract class AbstractBundleMojo extends AbstractMojo {
             throw new MojoFailureException("Unable to find JavaFX tools JAR file at '"
                     + jfxToolsJar + "'. Is your JAVA_HOME set to a JDK with JavaFX installed (must be Java 1.7.0 update 9 or higher)?");
         }
-        return new JfxToolsWrapper(jfxToolsJar, verbose);
+
+        File deployDir = new File(project.getBasedir(), "src/main/deploy");
+
+        return new JfxToolsWrapper(jfxToolsJar, deployDir.exists() ? deployDir : null, verbose);
     }
 }
