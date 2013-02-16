@@ -11,6 +11,10 @@ For information about this plugin including licencing information and how to con
 Release Notes
 ================
 
+Version 1.4 (16-Feb-2012)
+
+* Merged in contributions from the community to fix some webstart issues and make ccs2bin optional
+
 Version 1.3 (25-Nov-2012)
 
 * Split bundlers into separate Mojos giving developers more control
