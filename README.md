@@ -11,6 +11,11 @@ For information about this plugin including licencing information and how to con
 Release Notes
 ================
 
+Version 1.5 (20-Feb-2012)
+
+* Fixed 'app name' issue that was causing native bundle builds to fail on Mac
+* Added /src/main/deploy to the build classpath so you can now add things like custom native bundle icons, etc
+
 Version 1.4 (16-Feb-2012)
 
 * Merged in contributions from the community to fix some webstart issues and make ccs2bin optional
