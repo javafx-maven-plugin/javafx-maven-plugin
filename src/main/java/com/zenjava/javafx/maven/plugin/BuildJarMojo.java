@@ -36,6 +36,13 @@ public class BuildJarMojo extends AbstractBundleMojo {
      * @parameter
      */
     protected String executableJarFileName;
+    
+    /**
+     * Exclude files when unpacking module dependencies
+     * 
+     * @parameter default-value=""
+     */
+    protected String excludes;
 
     /**
      * Compile CSS to binary format
@@ -79,7 +86,8 @@ public class BuildJarMojo extends AbstractBundleMojo {
                 ),
                 goal("unpack-dependencies"),
                 configuration(
-                        element(name("outputDirectory"), "${project.build.directory}/" + subDir)
+                        element(name("outputDirectory"), "${project.build.directory}/" + subDir),
+                        element(name("excludes"), excludes)
                 ),
                 executionEnvironment(
                         project,
