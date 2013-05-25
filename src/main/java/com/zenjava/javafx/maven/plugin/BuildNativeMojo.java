@@ -93,6 +93,7 @@ public class BuildNativeMojo extends AbstractBundleMojo {
                 nativeReleaseVersion,
                 project.getOrganization() != null ? project.getOrganization().getName() : "Unknown JavaFX Developer",
                 mainClass,
+                preloaderClass,
                 needMenu,
                 needShortcut);
     }
