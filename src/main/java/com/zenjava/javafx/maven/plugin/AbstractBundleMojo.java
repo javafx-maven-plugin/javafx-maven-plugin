@@ -89,6 +89,11 @@ public abstract class AbstractBundleMojo extends AbstractMojo {
     protected String mainClass;
 
     /**
+     * @parameter
+     */
+    protected String preloaderClass;
+
+    /**
      * @parameter expression="${java.home}"
      */
     protected String javaHome;
@@ -205,6 +210,9 @@ public abstract class AbstractBundleMojo extends AbstractMojo {
             appProfile.setPermissions(permissions);
         }
 
+        if(preloaderClass!=null){
+            appProfile.setPreLoaderClass(preloaderClass);
+        }
         return appProfile;
     }
 

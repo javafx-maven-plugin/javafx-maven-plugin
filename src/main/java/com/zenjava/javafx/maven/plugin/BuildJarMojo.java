@@ -60,7 +60,7 @@ public class BuildJarMojo extends AbstractBundleMojo {
         JfxToolsWrapper jfxTools = getJfxToolsWrapper();
         getLog().debug("Using main class '" + mainClass + "'");
         File classesDir = new File(build.getOutputDirectory());
-        jfxTools.packageAsJar(targetJarFile, classesDir, dependenciesDir, mainClass, css2bin);
+        jfxTools.packageAsJar(targetJarFile, classesDir, dependenciesDir, mainClass, preloaderClass, css2bin);
     }
 
     protected File unpackDependencies() throws MojoExecutionException, MojoFailureException {

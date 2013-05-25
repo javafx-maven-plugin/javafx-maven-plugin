@@ -60,7 +60,8 @@ public class JfxToolsWrapper {
         invokeStatic(logClass, "setLogger", logger);
     }
 
-    public void packageAsJar(File outputFile, File classesDir, File dependenciesDir, String mainClass, boolean css2bin) throws MojoExecutionException {
+    public void packageAsJar(File outputFile, File classesDir, File dependenciesDir, String mainClass,
+                             String preloaderClass, boolean css2bin) throws MojoExecutionException {
 
         Object params = newInstance(createJarParamsClass);
         invoke(params, "setOutdir", outputFile.getParentFile());
@@ -69,6 +70,10 @@ public class JfxToolsWrapper {
         if( dependenciesDir.exists() ) {
             invoke( params, "addResource", dependenciesDir, "" );
         }
+        if (preloaderClass != null && !preloaderClass.isEmpty()) {
+            invoke(params, "setPreloader", preloaderClass);
+        }
+
         invoke(params, "setApplicationClass", mainClass);
         invoke(params, "setCss2bin", css2bin);
 
@@ -95,13 +100,15 @@ public class JfxToolsWrapper {
 
     public void generateDeploymentPackages(File outputDir, String[] jarResources, String bundleType,
                                            String appDistributionName, String appName, String version, String vendor,
-                                           String mainClass, boolean needMenu, boolean needShortcut)
+                                           String mainClass,String preloaderClass, boolean needMenu,
+                                           boolean needShortcut)
             throws MojoExecutionException {
 
         Object deployParams = newInstance(deployParamsClass);
         invoke(deployParams, "setOutdir", outputDir);
         invoke(deployParams, "setOutfile", appDistributionName);
         invoke(deployParams, "setApplicationClass", mainClass);
+        invoke(deployParams, "setPreloader", preloaderClass);
         invoke(deployParams, "setVerbose", new Class[] { Boolean.TYPE }, verbose);
         invoke(deployParams, "setNeedMenu", needMenu);
         invoke(deployParams, "setNeedShortcut", needShortcut);
