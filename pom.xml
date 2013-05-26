@@ -125,7 +125,7 @@
             <artifactId>javafx-packager</artifactId>
             <version>1.7</version>
             <scope>system</scope>
-            <systemPath>c:/apps/java/jdk1.7.0_21-32bit/lib/ant-javafx.jar</systemPath>
+            <systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>
         </dependency>
 
     </dependencies>
