@@ -15,10 +15,12 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
-import java.io.File;
+import org.apache.maven.project.MavenProject;
 
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
@@ -28,15 +30,43 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * @execute phase="compile"
  * @requiresDependencyResolution
  */
-public class RunMojo extends AbstractBundleMojo {
+public class RunMojo extends AbstractMojo {
+
+    /**
+     * The Maven Project Object
+     *
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+    protected MavenProject project;
+
+    /**
+     * The Maven Session Object
+     *
+     * @parameter expression="${session}"
+     * @required
+     * @readonly
+     */
+    protected MavenSession session;
+
+    /**
+     * The Maven PluginManager Object
+     *
+     * @component
+     * @required
+     */
+    protected BuildPluginManager pluginManager;
+
+    /**
+     * @parameter expression="${mainClass}"
+     * @required
+     */
+    protected String mainClass;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        String baseDir = project.getBuild().getDirectory();
-        String subDir = "jfx-dependencies";
-        File targetDir = new File(baseDir, subDir);
-
-        getLog().info("Unpacking module dependendencies to: " + targetDir);
+        getLog().info("Running JavaFX Application");
 
         executeMojo(
                 plugin(

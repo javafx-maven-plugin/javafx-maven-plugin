@@ -27,7 +27,7 @@
 
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <name>JavaFX Maven Plugin</name>
@@ -77,6 +77,16 @@
         </repository>
     </repositories>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>3.2</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <build>
         <plugins>
 
@@ -105,21 +115,17 @@
         </dependency>
 
         <dependency>
-            <groupId>com.zenjava</groupId>
-            <artifactId>javafx-deploy-lib</artifactId>
-            <version>1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>1.3.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-archiver</artifactId>
             <version>2.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javafx-packager</groupId>
+            <artifactId>javafx-packager</artifactId>
+            <version>1.7</version>
+            <scope>system</scope>
+            <systemPath>c:/apps/java/jdk1.7.0_21-32bit/lib/ant-javafx.jar</systemPath>
         </dependency>
 
     </dependencies>
