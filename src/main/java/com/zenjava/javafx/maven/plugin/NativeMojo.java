@@ -68,6 +68,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     private String nativeReleaseVersion;
 
+    /**
+     * @parameter
+     */
+    protected String preLoader;
 
     public void execute(PackagerLib packagerLib) throws MojoExecutionException, MojoFailureException {
 
@@ -93,7 +97,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             deployParams.setOutdir(nativeOutputDir);
             deployParams.setOutfile(build.getFinalName());
-
+            deployParams.setPreloader(preLoader);
             deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
             deployParams.addResource(jfxAppOutputDir, "lib");
 

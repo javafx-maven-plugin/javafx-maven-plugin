@@ -46,6 +46,10 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     protected boolean css2bin;
 
+    /**
+     * @parameter
+     */
+    protected String preLoader;
 
     public void execute(PackagerLib packagerLib) throws MojoExecutionException, MojoFailureException {
 
@@ -59,7 +63,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setApplicationClass(mainClass);
         createJarParams.setCss2bin(css2bin);
         createJarParams.addResource(new File(build.getOutputDirectory()), "");
-
+        createJarParams.setPreloader(preLoader);
         StringBuilder classpath = new StringBuilder();
         File libDir = new File(jfxAppOutputDir, "lib");
         if (!libDir.exists() && !libDir.mkdirs()) {
