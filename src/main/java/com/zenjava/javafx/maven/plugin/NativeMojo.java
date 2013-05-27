@@ -17,7 +17,6 @@ package com.zenjava.javafx.maven.plugin;
 
 import com.sun.javafx.tools.packager.DeployParams;
 import com.sun.javafx.tools.packager.PackagerException;
-import com.sun.javafx.tools.packager.PackagerLib;
 import com.sun.javafx.tools.packager.bundlers.Bundler;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -73,7 +72,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected String preLoader;
 
-    public void execute(PackagerLib packagerLib) throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building Native Installers");
 
@@ -101,7 +100,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
             deployParams.addResource(jfxAppOutputDir, "lib");
 
-            packagerLib.generateDeploymentPackages(deployParams);
+            getPackagerLib().generateDeploymentPackages(deployParams);
 
             // delete the JNLP and webstart generated files as we didn't ask for them
             new File(nativeOutputDir, build.getFinalName() + ".html").delete();

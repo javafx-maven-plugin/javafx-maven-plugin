@@ -17,7 +17,6 @@ package com.zenjava.javafx.maven.plugin;
 
 import com.sun.javafx.tools.packager.DeployParams;
 import com.sun.javafx.tools.packager.PackagerException;
-import com.sun.javafx.tools.packager.PackagerLib;
 import com.sun.javafx.tools.packager.SignJarParams;
 import com.sun.javafx.tools.packager.bundlers.Bundler;
 import org.apache.maven.model.Build;
@@ -118,7 +117,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
     protected String keyStoreType;
 
 
-    public void execute(PackagerLib packagerLib) throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building Web deployment bundles");
 
@@ -156,7 +155,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
             // turn off native bundles for this web build
             deployParams.setBundleType(Bundler.BundleType.NONE);
 
-            packagerLib.generateDeploymentPackages(deployParams);
+            getPackagerLib().generateDeploymentPackages(deployParams);
 
             // if permissions have been requested then we need to sign the JAR file
             if (allPermissions) {
@@ -190,7 +189,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
                 signJarParams.addResource(webOutputDir, jfxMainAppJarName);
                 signJarParams.addResource(webOutputDir, "lib");
 
-                packagerLib.signJar(signJarParams);
+                getPackagerLib().signJar(signJarParams);
             }
 
         } catch (PackagerException e) {

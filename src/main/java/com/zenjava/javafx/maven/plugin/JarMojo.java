@@ -17,7 +17,6 @@ package com.zenjava.javafx.maven.plugin;
 
 import com.sun.javafx.tools.packager.CreateJarParams;
 import com.sun.javafx.tools.packager.PackagerException;
-import com.sun.javafx.tools.packager.PackagerLib;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -51,7 +50,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     protected String preLoader;
 
-    public void execute(PackagerLib packagerLib) throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building JavaFX JAR for application");
 
@@ -75,7 +74,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 String path = (String) object;
                 File file = new File(path);
                 if (file.isFile()) {
-                    getLog().info("Including classpath element: " + path);
+                    getLog().debug("Including classpath element: " + path);
                     File dest = new File(libDir, file.getName());
                     if (!dest.exists()) {
                         Files.copy(file.toPath(), dest.toPath());
@@ -91,7 +90,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setClasspath(classpath.toString());
 
         try {
-            packagerLib.packageAsJar(createJarParams);
+            getPackagerLib().packageAsJar(createJarParams);
         } catch (PackagerException e) {
             throw new MojoExecutionException("Unable to build JFX JAR for application", e);
         }
