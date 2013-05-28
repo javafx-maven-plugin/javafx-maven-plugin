@@ -23,6 +23,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,6 +38,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @required
      */
     protected String mainClass;
+    
+    /**
+     * @parameter
+     */
+    protected String identifier;
 
     /**
      * @parameter expression="${project.organization.name}"
@@ -57,7 +63,12 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * @parameter
      */
-    private Map<String, String> jvmArgs;
+    private List<String> jvmArgs;
+    
+    /**
+     * @parameter
+     */
+    private Map<String, String> jvmProperties;
 
     /**
      * This must be a fairly traditional version string (like '1.34.5') with only numeric
@@ -86,11 +97,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             deployParams.setAppName(build.getFinalName());
             deployParams.setVersion(nativeReleaseVersion);
             deployParams.setVendor(vendor);
+            if (identifier != null) {
+                deployParams.setId(identifier);
+            }
 
             deployParams.setApplicationClass(mainClass);
             if (jvmArgs != null) {
-                for (String key : jvmArgs.keySet()) {
-                    deployParams.addJvmProperty(key, jvmArgs.get(key));
+                for (String jvmArg : jvmArgs) {
+                    deployParams.addJvmArg(jvmArg);
+                }
+            }
+            if (jvmProperties != null) {
+                for (String key : jvmProperties.keySet()) {
+                    deployParams.addJvmProperty(key, jvmProperties.get(key));
                 }
             }
 
