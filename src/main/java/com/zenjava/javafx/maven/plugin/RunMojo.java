@@ -25,6 +25,10 @@ import org.apache.maven.project.MavenProject;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
+ * A convenience class for running the JavaFX application defined by the POM. This is really just a wrapper around the
+ * standard Maven exec command, however it pulls the mainClass from the JavaFX plugin configuration so you don't have to
+ * respecify it.
+ *
  * @goal run
  * @phase package
  * @execute phase="compile"
@@ -59,6 +63,8 @@ public class RunMojo extends AbstractMojo {
     protected BuildPluginManager pluginManager;
 
     /**
+     * The main JavaFX application class that acts as the entry point to the JavaFX application.
+     *
      * @parameter expression="${mainClass}"
      * @required
      */

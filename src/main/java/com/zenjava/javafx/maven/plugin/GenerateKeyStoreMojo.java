@@ -28,6 +28,14 @@ import java.io.File;
 import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
+ * Generates a development keysstore that can be used for signing web based distribution bundles based on POM settings.
+ * You only need to run this command once and then you can include the resulting keystore in your source control. There
+ * is no harm in re-running the command however, it will simply overwrite the keystore with a new one.
+ *
+ * The resulting keystore is useful for simplifying development but should not be used in a production environment. You
+ * should get a legitimate certificate from a certifier and include that keystore in your codebase. Using this testing
+ * keystore will result in your users seeing the ugly warning about untrusted code.
+ *
  * @goal generate-key-store
  * @phase validate
  * @requiresDependencyResolution
@@ -61,51 +69,76 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     protected BuildPluginManager pluginManager;
 
     /**
+     * Set this to true to sliently overwrite the keystore. If this is set to false (the default) then if a keystore
+     * already exists, this Mojo will fail with an error. This is just to stop you inadvertantly overwritting a keystore
+     * you really didn't want to lose.
+     *
      * @parameter default-value="false" expression="${overwriteKeyStore}"
      */
     protected boolean overwriteKeyStore;
 
     /**
-     * @parameter
+     * The location of the keystore. If not set, this will default to src/main/deploy/kesytore.jks which is usually fine
+     * to use for most cases.
+     *
+     * @parameter expression="src/main/deploy/keystore.jks"
      */
     protected File keyStore;
 
     /**
-     * @parameter
+     * The alias to use when accessing the keystore. This will default to "myalias".
+     *
+     * @parameter default-value="myalias"
      */
     protected String keyStoreAlias;
 
     /**
-     * @parameter
+     * The password to use when accessing the keystore. This will default to "password".
+     *
+     * @parameter default-value="password"
      */
     protected String keyStorePassword;
 
     /**
+     * The password to use when accessing the key within the keystore. If not set, this will default to
+     * keyStorePassword.
+     *
      * @parameter
      */
     protected String keyPassword;
 
     /**
+     * The 'domain' to use for the certificate. Typically this is your company's domain name.
+     *
      * @parameter expression="${certDomain}"
      */
     protected String certDomain;
 
     /**
+     * The 'organisational unit' to use for the certificate. Your department or team name typically.
+     *
      * @parameter expression="${certOrgUnit}"
      */
     protected String certOrgUnit;
 
     /**
+     * The 'organisation' name to use for the certificate.
+     *
      * @parameter expression="${certOrg}"
      */
     protected String certOrg;
 
     /**
+     * The 'state' (province, etc) that your organisation is based in.
+     *
      * @parameter expression="${certState}"
      */
     protected String certState;
 
     /**
+     * The 'country' code that your organisation is based in. This should be a proper country code, e.g. Australia is
+     * 'AU'
+     *
      * @parameter expression="${certCountry}"
      */
     protected String certCountry;
@@ -113,10 +146,6 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        File keyStore = this.keyStore;
-        if (keyStore == null) {
-            keyStore = new File(project.getBasedir(), "/src/main/deploy/keystore.jks");
-        }
         if (keyStore.exists()) {
             if (overwriteKeyStore) {
                 if (!keyStore.delete()) {

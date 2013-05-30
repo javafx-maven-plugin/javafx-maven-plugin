@@ -27,6 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 /**
+ * This mojo 'fixes' your local JRE so that JavaFX is included on the system wide classpath.
+ *
  * @goal fix-classpath
  * @phase validate
  * @requiresProject false
@@ -34,11 +36,20 @@ import java.nio.file.StandardCopyOption;
 public class FixClasspathMojo extends AbstractMojo {
 
     /**
+     * The directory for your JAVA_HOME. This should point to the JDK you want to 'fix'. By default the system JAVA_HOME
+     * variable will be used and in most cases you do not need to specifically set this.
+     *
      * @parameter expression="${java.home}"
      */
     private String javaHome;
 
     /**
+     * Use this parameter to disable the warning message. This is provided in case you want to run the fix-classpath in
+     * a script where getting user input is not desirable. In normal cases you do not need to set this parameter, just
+     * say 'Y' when you are asked to confirm that you really want to update your system JDK. The warning is just
+     * provided to make you pause and think - for example you may not want to do this on a non-development machine that
+     * you are not the system administrator of, etc.
+     *
      * @parameter expression="${silentJfxFix}"
      */
     private boolean silentJfxFix;

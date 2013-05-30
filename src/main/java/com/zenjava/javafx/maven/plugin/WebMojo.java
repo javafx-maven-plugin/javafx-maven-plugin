@@ -27,6 +27,23 @@ import org.codehaus.plexus.util.StringUtils;
 import java.io.File;
 
 /**
+ * <p>Generates web deployment bundles (applet and webstart). This Mojo simply wraps the JavaFX packaging tools
+ * so it has all the problems and limitations of those tools. Currently you get both the webstart and applet outputs
+ * whether you want both or not.</p>
+ *
+ * <p>This Mojo will automatically try and sign all JARs included in the deployment bundle if 'all-permissions' are
+ * requested. If permissions are not requested, no signing will take place. The keystore parameters of this Mojo are
+ * only used in the case where signing is needed, and in that case some are required.</p>
+ *
+ * <p>As a general comment, these web deployment techniques have been pretty error prone in the newer releases of Java.
+ * They are also not ideal if the user doesn't have Java already installed as the JRE installation process is very user
+ * unfriendly. Additionally, these web deployment methods are the root of all the security problems that have been
+ * giving Java a bad name recently. For all these reasons and more, I'd highly recommend moving away from these
+ * deployment approaches in favour of native deployment bundles or just plain old JARs.</p>
+ *
+ * <p>For detailed information on generating web bundles it is best to first read through the official documentation
+ * on the JavaFX packaging tools.</p>
+ *
  * @goal web
  * @phase package
  * @execute goal="jar"
@@ -34,38 +51,56 @@ import java.io.File;
 public class WebMojo extends AbstractJfxToolsMojo {
 
     /**
-     * @parameter expression="${mainClass}"
-     * @required
-     */
-    protected String mainClass;
-
-    /**
+     * The vendor (i.e. you) to include in the deployment information.
+     *
      * @parameter expression="${project.organization.name}"
      * @required
      */
     protected String vendor;
 
     /**
+     * <p>The output directory that the web bundle is to be built into. Both the webstart and applet bundle are
+     * generated into the same output directory and share the same JNLP and JAR files.</p>
+     *
      * @parameter expression="${project.build.directory}/jfx/web"
      */
     protected File webOutputDir;
 
     /**
+     * Set this to true if you would like your application to have a shortcut on the users desktop (or platform
+     * equivalent) when it is installed.
+     *
      * @parameter default-value=false
      */
     protected boolean needShortcut;
 
     /**
+     * Set this to true if you would like your application to have a link in the main system menu (or platform
+     * equivalent) when it is installed.
+     *
      * @parameter default-value=false
      */
     protected boolean needMenu;
 
     /**
+     * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is
+     * useful for showing splash screens or similar 'progress' style windows. For more information on Pre-Loaders, see
+     * the official JavaFX packaging documentation.
+     *
      * @parameter
      */
     protected String preLoader;
 
     /**
+     * <p>Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
+     *
+     * <p>By setting this value, you are implicitly saying that your app needs to be signed. As such, this Mojo will
+     * automatically attempt to sign your JARs if this is set, and in this case the various keyStore parameters need to
+     * be set correctly and a keyStore must be present. Use the generate-key-store Mojo to generate a local keyStore for
+     * testing.</p>
+     *
+     * <p>If you are using FXML you will need to set this value to true.</p>
+     *
      * @parameter default-value=false
      */
     protected boolean allPermissions;
@@ -92,26 +127,38 @@ public class WebMojo extends AbstractJfxToolsMojo {
 
 
     /**
+     * The location of the keystore. If not set, this will default to src/main/deploy/kesytore.jks which is usually fine
+     * to use for most cases.
+     *
      * @parameter expression="src/main/deploy/keystore.jks"
      */
     protected File keyStore;
 
     /**
-     * @parameter
+     * The alias to use when accessing the keystore. This will default to "myalias".
+     *
+     * @parameter default-value="myalias"
      */
     protected String keyStoreAlias;
 
     /**
-     * @parameter
+     * The password to use when accessing the keystore. This will default to "password".
+     *
+     * @parameter default-value="password"
      */
     protected String keyStorePassword;
 
     /**
+     * The password to use when accessing the key within the keystore. If not set, this will default to
+     * keyStorePassword.
+     *
      * @parameter
      */
     protected String keyPassword;
 
     /**
+     * The type of KeyStore being used. This defaults to "jks", which is the normal one.
+     *
      * @parameter default-value="jks"
      */
     protected String keyStoreType;
