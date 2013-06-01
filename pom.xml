@@ -81,6 +81,19 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.6</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>index</report>
+                            <report>summary</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>3.2</version>
             </plugin>
@@ -125,8 +138,8 @@
             <artifactId>javafx-packager</artifactId>
             <version>1.7</version>
             <scope>system</scope>
-            <!--<systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>-->
-            <systemPath>c:/apps/java/jdk1.7.0_21-32bit/lib/ant-javafx.jar</systemPath>
+            <systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>
+            <!--<systemPath>c:/apps/java/jdk1.7.0_21-32bit/lib/ant-javafx.jar</systemPath>-->
         </dependency>
 
     </dependencies>
