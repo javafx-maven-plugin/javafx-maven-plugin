@@ -158,7 +158,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             deployParams.setOutfile(build.getFinalName());
             deployParams.setPreloader(preLoader);
             deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
-            deployParams.addResource(jfxAppOutputDir, "lib");
+
+            File libDir = new File(jfxAppOutputDir, "lib");
+            if (libDir.exists() && libDir.list().length > 0) {
+                deployParams.addResource(jfxAppOutputDir, libDir.getName());
+            }
 
             getPackagerLib().generateDeploymentPackages(deployParams);
 
