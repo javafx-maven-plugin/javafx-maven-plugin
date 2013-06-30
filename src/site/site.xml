@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Maven">
+
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.3.0</version>
+    </skin>
+
+    <bannerLeft>
+        <name>JavaFX Maven Plugin</name>
+        <href>http://zenjava.com/javafx/maven</href>
+    </bannerLeft>
+
+    <bannerRight>
+        <src>images/zenjava-logo-small.png</src>
+    </bannerRight>
+
+    <body>
+        <links>
+            <item name="ZenJava" href="http://zenjava.com" />
+            <item name="JavaFX" href="http://docs.oracle.com/javafx/"/>
+        </links>
+
+        <menu name="JavaFX Maven Plugin">
+            <item name="Introduction" href="index.html"/>
+            <item name="Goals" href="plugin-info.html" />
+        </menu>
+
+    </body>
+
+</project>

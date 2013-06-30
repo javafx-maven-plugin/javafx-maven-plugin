@@ -47,6 +47,13 @@
         </license>
     </licenses>
 
+    <distributionManagement>
+        <site>
+            <id>zenjava</id>
+            <url>ftp://ftp.zenjava.com/javafx/maven</url>
+        </site>
+    </distributionManagement>
+
     <developers>
         <developer>
             <id>zonski</id>
@@ -79,6 +86,13 @@
 
     <reporting>
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>3.2</version>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -92,11 +106,7 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.2</version>
-            </plugin>
+
         </plugins>
     </reporting>
 
@@ -109,6 +119,19 @@
                 <configuration>
                     <goalPrefix>jfx</goalPrefix>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-ftp</artifactId>
+                        <version>2.4</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
         </plugins>
