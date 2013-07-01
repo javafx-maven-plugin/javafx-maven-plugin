@@ -5,11 +5,20 @@ The JavaFX Maven Plugin provides a way to assemble distribution bundles for Java
  
 For information about this plugin including licencing information and how to configure your POM, please refer to the main wiki page: 
 
-* https://github.com/zonski/javafx-maven-plugin/wiki
+* [http://zenjava.com/javafx/maven/](http://zenjava.com/javafx/maven/)
 
 
 Release Notes
 ================
+
+Version 2.0 (1-Jul-2013)
+
+* Complete rework of the Maven plugin from the ground up
+* Changed the loading of JFX tools so as to not need the ugly reflection used previously
+* Dropped the use of the separate javafx-deploy-lib module - all code is now internal to this project
+* Dropped the 'uber-jar' support and now use a 'lib' directory to avoid a lot of problems people were having
+* Renamed the goals to be more inline with Maven standards
+* Added full site documentation now deployed as part of the Maven release process
 
 Version 1.5 (20-Feb-2012)
 
