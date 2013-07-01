@@ -1,0 +1,33 @@
+Building an Executable JAR Distribution Bundle
+
+    To build a JavaFX-aware, executable JAR, with JavaFX pre-loader support (to load JavaFX onto the classpath when
+    running), then use the specific JavaFX Maven Plugin goal for this:
+
+---
+mvn clean jfx:jar
+---
+
+    The resulting JAR will be built into '<<target/jfx/app>>'.
+
+    Any third-party libraries (i.e. runtime dependencies from your project's POM) will be copied into
+    '<<target/jfx/app/lib>>'. The manifest of the executable JAR produced for your project will reference these
+    libraries using the relative lib directory. When you distribute your application, you need to distribute the JAR
+    and the lib directory!
+
+    <Note: previous versions of the JavaFX Maven Plugin assembled the entire application into one 'uber-jar' that
+    contained all the third party libraries in one big JAR. This caused a lot of problems with name clashes, etc, and
+    was generally a bad idea.>
+
+
+* Running the app
+
+    The JavaFX Maven Plugin also provides a convenience method for running your JavaFX app from the command line, using
+    Maven. Typically you will use your IDE to launch your app, but this command can come in handy at times:
+
+---
+mvn jfx:run
+---
+
+    This command is just a convenience wrapper around the standard Maven 'exec' command and just saves you the hassle
+    of re-specifying the main class, which the JavaFX Maven Plugin already knows about. It does not do any particular
+    JavaFX magic and is no different to running the main() method of your app from within your favourite IDE.

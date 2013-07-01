@@ -1,0 +1,84 @@
+JavaFX Maven Plugin
+
+    The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (2.2+)
+    from within Maven.
+
+    This plugin is essentially a Maven wrapper for the packaging tools that come with JavaFX. For more details on these
+    tools see: {{http://docs.oracle.com/javafx/2/deployment/deploy_quick_start.htm}}
+
+
+* Features
+
+    Current supported features:
+
+    * Building executable JARs of your application
+
+    * Building native installers (MSI, EXE, RPM, DMG) with a co-bundled JRE
+
+    * Building web (applet and webstart) distribution bundles
+
+    * Signing JAR files to avoid the JRE sandbox when running in a browser
+
+
+* Before you start
+
+    This plugin requires <<Maven 3>>.
+
+    This plugin requires <<JDK 1.7.0 update 9 or higher>> with <<JAVA_HOME>> set.
+
+    You must {{{./fix-classpath.html}put the JavaFX runtime on the classpath}} of your JDK.
+
+    To build <<native installers>>, you need to also install the <<relevant native installer library>> used by
+    JavaFX for your OS (e.g. on Windows, install WiX). See the
+    {{{https://blogs.oracle.com/talkingjavadeployment/entry/native_packaging_for_javafx}JavaFX native installer guide}}
+    steps for info on this.
+
+
+* Using the Plugin
+
+    See {{{./basic-config.html}Basic Configuration}} for how to setup your POM.
+
+    For assembling distribution bundles, see one of the following:
+
+    * {{{./jar-bundle.html}Building an Executable JAR}}
+
+    * {{{./native-bundle.html}Building a Native Installer}}
+
+    * {{{./web-bundle.html}Building a Web distribution bundle}}
+
+    []
+
+    See {{{./plugin-info.html}All Goals and Settings}} for full configuration options.
+
+    Use the {{{./basic-archetype.html}Quickstart JavaFX archetype}} to generate a basic JavaFX skeleton project.
+
+    Use the {{{./rest-archetype.html}Quickstart JavaFX Client with REST Server archetype}} to generate a project
+    containing a SpringMVC REST Server and a JavaFX client that communicates with it.
+
+* Support
+
+    This plugin is provided as is for general public usage. Please raise any issues that you have in the issues
+    section but I make no guarantees of support or ongoing maintenance for this project. My current intent is to
+    continue working on it and evolve it further, however I am working on this in my spare time, unpaid, and cannot
+    guarantee that this is something I will be able to sustain.
+
+    If you do not get a response here, try posting a question in the
+    {{{https://forums.oracle.com/community/developer/english/java/javafx/javafx_2.0_and_later}JavaFX OTN}} forum and
+    someone there may be able to help you out.
+
+    The best way to guarantee the long term survival of this project is to get involved. If you would like to contribute
+    to this project please contact me.
+
+
+* License
+
+    Copyright 2012 Daniel Zwolenski.
+
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+    the License. You may obtain a copy of the License at
+
+    {{http://www.apache.org/licenses/LICENSE-2.0}}
+
+    Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+    an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+    specific language governing permissions and limitations under the License.

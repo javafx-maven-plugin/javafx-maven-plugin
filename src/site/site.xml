@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="Maven">
+
+<project name="JavaFX Maven Plugin">
 
     <skin>
         <groupId>org.apache.maven.skins</groupId>
@@ -24,7 +25,20 @@
 
         <menu name="JavaFX Maven Plugin">
             <item name="Introduction" href="index.html"/>
-            <item name="Goals" href="plugin-info.html" />
+            <item name="Fix the classpath" href="fix-classpath.html"/>
+            <item name="Basic Configuration" href="basic-config.html"/>
+            <item name="All Goals and Settings" href="plugin-info.html" />
+        </menu>
+
+        <menu name="Usage Guide">
+            <item name="Building an Executable JAR" href="jar-bundle.html"/>
+            <item name="Building a Native installer" href="native-bundle.html"/>
+            <item name="Building a Web bundle" href="web-bundle.html"/>
+        </menu>
+
+        <menu name="Quickstart Archetypes">
+            <item name="JavaFX Quickstart Project" href="basic-archetype.html"/>
+            <item name="JavaFX + REST Quickstart Project" href="rest-archetype.html"/>
         </menu>
 
     </body>

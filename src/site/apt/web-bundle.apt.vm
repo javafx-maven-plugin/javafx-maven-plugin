@@ -1,0 +1,126 @@
+Building a Web Distribution Bundle
+
+    The JavaFX packaging tools support web-based distribution via Applets and/or Webstart (JNLP). There are a number
+    of very strong reasons not to use this deployment option (see below), however, since native installation bundles
+    are still quite feature limited and App Store support is non-existent, I've included support for web based distros
+    for those who really want to use them.
+
+
+    To build a web distribution bundle:
+
+---
+mvn clean jfx:web
+---
+
+    The resulting web distribution bundle will be built to '<<target/jfx/web>>'. This will include both a JNLP and
+    Applet distribution option for your application.
+
+    This is built using the {{{http://docs.oracle.com/javafx/2/deployment/deployment_toolkit.htm#BABJHEJA}JavaFX packaging tools}}
+    and there are not a lot of ways to customise this from outside of the tools. The resulting bundle is rather ugly
+    and you will likely want to create your own HTML files to launch your application. Use the generated files as a
+    template for doing this.
+
+    Numerous configuration options exist for the web deployment goal, see the
+    {{{./web-mojo.html}javafx:web goal documentation}} for a full list.
+
+
+* Signing and the Sandbox
+
+    If your app does anything remotely interesting it will most likely need to be signed and have 'allPermissions' set
+    in the POM to allow it to break out of the constraints of the Browser's Sandbox.
+
+    To allow this, you need to have the following configuration in your POM at a minimum:
+
+---
+<plugin>
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+        <mainClass>your.main.class</mainClass>
+        <keyStoreAlias>your-username</keyStoreAlias>
+        <keyStorePassword>your-password</keyStorePassword>
+        <allPermissions>true</allPermissions>
+    </configuration>
+</plugin>
+---
+
+    Before you can sign your app, you need to have a Keystore to sign it with. If you are deploying into the real world
+    and don't want your users to see a 'this app is not trusted' message, you need a proper certificate from a certifying
+    entity. See {{{http://stackoverflow.com/questions/155241/cheapest-java-code-signing-certificate-not-self-signed}this for more information}}.
+
+    If you just want a certificate for testing with (or for deploying on a local network to users who won't get freaked
+    out by the 'not trusted' warning), the JavaFX Maven Plugin includes a handy command for generating a testing Keystore:
+
+---
+mvn jfx:generate-key-store -DcertDomain=com.yourdomain -DcertState=NSW -DcertCountry=AU
+---
+
+    It doesn't really matter what you use for your domain, state and country but it's best to try and use something that
+    represents you somewhat. You only need to run this once, then you can save the Keystore into your source control
+    repository and all developers on the team can share it.
+
+
+* Why you shouldn't use web deployment
+
+    On the surface, web deployment looks like a great option, but it has a lot of drawbacks when you actually start
+    using it.
+
+
+    * <<Buggy>>: web deployment is buggy. There have been numerous cases reported of users attempting to open an Applet
+     or JNLP file and it just not working, or worse, messing up their installed JRE so that other things stop working
+     properly as well. I've personally experienced problems with 32bit and 64bit conflicts on Windows that resulted in
+     the app never starting and users having to completely uninstall and reinstall Java manually (not pleasant for anyone).
+
+
+    * <<Poor user experience>>: the installer (especially on Windows) for Java is a horrible experience. If a user does
+     not have Java installed, they are taken to the ugly and confusing download page, they have to work out whether they
+     have a 64bit (x64) )or 32bit (x86) machine, and then go through some scary installation pages. After the install,
+     they then manually have to return to your page to launch your app. All the user really wants to do is run your app,
+     so having to do all this weird and scary Java installation stuff is very off-putting for them.
+
+
+    * <<System-wide JRE>>: web deployment always uses a system wide JRE. You cannot have one application use one version
+     of Java and another application use a different version. There can be only one.
+
+
+    * <<Default auto-updating>>: as well as having only one JRE, this JRE is always auto-updating itself to the latest
+     version for security reasons. If your application is not compatible with the latest version (and there have been
+     many instances of backwards compatibility failures) then one day, out-of-the-blue, your app will just stop working
+     when your users suddenly get the latest version of Java appearing on your system.
+
+
+    * <<Do you want to update?>>: the auto-updates aren't invisible. The user is actually prompted for these updates.
+    Most users have no idea what this update is for, or what it is doing. The prompt to update can happen at any time and
+    not just when the user launches your Java application. These weird, annoying dialogs popping up about Java needing to
+    update are a great source of stress and anxiety for a lot of users.
+
+    []
+
+    If you have used JNLP or Applets before, it's worth noting that some of these problems are recent additions. The
+    auto-updating issues are worse now due to the security problems and a new policy of always trying to force the user
+    to the latest version to avoid security holes. The buggy aspects of Applets and JNLP seem to be worse at the moment
+    with the mixture of 32bit and 64bit operating systems, browsers and JREs all being combined to bad effect.
+
+    Additionally, the web deployment options rely on the use of browser plugins to work. Browser vendors have made
+    strong noises recently about dropping support for plugins. Once this happens, the choice will be out of our hands
+    and all web deployment options will be null and void anyway. It's not clear when browser vendors are going to make
+    this shift, but with the rise of the App Stores, Mac gaining some market traction and Windows 8 very slowly trickling
+    in, the trend is growing.
+
+    As well as the problems listed above, web deployment is also the root of all the 'security' problems that have been
+    plaguing Java in recent years and giving it such a bad reputation. If we didn't have web deployed applications we
+    wouldn't have all these security violations that keep busting out of the sandbox and allowing people to do bad
+    things. A lot of good development time is being wasted trying to patch these holes when really we should all just
+    accept that the web deployment dream died back when Netscape Navigator lost the browser war to IE. Flash conceded
+    defeat long ago and it was much better positioned than Java ever was in web deployment. Lets lay the dead to rest.
+
+    It would be best if Oracle could deprecate these deployment options and instead focus on adding features to
+    native installers and supporting App Store deployment but too many big players seem intent on clinging to these
+    flawed web deployment models for Oracle to be willing to let them go. I'd encourage anyone doing JFX development to
+    start using the native installation options, and to start putting pressure on the JFX team to invest in developing
+    this and App Store deployment options instead of throwing away good time on web deployment.
+
+
+
+

@@ -1,0 +1,82 @@
+Getting JavaFX on the Classpath
+
+    Before you can use JavaFX you need to include it on your JDK's classpath. Use the following command (from anywhere):
+
+------
+mvn com.zenjava:javafx-maven-plugin:${project.version}:fix-classpath
+------
+
+    <Note: you must run this as a super user if your JDK is installed in a restricted directory (such as
+    Program Files on Windows).>
+
+    After running this command, JavaFX will now be on the default classpath of your JDK (like Swing, java.util, etc).
+    Most IDEs need to be restarted to pick up the change.
+
+
+* Why is this needed?
+
+    Yes, this is a bit weird.
+
+    As of Java 7 update 7, JavaFX is now 'co-bundled' with the JDK, so when you install the JDK, JavaFX is automatically
+    installed with it. Oracle however have not fully finished this co-bundling and have left this in a somewhat annoying
+    half-done state. The JavaFX libraries are included with the JRE, but are <<NOT>> put on the classpath by default.
+    The above Maven command finishes the job so that your system is fully setup to use JavaFX.
+
+    Oracle plans to fix this (hopefully by Java 8) but until then it is necessary to manually update the JRE classpath of
+    your local JDK so that JavaFX is available to your application. See
+    {{{http://mail.openjdk.java.net/pipermail/openjfx-dev/2012-October/004072.html}this discussion}} for more information.
+
+
+* What does this actually do?
+
+    All the above command does is simply move the JavaFX JAR (jfxrt.jar) from its default location of 'lib' within your
+    installed JDK to the 'ext' directory of that same JDK. The command above is just a helpful shortcut to copy and paste
+    this one file, and no more complex than that.
+
+    By placing the JAR in the 'ext' directory the JDK will automatically detect it and load it when it starts up. This
+    directory is the {{{http://docs.oracle.com/javase/tutorial/ext/basics/install.html}standard way to load extensions
+    into the JDK}} and we are just taking advantage of that. The JavaFX
+    team have indicated that when they finally fully include JavaFX on the path it will be by placing this jar in the
+    ext directory so the end result will be exactly the same.
+
+    If you don't want to use the fix-classpath Maven command or have problems when running it. You can try manually
+    moving the JAR file yourself from the lib directory to the ext directory. There is no more magic required than
+    that.
+
+* Why is there a scary warning message when I run this command?
+
+    I'm just making sure you know what you are doing. By moving the JAR onto the JDK default system classpath you now
+    effect every Java application running on that computer. If you have another application or project that is in
+    someway upset by JavaFX being included (highly unlikely!) then you get a chance here to think that over.
+
+    In 99.9% of cases you can safely say 'yes' when asked and follow through with the classpath fix. If you need to run
+    this command as a part of your automated build script and don't want this prompt you can set the 'silentJfxFix' to
+    true.
+
+
+* Why can't I just add JavaFX as a normal Maven dependency?
+
+    This seems like the obvious solution: if JavaFX is just a JAR, why can't we just add it as a regular Maven dependency
+    to the POM.
+
+    Unfortunately this does not work due to the native file loading approach used by JFX. Search the OTN forums for more
+    information on this. Oracle has no plans to fix this loading issue and the co-bundling fix for Java 8 will make this
+    unnecessary anyway (you won't want, or need a Maven dependency for JavaFX since it will be on the classpath by
+    default, much like Swing and the Java Collections API).
+
+    There are other ways to achieve the same result as the fix-classpath command (such as using a 'system' scoped
+    dependency), but every option has its own peculiar drawbacks. The fix-classpath is the one I would recommend as
+    having the least problems in the long run.
+
+
+* Do I need to do this on every user's machine?
+
+    No, not for every 'user'. You do need to do it once (and only once) on each 'developer' machine to fix their JDK.
+
+    If you use this Maven plugin to generate your deployment bundles, whether that is as an executable JAR, a web bundle
+    or a native installer, you do not need to worry about how JavaFX ends up the client machine - the deployment bundles
+    will sort it out for you.
+
+    In the case of executable JARs and web bundles, there is a whole lot of pre-launch trickery used by the JFX guys to
+    get JavaFX running as part of the JAR or web plugin. If using a native installer, then JavaFX is bundled into the
+    JRE included in the native installer and life is pretty simple.

@@ -1,0 +1,76 @@
+Building a Native Installer
+
+    The JavaFX Maven plugin allows you to build "native installers" for your JavaFX application. This gives your users a
+    way to install and run your application without any external dependencies on a system JRE, as everything the
+    application needs to run is bundled into the installer.
+
+    To build a native installer run:
+
+---
+mvn clean jfx:native
+---
+
+    The resulting native installation file will be built to '<<target/jfx/native/bundles>>'.
+
+    You do <<not>> need to sign your application or request 'allPermissions' when building native installers. This is
+    only needed for web deployment (applet or webstart).
+
+    You can customise the icon used for your installed application simply by placing it on the path under
+
+    * Windows: src/main/deploy/package/windows/[project-final-name].ico
+
+    * Mac: src/main/deploy/package/macosx/[project-final-name].icns
+
+    []
+
+    For a full list of configuration options, see the {{{./native-mojo.html}javafx:native goal documentation}}.
+
+
+* Background information
+
+    The JavaFX Maven plugin uses the official Oracle JavaFX packaging tools to build native bundles and so the
+    limitations of these tools also apply to the plugin. For a detailed view of what the packaging tools can (and
+    cannot) do, see the {{{https://blogs.oracle.com/talkingjavadeployment/entry/native_packaging_for_javafx}Oracle guide
+    on building native installers}}.
+
+    The type of installer that gets built depends on the operating system you are building on. You can only build MSI
+    installers, for example, on Windows. On Mac you will get a DMG file and on Linux an RPM.
+
+    On Windows you also need to install additional tools - either {{{http://wix.sourceforge.net/}WIX}} or
+    {{{Inno Setup}http://www.jrsoftware.org/isdl.php}}. These are used by the JavaFX packaging tools under the covers and
+    must be manually installed.
+
+
+* Want more features?
+
+    The JFX packaging tools support for native installers is quite basic at this stage. Even so this option is the
+    strongest of the available deployment options and is the one I would recommend for any serious deployment.
+
+    A number of features are needed to make it a hands-down winner however. These are on the radar of the JFX team,
+    however packaging is one of the lowest prioritised areas in JavaFX. If you would like to see more of these features
+    supported, lobby the JavaFX development team on the
+    {{{http://mail.openjdk.java.net/mailman/listinfo/openjfx-dev}OpenJFX}} mailing list.
+
+    Some of the features that are clearly needed include:
+
+    * <<Auto-update support>>: the ability to release new versions of your application and have already deployed versions
+    detect this and automatically download and use the new version.
+
+    * <<Cross-platform builds>>: the ability to build for multiple platforms on the same platform. e.g. build Mac DMG
+    files on Windows, and Windows MSI files on Mac.
+
+    * <<Compact JREs>>: cut-down JRE sizes when bundled into a native installer. A large portion of the JRE is not
+    needed (e.g. Swing) and could be cut out massively reducing the size of the native installers for distribution
+    (currently they come out at a minimum 60 meg).
+
+    * <<App store support>>: the ability to build distribution bundles for uploading into App Stores, such as the Mac
+    App Store (note that iOS and Android support for JavaFX is being left largely to the community so do not expect
+    mobile App Store support to come from Oracle).
+
+    * <<More configuration options>>: the ability to customise more parts of the installation, such as licence files,
+     and custom installation steps.
+
+
+
+
+

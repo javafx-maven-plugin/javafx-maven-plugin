@@ -1,0 +1,23 @@
+Basic Configuration
+
+    For basic usage, add the plugin dependency to your POM:
+
+------
+<plugin>
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin</artifactId>
+    <version>${project.version}</version>
+    <configuration>
+        <mainClass>[put your application main class here]</mainClass>
+    </configuration>
+</plugin>
+------
+
+    Note, some of the goals require a 'vendor' and in general you are generally just better off setting your
+    organisation's name in your project's POM from the get-go and never having to worry about it:
+
+------
+<organization>
+  <name>Your Organisation</name>
+</organization>
+------
