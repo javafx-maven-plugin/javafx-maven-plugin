@@ -21,6 +21,7 @@
         <links>
             <item name="ZenJava" href="http://zenjava.com" />
             <item name="JavaFX" href="http://docs.oracle.com/javafx/"/>
+            <item name="GitHub Project" href="http://github.com/zonski/javafx-maven-plugin"/>
         </links>
 
         <menu name="JavaFX Maven Plugin">
