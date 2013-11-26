@@ -65,6 +65,17 @@
         </developer>
     </developers>
 
+    <contributors>
+        <contributor>
+            <name>Oliver Günther</name>
+            <email>oliver.guenther@tuhh.de</email>
+            <url>http://gg-net.de/</url>
+            <properties>
+                <github>og0815</github>
+            </properties>
+        </contributor>
+    </contributors>
+
     <scm>
         <connection>scm:git:git://github.com/shemnon/javafx-maven-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:shemnon/javafx-maven-plugin.git</developerConnection>
