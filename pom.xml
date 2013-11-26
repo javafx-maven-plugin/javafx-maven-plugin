@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Copyright 2012 Daniel Zwolenski.
+    Copyright 2012 Daniel Zwolenski, et al.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@
     <packaging>maven-plugin</packaging>
 
     <name>JavaFX Maven Plugin</name>
-    <url>https://github.com/zonski/javafx-maven-plugin</url>
     <description>
         The JavaFX Maven Plugin provides a way to to assemble distributable bundles for JavaFX applications from within
         Maven. It provides a wrapper around the JavaFX packaging tools which are provided as part of the JavaFX
@@ -47,13 +46,6 @@
         </license>
     </licenses>
 
-    <distributionManagement>
-        <site>
-            <id>zenjava</id>
-            <url>ftp://ftp.zenjava.com/javafx/maven</url>
-        </site>
-    </distributionManagement>
-
     <developers>
         <developer>
             <id>zonski</id>
@@ -63,17 +55,25 @@
                 <role>Original Author</role>
             </roles>
         </developer>
+        <developer>
+            <id>shemnon</id>
+            <name>Danno Ferrin</name>
+            <email>danno.ferrin@gmail.com</email>
+            <roles>
+                <role>Maintainer</role>
+            </roles>
+        </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/zonski/javafx-maven-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:zonski/javafx-maven-plugin.git</developerConnection>
-        <url>https://github.com/zonski/javafx-maven-plugin.git</url>
+        <connection>scm:git:git://github.com/shemnon/javafx-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:shemnon/javafx-maven-plugin.git</developerConnection>
+        <url>https://github.com/shemnon/javafx-maven-plugin.git</url>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/zonski/javafx-maven-plugin/issues</url>
+        <url>https://github.com/shemnon/javafx-maven-plugin/issues</url>
     </issueManagement>
 
     <repositories>
