@@ -25,6 +25,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Builds an executable JAR for the project that has all the trappings needed to run as a JavaFX app. This will
@@ -55,7 +57,6 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean css2bin;
-
     /**
      * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is
      * useful for showing splash screens or similar 'progress' style windows. For more information on Pre-Loaders, see
@@ -64,11 +65,16 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter
      */
     protected String preLoader;
+    /**
+     * A Map of Entries to be added to the Manifest.
+     *
+     * @parameter
+     */
+    private Map<String, String> manifestEntries = new HashMap<>();
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building JavaFX JAR for application");
-
         Build build = project.getBuild();
 
         CreateJarParams createJarParams = new CreateJarParams();
@@ -78,6 +84,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setCss2bin(css2bin);
         createJarParams.addResource(new File(build.getOutputDirectory()), "");
         createJarParams.setPreloader(preLoader);
+        createJarParams.setManifestAttrs(manifestEntries);
         StringBuilder classpath = new StringBuilder();
         File libDir = new File(jfxAppOutputDir, "lib");
         if (!libDir.exists() && !libDir.mkdirs()) {
