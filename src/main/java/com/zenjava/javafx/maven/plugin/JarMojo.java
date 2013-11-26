@@ -72,6 +72,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     private Map<String, String> manifestEntries = new HashMap<>();
 
+    /**
+     * A custom class that will be executed in the event that the platform does not support JavaFX.
+     *
+     * @parameter
+     */
+    protected String fallbackClass;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building JavaFX JAR for application");
@@ -81,6 +88,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setOutdir(jfxAppOutputDir);
         createJarParams.setOutfile(jfxMainAppJarName);
         createJarParams.setApplicationClass(mainClass);
+        createJarParams.setFallback(fallbackClass);
         createJarParams.setCss2bin(css2bin);
         createJarParams.addResource(new File(build.getOutputDirectory()), "");
         createJarParams.setPreloader(preLoader);
