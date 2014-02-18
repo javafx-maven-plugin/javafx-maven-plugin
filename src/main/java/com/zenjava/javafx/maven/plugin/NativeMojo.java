@@ -120,6 +120,15 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter
      */
     protected String preLoader;
+    
+    
+    /**
+     * The name of the JavaFX packaged executable to be built into the 'native/bundles' directory. By default this will
+     * be the finalName as set in your project. Change this if you want something nicer. 
+     * 
+     * @parameter expression="${project.build.finalName}" 
+     */
+    protected String jfxAppName;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -136,10 +145,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
 
             deployParams.setBundleType(bundleType);
-            deployParams.setAppName(build.getFinalName());
+            deployParams.setAppName(jfxAppName);
             deployParams.setVersion(nativeReleaseVersion);
             deployParams.setVendor(vendor);
-
+            
             deployParams.setApplicationClass(mainClass);
 
             if (jvmProperties != null) {
