@@ -113,6 +113,22 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private String nativeReleaseVersion;
 
     /**
+     * Set this to true if you would like your application to have a shortcut on the users desktop (or platform
+     * equivalent) when it is installed.
+     * 
+     * @parameter default-value=false
+     */
+    protected boolean needShortcut;
+
+    /**
+     * Set this to true if you would like your application to have a link in the main system menu (or platform
+     * equivalent) when it is installed.
+     * 
+     * @parameter default-value=false
+     */
+    protected boolean needMenu;
+
+    /**
      * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is
      * useful for showing splash screens or similar 'progress' style windows. For more information on Pre-Loaders, see
      * the official JavaFX packaging documentation.
@@ -139,7 +155,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             deployParams.setAppName(build.getFinalName());
             deployParams.setVersion(nativeReleaseVersion);
             deployParams.setVendor(vendor);
-
+            deployParams.setNeedShortcut(needShortcut);
+            deployParams.setNeedMenu(needMenu);
             deployParams.setApplicationClass(mainClass);
 
             if (jvmProperties != null) {
