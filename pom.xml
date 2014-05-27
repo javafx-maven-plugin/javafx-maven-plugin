@@ -86,6 +86,13 @@
                 <github>Jabqooo</github>
             </properties>
         </contributor>
+        <contributor>
+            <name>BTAN</name>
+            <email>BTAN@MF110187.lafayette.micropole.com</email>
+            <properties>
+                <github>boliang-micropole</github>
+            </properties>
+        </contributor>
     </contributors>
 
     <scm>
