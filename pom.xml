@@ -26,8 +26,8 @@
     </parent>
 
     <groupId>com.zenjava</groupId>
-    <artifactId>javafx-maven-plugin</artifactId>
-    <version>2.1-SNAPSHOT</version>
+    <artifactId>javapackager-maven-plugin</artifactId>
+    <version>8.1-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <name>JavaFX Maven Plugin</name>
@@ -142,13 +142,28 @@
 
     <build>
         <plugins>
-
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.3</version>
                 <configuration>
-                    <goalPrefix>jfx</goalPrefix>
+                    <goalPrefix>javapackager</goalPrefix>
+                    <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>mojo-descriptor</id>
+                        <goals>
+                            <goal>descriptor</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>help-goal</id>
+                        <goals>
+                            <goal>helpmojo</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

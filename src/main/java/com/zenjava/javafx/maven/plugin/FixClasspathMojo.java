@@ -39,7 +39,7 @@ public class FixClasspathMojo extends AbstractMojo {
      * The directory for your JAVA_HOME. This should point to the JDK you want to 'fix'. By default the system JAVA_HOME
      * variable will be used and in most cases you do not need to specifically set this.
      *
-     * @parameter expression="${java.home}"
+     * @parameter default-value="${java.home}"
      */
     private String javaHome;
 
@@ -50,7 +50,7 @@ public class FixClasspathMojo extends AbstractMojo {
      * provided to make you pause and think - for example you may not want to do this on a non-development machine that
      * you are not the system administrator of, etc.
      *
-     * @parameter expression="${silentJfxFix}"
+     * @parameter default-value="${silentJfxFix}"
      */
     private boolean silentJfxFix;
 

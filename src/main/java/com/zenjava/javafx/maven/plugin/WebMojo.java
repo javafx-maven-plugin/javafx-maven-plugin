@@ -53,7 +53,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
     /**
      * The vendor (i.e. you) to include in the deployment information.
      *
-     * @parameter expression="${project.organization.name}"
+     * @parameter property="project.organization.name"
      * @required
      */
     protected String vendor;
@@ -62,7 +62,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
      * <p>The output directory that the web bundle is to be built into. Both the webstart and applet bundle are
      * generated into the same output directory and share the same JNLP and JAR files.</p>
      *
-     * @parameter expression="${project.build.directory}/jfx/web"
+     * @parameter default-value="${project.build.directory}/jfx/web"
      */
     protected File webOutputDir;
 
@@ -130,7 +130,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
      * The location of the keystore. If not set, this will default to src/main/deploy/kesytore.jks which is usually fine
      * to use for most cases.
      *
-     * @parameter expression="src/main/deploy/keystore.jks"
+     * @parameter default-value="src/main/deploy/keystore.jks"
      */
     protected File keyStore;
 
@@ -200,6 +200,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
             deployParams.setEmbeddedDimensions(embeddedWidth, embeddedHeight);
 
             // turn off native bundles for this web build
+            //noinspection deprecation
             deployParams.setBundleType(Bundler.BundleType.NONE);
 
             getPackagerLib().generateDeploymentPackages(deployParams);

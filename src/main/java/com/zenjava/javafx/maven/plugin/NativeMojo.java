@@ -55,7 +55,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * recommended just to set it from the get-go to avoid problems. This will default to the project.organization.name
      * element in you POM if you have one.
      *
-     * @parameter expression="${project.organization.name}"
+     * @parameter property="project.organization.name"
      * @required
      */
     protected String vendor;
@@ -67,7 +67,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      *
      * <p>This defaults to 'target/jfx/native' and the interesting files are usually under 'bundles'.</p>
      *
-     * @parameter expression="${project.build.directory}/jfx/native"
+     * @parameter default-value="${project.build.directory}/jfx/native"
      */
     protected File nativeOutputDir;
 
@@ -81,8 +81,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * native bundles for your OS, based on whatever tools you have installed. If you want to get more fancy than that
      * then you are probably best to read the official JavaFX packaging tool documentation for more info. </p>
      *
-     * @parameter expression="${bundleType}" default-value="ALL"
+     * @parameter property="bundleType" default-value="ALL"
      */
+    @SuppressWarnings("deprecation")
     private Bundler.BundleType bundleType;
 
     /**
@@ -108,7 +109,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * separators, otherwise the JFX packaging tools bomb out. We default to 1.0 in case you can't be bothered to set
      * a version and don't really care.
      *
-     * @parameter expression="1.0"
+     * @parameter default-value="1.0"
      */
     private String nativeReleaseVersion;
 
