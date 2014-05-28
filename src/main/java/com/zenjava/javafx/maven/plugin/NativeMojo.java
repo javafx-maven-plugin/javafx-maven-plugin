@@ -138,7 +138,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * Set this to true if you would like your application to have a shortcut on the users desktop (or platform
      * equivalent) when it is installed.
-     * 
+     *
      * @parameter default-value=false
      */
     protected boolean needShortcut;
@@ -146,7 +146,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * Set this to true if you would like your application to have a link in the main system menu (or platform
      * equivalent) when it is installed.
-     * 
+     *
      * @parameter default-value=false
      */
     protected boolean needMenu;
@@ -173,6 +173,16 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected Map<String, String> bundleArguments;
 
+    /**
+     * The name of the JavaFX packaged executable to be built into the 'native/bundles' directory. By default this will
+     * be the finalName as set in your project. Change this if you want something nicer.
+     *
+     * @parameter default-value="${project.build.finalName}"
+     */
+    protected String appName;
+
+
+
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         //noinspection deprecation
@@ -192,7 +202,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 params.put(StandardBundlerParam.IDENTIFIER.getID(), identifier);
             }
 
-            params.put(StandardBundlerParam.APP_NAME.getID(), build.getFinalName());
+            params.put(StandardBundlerParam.APP_NAME.getID(), appName);
             params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
             params.put(StandardBundlerParam.VENDOR.getID(), vendor);
             params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
