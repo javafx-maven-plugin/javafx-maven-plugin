@@ -156,8 +156,22 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * the official JavaFX packaging documentation.
      *
      * @parameter
+     * @deprecated
      */
     protected String preLoader;
+
+    /**
+     * A list of bundler arguments.  The particular keys and the meaning of their values are dependent on the bundler
+     * that is reading the arguments.  Any argument not recognized by a bundler is silently ignored, so that arguments
+     * that are specific to a specific bundler (for example, a Mac OS X Code signing key name) can be configured and
+     * ignored by bundlers that don't use the particular argument.
+     *
+     * If there are bundle arguments that override other fields in the configuration, then the value in the
+     * bundleArguments will take precedence.
+     *
+     * @parameter
+     */
+    protected Map<String, String> bundleArguments;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -230,7 +244,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
 
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
-            System.out.println(params);
+
+            params.putAll(bundleArguments);
 
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
             for (Bundler b : bundlers.getBundlers()) {
@@ -252,7 +267,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 }
             }
         } catch (RuntimeException e) {
-            e.printStackTrace();
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
         }
     }
