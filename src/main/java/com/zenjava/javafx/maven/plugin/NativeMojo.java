@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -166,8 +167,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * that are specific to a specific bundler (for example, a Mac OS X Code signing key name) can be configured and
      * ignored by bundlers that don't use the particular argument.
      *
-     * If there are bundle arguments that override other fields in the configuration, then the value in the
-     * bundleArguments will take precedence.
+     * If there are bundle arguments that override other fields in the configuration, then it is an execution error.
      *
      * @parameter
      */
@@ -244,6 +244,12 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
 
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
+
+            Collection<String> duplicateKeys = new HashSet<>(params.keySet());
+            duplicateKeys.retainAll(bundleArguments.keySet());
+            if (!duplicateKeys.isEmpty()) {
+                throw new MojoExecutionException("The following keys in <bundleArguments> duplicate other settings, please remove one or the other: " + duplicateKeys.toString());
+            }
 
             params.putAll(bundleArguments);
 
