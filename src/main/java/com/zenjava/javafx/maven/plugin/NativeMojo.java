@@ -104,9 +104,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private Map<String, String> jvmProperties;
 
     /**
-     * Optional command line arguments passed to the application when it is started. These will be included in the
-     * native bundle that is generated and will be accessible via the main(String[] args) method on the main class that
-     * is launched at runtime.
+     * JVM Flags to be passed into the JVM at invocation time.  These are the arguments to the left of the main class
+     * name when launching Java on the command line.  For example:
+     * <pre>
+     *     <jvmArgs>
+     *         <jvmArg>-Xmx8G</jvmArg>
+     *     </jvmArgs>
+     * </pre>
      *
      * @parameter
      */
