@@ -15,16 +15,25 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
-import com.sun.javafx.tools.packager.DeployParams;
-import com.sun.javafx.tools.packager.PackagerException;
-import com.sun.javafx.tools.packager.bundlers.Bundler;
+import com.oracle.tools.packager.Bundler;
+import com.oracle.tools.packager.Bundlers;
+import com.oracle.tools.packager.ConfigException;
+import com.oracle.tools.packager.RelativeFileSet;
+import com.oracle.tools.packager.StandardBundlerParam;
+import com.oracle.tools.packager.UnsupportedPlatformException;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>Generates native deployment bundles (MSI, EXE, DMG, RPG, etc). This Mojo simply wraps the JavaFX packaging tools
@@ -83,8 +92,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      *
      * @parameter property="bundleType" default-value="ALL"
      */
-    @SuppressWarnings("deprecation")
-    private Bundler.BundleType bundleType;
+    private String bundleType;
 
     /**
      * Properties passed to the Java Virtual Machine when the application is started (i.e. these properties are system
@@ -102,6 +110,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter
      */
     private List<String> jvmArgs;
+
+
+    /**
+     * Optional command line arguments passed to the application when it is started. These will be included in the
+     * native bundle that is generated and will be accessible via the main(String[] args) method on the main class that
+     * is launched at runtime.
+     *
+     * These options are user overridable for the value part of the entry via user preferences.  The key and the value
+     * are concated without a joining character when invoking the JVM.
+     *
+     * @parameter
+     */
+    private Map<String, String> userJvmArgs;
 
     /**
      * The release version as passed to the native installer. It would be nice to just use the project's version number
@@ -140,55 +161,98 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
+        //noinspection deprecation
+        if ("NONE".equals(bundleType)) return;
+
         getLog().info("Building Native Installers");
 
         try {
             Build build = project.getBuild();
 
-            DeployParams deployParams = new DeployParams();
-            deployParams.setVerbose(verbose);
+            Map<String, ? super Object> params = new HashMap<>();
+
+
+            params.put(StandardBundlerParam.VERBOSE.getID(), verbose);
 
             if (identifier != null) {
-                deployParams.setId(identifier);
+                params.put(StandardBundlerParam.IDENTIFIER.getID(), identifier);
             }
 
-            deployParams.setBundleType(bundleType);
-            deployParams.setAppName(build.getFinalName());
-            deployParams.setVersion(nativeReleaseVersion);
-            deployParams.setVendor(vendor);
-            deployParams.setNeedShortcut(needShortcut);
-            deployParams.setNeedMenu(needMenu);
-            deployParams.setApplicationClass(mainClass);
+            params.put(StandardBundlerParam.APP_NAME.getID(), build.getFinalName());
+            params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
+            params.put(StandardBundlerParam.VENDOR.getID(), vendor);
+            params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
+            params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
+            params.put(StandardBundlerParam.MAIN_CLASS.getID(), mainClass);
 
             if (jvmProperties != null) {
+                Map<String, String> jvmProps = new HashMap<>();
                 for (String key : jvmProperties.keySet()) {
-                    deployParams.addJvmProperty(key, jvmProperties.get(key));
+                    jvmProps.put(key, jvmProperties.get(key));
                 }
+                params.put(StandardBundlerParam.JVM_PROPERTIES.getID(), jvmProps);
             }
 
             if (jvmArgs != null) {
+                List<String> jvmOptions = new ArrayList<>();
                 for (String arg : jvmArgs) {
-                    deployParams.addJvmArg(arg);
+                    jvmOptions.add(arg);
                 }
+                params.put(StandardBundlerParam.JVM_OPTIONS.getID(), jvmOptions);
             }
 
-            deployParams.setOutdir(nativeOutputDir);
-            deployParams.setOutfile(build.getFinalName());
-            deployParams.setPreloader(preLoader);
-            deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
+            if (userJvmArgs != null) {
+                Map<String, String> userJvmOptions = new HashMap<>();
+                for (String key : jvmProperties.keySet()) {
+                    userJvmOptions.put(key, jvmProperties.get(key));
+                }
+                params.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), userJvmOptions);
+            }
+
+            Set<File> resourceFiles = new HashSet<>();
+
+            resourceFiles.add(new File(jfxAppOutputDir, jfxMainAppJarName));
 
             File libDir = new File(jfxAppOutputDir, "lib");
             if (libDir.exists() && libDir.list().length > 0) {
-                deployParams.addResource(jfxAppOutputDir, libDir.getName());
+                try {
+                    Files.walk(libDir.toPath())
+                        .forEach(p -> {
+                            File f = p.toFile();
+                            System.out.println(p.toFile());
+                            if (f.isFile()) {
+                                resourceFiles.add(p.toFile());
+                            }
+                        });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
-            getPackagerLib().generateDeploymentPackages(deployParams);
+            params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
+            System.out.println(params);
 
-            // delete the JNLP and webstart generated files as we didn't ask for them
-            new File(nativeOutputDir, build.getFinalName() + ".html").delete();
-            new File(nativeOutputDir, build.getFinalName() + ".jnlp").delete();
+            Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
+            for (Bundler b : bundlers.getBundlers()) {
+                Map<String, ? super Object> localParams = new HashMap<>(params);
+                try {
+                    //noinspection deprecation
+                    if (bundleType != null && !"ALL".equals(bundleType) && !b.getBundleType().equals(bundleType)) {
+                        // not this kind of bundler
+                        return;
+                    }
 
-        } catch (PackagerException e) {
+                    if (b.validate(params)) {
+                        b.execute(params, nativeOutputDir);
+                    }
+                } catch (UnsupportedPlatformException e) {
+                    // quietly ignore
+                } catch (ConfigException e) {
+                    getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
+                }
+            }
+        } catch (RuntimeException e) {
+            e.printStackTrace();
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
         }
     }

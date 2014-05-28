@@ -1,6 +1,6 @@
 package com.zenjava.javafx.maven.plugin;
 
-import com.sun.javafx.tools.packager.Log;
+import com.oracle.tools.packager.Log;
 import com.sun.javafx.tools.packager.PackagerLib;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
