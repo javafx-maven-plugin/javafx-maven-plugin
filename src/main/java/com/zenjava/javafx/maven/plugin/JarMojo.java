@@ -17,16 +17,16 @@ package com.zenjava.javafx.maven.plugin;
 
 import com.sun.javafx.tools.packager.CreateJarParams;
 import com.sun.javafx.tools.packager.PackagerException;
+
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * <p>Builds an executable JAR for the project that has all the trappings needed to run as a JavaFX app. This will
@@ -57,6 +57,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean css2bin;
+
     /**
      * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is
      * useful for showing splash screens or similar 'progress' style windows. For more information on Pre-Loaders, see
@@ -65,38 +66,37 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter
      */
     protected String preLoader;
-    /**
-     * A Map of Entries to be added to the Manifest.
-     *
-     * @parameter
-     */
-    private Map<String, String> manifestEntries = new HashMap<>();
 
     /**
-     * A custom class that will be executed in the event that the platform does not support JavaFX.
+     * Flag to switch on updating the existing jar created with maven. The jar to be updated is taken from 
+     * '${project.basedir}/target/${project.build.finalName}.jar'.
      *
-     * @parameter
+     * @parameter default-value=false
      */
-    protected String fallbackClass;
+    protected boolean updateExistingJar;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building JavaFX JAR for application");
+
         Build build = project.getBuild();
 
         CreateJarParams createJarParams = new CreateJarParams();
         createJarParams.setOutdir(jfxAppOutputDir);
         createJarParams.setOutfile(jfxMainAppJarName);
         createJarParams.setApplicationClass(mainClass);
-        createJarParams.setFallback(fallbackClass);
         createJarParams.setCss2bin(css2bin);
-        createJarParams.addResource(new File(build.getOutputDirectory()), "");
         createJarParams.setPreloader(preLoader);
-        createJarParams.setManifestAttrs(manifestEntries);
         StringBuilder classpath = new StringBuilder();
         File libDir = new File(jfxAppOutputDir, "lib");
         if (!libDir.exists() && !libDir.mkdirs()) {
             throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
+        }
+
+        if (updateExistingJar) {
+            createJarParams.addResource(null, new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar"));
+        } else {
+            createJarParams.addResource(new File(build.getOutputDirectory()), "");
         }
 
         try {
