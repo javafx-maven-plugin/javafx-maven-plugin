@@ -147,7 +147,7 @@
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <goalPrefix>javapackager</goalPrefix>
+                    <goalPrefix>jfx</goalPrefix>
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                 </configuration>
                 <executions>
@@ -224,10 +224,9 @@
         <dependency>
             <groupId>javafx-packager</groupId>
             <artifactId>javafx-packager</artifactId>
-            <version>1.7</version>
+            <version>1.8</version>
             <scope>system</scope>
             <systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>
-            <!--<systemPath>c:/apps/java/jdk1.7.0_21-32bit/lib/ant-javafx.jar</systemPath>-->
         </dependency>
 
     </dependencies>
