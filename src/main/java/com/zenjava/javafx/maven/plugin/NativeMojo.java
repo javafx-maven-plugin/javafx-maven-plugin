@@ -15,16 +15,26 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
-import com.sun.javafx.tools.packager.DeployParams;
-import com.sun.javafx.tools.packager.PackagerException;
-import com.sun.javafx.tools.packager.bundlers.Bundler;
+import com.oracle.tools.packager.Bundler;
+import com.oracle.tools.packager.Bundlers;
+import com.oracle.tools.packager.ConfigException;
+import com.oracle.tools.packager.RelativeFileSet;
+import com.oracle.tools.packager.StandardBundlerParam;
+import com.oracle.tools.packager.UnsupportedPlatformException;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>Generates native deployment bundles (MSI, EXE, DMG, RPG, etc). This Mojo simply wraps the JavaFX packaging tools
@@ -55,7 +65,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * recommended just to set it from the get-go to avoid problems. This will default to the project.organization.name
      * element in you POM if you have one.
      *
-     * @parameter expression="${project.organization.name}"
+     * @parameter property="project.organization.name"
      * @required
      */
     protected String vendor;
@@ -67,7 +77,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      *
      * <p>This defaults to 'target/jfx/native' and the interesting files are usually under 'bundles'.</p>
      *
-     * @parameter expression="${project.build.directory}/jfx/native"
+     * @parameter default-value="${project.build.directory}/jfx/native"
      */
     protected File nativeOutputDir;
 
@@ -81,9 +91,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * native bundles for your OS, based on whatever tools you have installed. If you want to get more fancy than that
      * then you are probably best to read the official JavaFX packaging tool documentation for more info. </p>
      *
-     * @parameter expression="${bundleType}" default-value="ALL"
+     * @parameter property="bundleType" default-value="ALL"
      */
-    private Bundler.BundleType bundleType;
+    private String bundleType;
 
     /**
      * Properties passed to the Java Virtual Machine when the application is started (i.e. these properties are system
@@ -94,13 +104,30 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private Map<String, String> jvmProperties;
 
     /**
-     * Optional command line arguments passed to the application when it is started. These will be included in the
-     * native bundle that is generated and will be accessible via the main(String[] args) method on the main class that
-     * is launched at runtime.
+     * JVM Flags to be passed into the JVM at invocation time.  These are the arguments to the left of the main class
+     * name when launching Java on the command line.  For example:
+     * <pre>
+     *     <jvmArgs>
+     *         <jvmArg>-Xmx8G</jvmArg>
+     *     </jvmArgs>
+     * </pre>
      *
      * @parameter
      */
     private List<String> jvmArgs;
+
+
+    /**
+     * Optional command line arguments passed to the application when it is started. These will be included in the
+     * native bundle that is generated and will be accessible via the main(String[] args) method on the main class that
+     * is launched at runtime.
+     *
+     * These options are user overridable for the value part of the entry via user preferences.  The key and the value
+     * are concated without a joining character when invoking the JVM.
+     *
+     * @parameter
+     */
+    private Map<String, String> userJvmArgs;
 
     /**
      * The release version as passed to the native installer. It would be nice to just use the project's version number
@@ -108,9 +135,25 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * separators, otherwise the JFX packaging tools bomb out. We default to 1.0 in case you can't be bothered to set
      * a version and don't really care.
      *
-     * @parameter expression="1.0"
+     * @parameter default-value="1.0"
      */
     private String nativeReleaseVersion;
+
+    /**
+     * Set this to true if you would like your application to have a shortcut on the users desktop (or platform
+     * equivalent) when it is installed.
+     *
+     * @parameter default-value=false
+     */
+    protected boolean needShortcut;
+
+    /**
+     * Set this to true if you would like your application to have a link in the main system menu (or platform
+     * equivalent) when it is installed.
+     *
+     * @parameter default-value=false
+     */
+    protected boolean needMenu;
 
     /**
      * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is
@@ -118,59 +161,132 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * the official JavaFX packaging documentation.
      *
      * @parameter
+     * @deprecated
      */
     protected String preLoader;
 
+    /**
+     * A list of bundler arguments.  The particular keys and the meaning of their values are dependent on the bundler
+     * that is reading the arguments.  Any argument not recognized by a bundler is silently ignored, so that arguments
+     * that are specific to a specific bundler (for example, a Mac OS X Code signing key name) can be configured and
+     * ignored by bundlers that don't use the particular argument.
+     *
+     * If there are bundle arguments that override other fields in the configuration, then it is an execution error.
+     *
+     * @parameter
+     */
+    protected Map<String, String> bundleArguments;
+
+    /**
+     * The name of the JavaFX packaged executable to be built into the 'native/bundles' directory. By default this will
+     * be the finalName as set in your project. Change this if you want something nicer.
+     *
+     * @parameter default-value="${project.build.finalName}"
+     */
+    protected String appName;
+
+
+
     public void execute() throws MojoExecutionException, MojoFailureException {
+
+        //noinspection deprecation
+        if ("NONE".equals(bundleType)) return;
 
         getLog().info("Building Native Installers");
 
         try {
             Build build = project.getBuild();
 
-            DeployParams deployParams = new DeployParams();
-            deployParams.setVerbose(verbose);
+            Map<String, ? super Object> params = new HashMap<>();
+
+
+            params.put(StandardBundlerParam.VERBOSE.getID(), verbose);
 
             if (identifier != null) {
-                deployParams.setId(identifier);
+                params.put(StandardBundlerParam.IDENTIFIER.getID(), identifier);
             }
 
-            deployParams.setBundleType(bundleType);
-            deployParams.setAppName(build.getFinalName());
-            deployParams.setVersion(nativeReleaseVersion);
-            deployParams.setVendor(vendor);
-
-            deployParams.setApplicationClass(mainClass);
+            params.put(StandardBundlerParam.APP_NAME.getID(), appName);
+            params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
+            params.put(StandardBundlerParam.VENDOR.getID(), vendor);
+            params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
+            params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
+            params.put(StandardBundlerParam.MAIN_CLASS.getID(), mainClass);
 
             if (jvmProperties != null) {
+                Map<String, String> jvmProps = new HashMap<>();
                 for (String key : jvmProperties.keySet()) {
-                    deployParams.addJvmProperty(key, jvmProperties.get(key));
+                    jvmProps.put(key, jvmProperties.get(key));
                 }
+                params.put(StandardBundlerParam.JVM_PROPERTIES.getID(), jvmProps);
             }
 
             if (jvmArgs != null) {
+                List<String> jvmOptions = new ArrayList<>();
                 for (String arg : jvmArgs) {
-                    deployParams.addJvmArg(arg);
+                    jvmOptions.add(arg);
                 }
+                params.put(StandardBundlerParam.JVM_OPTIONS.getID(), jvmOptions);
             }
 
-            deployParams.setOutdir(nativeOutputDir);
-            deployParams.setOutfile(build.getFinalName());
-            deployParams.setPreloader(preLoader);
-            deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
+            if (userJvmArgs != null) {
+                Map<String, String> userJvmOptions = new HashMap<>();
+                for (String key : jvmProperties.keySet()) {
+                    userJvmOptions.put(key, jvmProperties.get(key));
+                }
+                params.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), userJvmOptions);
+            }
+
+            Set<File> resourceFiles = new HashSet<>();
+
+            resourceFiles.add(new File(jfxAppOutputDir, jfxMainAppJarName));
 
             File libDir = new File(jfxAppOutputDir, "lib");
             if (libDir.exists() && libDir.list().length > 0) {
-                deployParams.addResource(jfxAppOutputDir, libDir.getName());
+                try {
+                    Files.walk(libDir.toPath())
+                        .forEach(p -> {
+                            File f = p.toFile();
+                            System.out.println(p.toFile());
+                            if (f.isFile()) {
+                                resourceFiles.add(p.toFile());
+                            }
+                        });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
-            getPackagerLib().generateDeploymentPackages(deployParams);
+            params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
 
-            // delete the JNLP and webstart generated files as we didn't ask for them
-            new File(nativeOutputDir, build.getFinalName() + ".html").delete();
-            new File(nativeOutputDir, build.getFinalName() + ".jnlp").delete();
+            Collection<String> duplicateKeys = new HashSet<>(params.keySet());
+            duplicateKeys.retainAll(bundleArguments.keySet());
+            if (!duplicateKeys.isEmpty()) {
+                throw new MojoExecutionException("The following keys in <bundleArguments> duplicate other settings, please remove one or the other: " + duplicateKeys.toString());
+            }
 
-        } catch (PackagerException e) {
+            params.putAll(bundleArguments);
+
+            Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
+            for (Bundler b : bundlers.getBundlers()) {
+                Map<String, ? super Object> localParams = new HashMap<>(params);
+                try {
+                    //noinspection deprecation
+                    if (bundleType != null && !"ALL".equals(bundleType) && !b.getBundleType().equals(bundleType)) {
+                        // not this kind of bundler
+                        return;
+                    }
+
+                    if (b.validate(params)) {
+                        b.execute(params, nativeOutputDir);
+                    }
+                } catch (UnsupportedPlatformException e) {
+                    // quietly ignore
+                } catch (ConfigException e) {
+                    getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
+                }
+            }
+        } catch (RuntimeException e) {
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
         }
     }

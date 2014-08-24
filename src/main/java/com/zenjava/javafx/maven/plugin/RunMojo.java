@@ -39,7 +39,7 @@ public class RunMojo extends AbstractMojo {
     /**
      * The Maven Project Object
      *
-     * @parameter expression="${project}"
+     * @parameter property="project"
      * @required
      * @readonly
      */
@@ -48,7 +48,7 @@ public class RunMojo extends AbstractMojo {
     /**
      * The Maven Session Object
      *
-     * @parameter expression="${session}"
+     * @parameter property="session"
      * @required
      * @readonly
      */
@@ -65,7 +65,7 @@ public class RunMojo extends AbstractMojo {
     /**
      * The main JavaFX application class that acts as the entry point to the JavaFX application.
      *
-     * @parameter expression="${mainClass}"
+     * @parameter property="mainClass"
      * @required
      */
     protected String mainClass;

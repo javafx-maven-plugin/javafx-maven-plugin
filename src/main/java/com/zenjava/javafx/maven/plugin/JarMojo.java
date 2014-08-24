@@ -17,10 +17,12 @@ package com.zenjava.javafx.maven.plugin;
 
 import com.sun.javafx.tools.packager.CreateJarParams;
 import com.sun.javafx.tools.packager.PackagerException;
+
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +67,14 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     protected String preLoader;
 
+    /**
+     * Flag to switch on updating the existing jar created with maven. The jar to be updated is taken from 
+     * '${project.basedir}/target/${project.build.finalName}.jar'.
+     *
+     * @parameter default-value=false
+     */
+    protected boolean updateExistingJar;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building JavaFX JAR for application");
@@ -76,12 +86,17 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setOutfile(jfxMainAppJarName);
         createJarParams.setApplicationClass(mainClass);
         createJarParams.setCss2bin(css2bin);
-        createJarParams.addResource(new File(build.getOutputDirectory()), "");
         createJarParams.setPreloader(preLoader);
         StringBuilder classpath = new StringBuilder();
         File libDir = new File(jfxAppOutputDir, "lib");
         if (!libDir.exists() && !libDir.mkdirs()) {
             throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
+        }
+
+        if (updateExistingJar) {
+            createJarParams.addResource(null, new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar"));
+        } else {
+            createJarParams.addResource(new File(build.getOutputDirectory()), "");
         }
 
         try {
