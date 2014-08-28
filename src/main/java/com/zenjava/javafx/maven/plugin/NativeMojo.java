@@ -259,13 +259,17 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
 
-            Collection<String> duplicateKeys = new HashSet<>(params.keySet());
-            duplicateKeys.retainAll(bundleArguments.keySet());
-            if (!duplicateKeys.isEmpty()) {
-                throw new MojoExecutionException("The following keys in <bundleArguments> duplicate other settings, please remove one or the other: " + duplicateKeys.toString());
-            }
+            if (bundleArguments != null && !bundleArguments.isEmpty()) {
+                Collection<String> duplicateKeys = new HashSet<>(params.keySet());
+                duplicateKeys.retainAll(bundleArguments.keySet());
+                if (!duplicateKeys.isEmpty()) {
+                    throw new MojoExecutionException(
+                            "The following keys in <bundleArguments> duplicate other settings, please remove one or the other: "
+                                    + duplicateKeys.toString());
+                }
 
-            params.putAll(bundleArguments);
+                params.putAll(bundleArguments);
+            }
 
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
             for (Bundler b : bundlers.getBundlers()) {
