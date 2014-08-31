@@ -259,6 +259,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
 
+            if (bundleArguments == null) {
+            	bundleArguments = new HashMap<String, String>();
+            }
+
             Collection<String> duplicateKeys = new HashSet<>(params.keySet());
             duplicateKeys.retainAll(bundleArguments.keySet());
             if (!duplicateKeys.isEmpty()) {
