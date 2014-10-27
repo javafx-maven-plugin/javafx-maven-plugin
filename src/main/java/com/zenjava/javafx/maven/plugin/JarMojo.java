@@ -49,7 +49,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
 
     /**
      * Flag to switch on and off the compiling of CSS files to the binary format. In theory this has some minor
-     * performance gains but it's debatable weather you will notice them and the some people have experienced problems
+     * performance gains, but it's debatable whether you will notice them, and some people have experienced problems
      * with the resulting compiled files. Use at your own risk. By default this is false and CSS files are left in their
      * plain text format as they are found.
      *
