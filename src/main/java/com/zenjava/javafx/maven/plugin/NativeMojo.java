@@ -238,23 +238,17 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
 
             Set<File> resourceFiles = new HashSet<>();
-
-            resourceFiles.add(new File(jfxAppOutputDir, jfxMainAppJarName));
-
-            File libDir = new File(jfxAppOutputDir, "lib");
-            if (libDir.exists() && libDir.list().length > 0) {
-                try {
-                    Files.walk(libDir.toPath())
-                        .forEach(p -> {
-                            File f = p.toFile();
-                            System.out.println(p.toFile());
-                            if (f.isFile()) {
-                                resourceFiles.add(p.toFile());
-                            }
-                        });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                Files.walk(jfxAppOutputDir.toPath())
+                    .forEach(p -> {
+                        File f = p.toFile();
+                        if (f.isFile()) {
+                            getLog().info(String.format("Add %s file to application resources.", p.toFile()));
+                            resourceFiles.add(p.toFile());
+                        }
+                    });
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
