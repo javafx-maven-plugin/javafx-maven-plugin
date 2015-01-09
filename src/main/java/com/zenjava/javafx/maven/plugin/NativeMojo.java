@@ -272,14 +272,16 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.putAll(bundleArguments);
 
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
+            boolean foundBundler = false;
             for (Bundler b : bundlers.getBundlers()) {
                 Map<String, ? super Object> localParams = new HashMap<>(params);
                 try {
                     //noinspection deprecation
                     if (bundleType != null && !"ALL".equals(bundleType) && !b.getBundleType().equals(bundleType)) {
                         // not this kind of bundler
-                        return;
+                        continue;
                     }
+                    foundBundler = true;
 
                     if (b.validate(params)) {
                         b.execute(params, nativeOutputDir);
@@ -289,6 +291,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 } catch (ConfigException e) {
                     getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
                 }
+            }
+            if(!foundBundler){
+                getLog().info("No bundler found for given type " + bundleType + ". Please check your configuration.");
             }
         } catch (RuntimeException e) {
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
