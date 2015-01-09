@@ -278,7 +278,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     //noinspection deprecation
                     if (bundleType != null && !"ALL".equals(bundleType) && !b.getBundleType().equals(bundleType)) {
                         // not this kind of bundler
-                        return;
+                        continue;
                     }
 
                     if (b.validate(params)) {
