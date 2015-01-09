@@ -274,7 +274,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
             boolean foundBundler = false;
             for (Bundler b : bundlers.getBundlers()) {
-                Map<String, ? super Object> localParams = new HashMap<>(params);
                 try {
                     //noinspection deprecation
                     if (bundleType != null && !"ALL".equals(bundleType) && !b.getBundleType().equals(bundleType)) {
