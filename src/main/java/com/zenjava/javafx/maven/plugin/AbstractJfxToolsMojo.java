@@ -82,6 +82,16 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      */
     protected String deployDir;
 
+    /**
+     * <p>The directory contains application configuration files which can be changed by user, such as config logger, jdbc connection data, etc.
+     * This directory is added to the classpath of the Mojo when it runs, so that any files within this directory are accessible to the JavaFX packaging tools.</p>
+     *
+     * <p>This defaults to src/main/config and typically this is good enough. Just put your configuration files in
+     * this directory and they will be automatically picked up.</p>
+     *
+     * @parameter default-value="${project.basedir}/src/main/config"
+     */
+    protected File configDir;
 
     private PackagerLib packagerLib;
 

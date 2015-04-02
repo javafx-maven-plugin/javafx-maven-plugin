@@ -18,6 +18,8 @@ package com.zenjava.javafx.maven.plugin;
 import com.sun.javafx.tools.packager.CreateJarParams;
 import com.sun.javafx.tools.packager.PackagerException;
 
+import java.nio.file.StandardCopyOption;
+
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -98,6 +100,28 @@ public class JarMojo extends AbstractJfxToolsMojo {
             createJarParams.addResource(new File(build.getOutputDirectory()), "");
         }
 
+        if (configDir.exists() && configDir.list().length > 0) {
+            try {
+                String configDirName = configDir.getName();
+                File cfgOutDir = new File(jfxAppOutputDir, configDirName);
+                cfgOutDir.mkdirs();
+                Files.walk(configDir.toPath()).forEach(p -> {
+                    File file = p.toFile();
+                    if (!file.equals(configDir)) {
+                        System.out.println(file);
+                        File dest = new File(cfgOutDir, file.getName());
+                        try {
+                            Files.copy(p, dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error copying configuration for application", e);
+                        }
+                    }
+                });
+                classpath.append(configDirName).append(' ');
+            } catch (IOException e) {
+                throw new MojoExecutionException("Error copying configuration for application", e);
+            }
+        }
         try {
             for (Object object : project.getRuntimeClasspathElements()) {
                 String path = (String) object;
