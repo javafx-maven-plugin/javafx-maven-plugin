@@ -19,12 +19,14 @@ import com.sun.javafx.tools.packager.DeployParams;
 import com.sun.javafx.tools.packager.PackagerException;
 import com.sun.javafx.tools.packager.SignJarParams;
 import com.sun.javafx.tools.packager.bundlers.Bundler;
+
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * <p>Generates web deployment bundles (applet and webstart). This Mojo simply wraps the JavaFX packaging tools
@@ -163,6 +165,11 @@ public class WebMojo extends AbstractJfxToolsMojo {
      */
     protected String keyStoreType;
 
+    /**
+     * @parameter
+     */
+    protected List<String> templates;
+
 
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -198,6 +205,16 @@ public class WebMojo extends AbstractJfxToolsMojo {
             String embeddedWidth = this.embeddedWidth != null ? this.embeddedWidth : String.valueOf(width);
             String embeddedHeight = this.embeddedHeight != null ? this.embeddedHeight : String.valueOf(height);
             deployParams.setEmbeddedDimensions(embeddedWidth, embeddedHeight);
+            
+            if (templates != null)
+                for (String template : templates) {
+                  final File in = new File(project.getBasedir(), "src/main/deploy/templates/" + template);
+                  final File out = new File(webOutputDir, template);
+                  getLog().info("Using template: " + in);
+                  deployParams.addTemplate(in, out);
+                }
+              else
+                getLog().info("Using default template.");
 
             // turn off native bundles for this web build
             //noinspection deprecation
