@@ -199,7 +199,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
         }
 
         if (certCountry != null) {
-            domainName.append("c=").append(certState);
+            domainName.append("c=").append(certCountry);
         } else {
             throw new MojoExecutionException("A 'certCountry' must be provided to generate a KeyStore");
         }
