@@ -168,16 +168,16 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
             keyPassword = keyStorePassword;
         }
 
-        StringBuilder domainName = new StringBuilder();
+        StringBuilder domainName = new StringBuilder("\"");
 
         if (certDomain != null) {
-            domainName.append("cn=").append(certDomain);
+            domainName.append("cn=").append(certDomain).append(", ");
         } else if (project.getOrganization() != null && project.getOrganization().getUrl() != null) {
             String url = project.getOrganization().getUrl();
             if (url.startsWith("http://")) {
                 url = url.substring("http://".length());
             }
-            domainName.append("cn=").append(url);
+            domainName.append("cn=").append(url).append(", ");
         } else {
             throw new MojoExecutionException("A 'certDomain' must be provided to generate a KeyStore");
         }
@@ -185,21 +185,21 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
         domainName.append("ou=").append(certOrgUnit != null ? certOrgUnit : "none");
 
         if (certOrg != null) {
-            domainName.append("o=").append(certOrg);
+            domainName.append("o=").append(certOrg).append(", ");
         } else if (project.getOrganization() != null && project.getOrganization().getName() != null) {
-            domainName.append("o=").append(project.getOrganization().getName());
+            domainName.append("o=").append(project.getOrganization().getName().append(", "));
         } else {
             throw new MojoExecutionException("A 'certOrg' must be provided to generate a KeyStore");
         }
 
         if (certState != null) {
-            domainName.append("st=").append(certState);
+            domainName.append("s=").append(certState).append(", ");
         } else {
             throw new MojoExecutionException("A 'certState' must be provided to generate a KeyStore");
         }
 
         if (certCountry != null) {
-            domainName.append("c=").append(certState);
+            domainName.append("c=").append(certState).append("\"");
         } else {
             throw new MojoExecutionException("A 'certCountry' must be provided to generate a KeyStore");
         }
