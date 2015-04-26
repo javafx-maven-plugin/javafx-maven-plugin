@@ -249,8 +249,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             if (userJvmArgs != null) {
                 Map<String, String> userJvmOptions = new HashMap<>();
-                for (String key : jvmProperties.keySet()) {
-                    userJvmOptions.put(key, jvmProperties.get(key));
+                for (String key : userJvmArgs.keySet()) {
+                    userJvmOptions.put(key, userJvmArgs.get(key));
                 }
                 params.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), userJvmOptions);
             }
