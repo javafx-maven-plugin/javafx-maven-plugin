@@ -96,6 +96,24 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private String bundleType;
 
     /**
+     * <p>Specify the used bundler found by selected bundleType. May not be installed your OS and will fail in that case.</p>
+     * 
+     * <p>By default this will be set to 'ALL', depending on your installed OS following values are possible for installers: </p>
+     * <ul>
+     *     <li>exe <i>(Microsoft Windows EXE Installer, via InnoIDE)</i></li>
+     *     <li>msi <i>(Microsoft Windows MSI Installer, via WiX)</i></li>
+     *     <li>deb <i>(Linux Debian Bundle)</i></li>
+     *     <li>rpm <i>(Redhat Package Manager (RPM) bundler)</i></li>
+     *     <li>dmg <i>(Mac DMG Installer Bundle)</i></li>
+     *     <li>pkg <i>(Mac PKG Installer Bundle)</i></li>
+     *     <li>mac.appStore <i>(Creates a binary bundle ready for deployment into the Mac App Store)</i></li>
+     * </ul>
+     *
+     * @parameter property="bundler" default-value="ALL"
+     */
+    private String bundler;
+
+    /**
      * Properties passed to the Java Virtual Machine when the application is started (i.e. these properties are system
      * properties of the JVM bundled in the native distribution and used to run the application once installed).
      *
@@ -107,9 +125,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * JVM Flags to be passed into the JVM at invocation time.  These are the arguments to the left of the main class
      * name when launching Java on the command line.  For example:
      * <pre>
-     *     <jvmArgs>
-     *         <jvmArg>-Xmx8G</jvmArg>
-     *     </jvmArgs>
+     *     &lt;jvmArgs&gt;
+     *         &lt;jvmArg&gt;-Xmx8G&lt;/jvmArg&gt;
+     *     &lt;/jvmArgs&gt;
      * </pre>
      *
      * @parameter
@@ -272,14 +290,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.putAll(bundleArguments);
 
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
+            boolean foundBundler = false;
             for (Bundler b : bundlers.getBundlers()) {
-                Map<String, ? super Object> localParams = new HashMap<>(params);
                 try {
                     //noinspection deprecation
-                    if (bundleType != null && !"ALL".equals(bundleType) && !b.getBundleType().equals(bundleType)) {
+                    if (bundleType != null && !"ALL".equalsIgnoreCase(bundleType) && !b.getBundleType().equalsIgnoreCase(bundleType)) {
                         // not this kind of bundler
-                        return;
+                        continue;
                     }
+                    if (bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(b.getID())){
+                        // this is not the specified bundler
+                        continue;
+                    }
+                    foundBundler = true;
 
                     if (b.validate(params)) {
                         b.execute(params, nativeOutputDir);
@@ -289,6 +312,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 } catch (ConfigException e) {
                     getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
                 }
+            }
+            if(!foundBundler){
+                getLog().warn("No bundler found for given type " + bundleType + ". Please check your configuration.");
             }
         } catch (RuntimeException e) {
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
