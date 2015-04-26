@@ -115,14 +115,6 @@
         <url>https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues</url>
     </issueManagement>
 
-    <repositories>
-        <repository>
-            <id>mojo-executor-repository</id>
-            <name>Mojo Executor Repository for Maven</name>
-            <url>http://twdata-m2-repository.googlecode.com/svn/</url>
-        </repository>
-    </repositories>
-
     <reporting>
         <plugins>
 
