@@ -203,6 +203,22 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected String appName;
 
+    /**
+     * Set this to true if you would like to install your application in the system directory (i.e. Program Files on
+     * Windows) instead of a user specific one. Note that when you activate this option, you need admin privilege to
+     * install your application.
+     *
+     * @parameter default-value=false
+     */
+    protected boolean installForAllUsers;
+
+    /**
+     * The icon file to customize icon application launcher. On Windows, the .ico format is expected, and on Mac it is
+     * .icns. No icon is embedded into launcher on Linux.
+     *
+     * @parameter
+     */
+    protected File appIcon;
 
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -230,6 +246,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
             params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
             params.put(StandardBundlerParam.MAIN_CLASS.getID(), mainClass);
+            params.put(StandardBundlerParam.SYSTEM_WIDE.getID(), installForAllUsers);
+            params.put(StandardBundlerParam.ICON.getID(), appIcon);
 
             if (jvmProperties != null) {
                 Map<String, String> jvmProps = new HashMap<>();
