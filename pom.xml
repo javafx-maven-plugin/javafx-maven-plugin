@@ -31,7 +31,7 @@
     <packaging>maven-plugin</packaging>
 
     <name>JavaFX Maven Plugin</name>
-    <url>https://github.com/zonski/javafx-maven-plugin</url>
+    <url>https://github.com/javafx-maven-plugin/javafx-maven-plugin</url>
     <description>
         The JavaFX Maven Plugin provides a way to to assemble distributable bundles for JavaFX applications from within
         Maven. It provides a wrapper around the JavaFX packaging tools which are provided as part of the JavaFX
