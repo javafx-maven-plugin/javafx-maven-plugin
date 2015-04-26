@@ -224,7 +224,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
                 plugin(
                         groupId("org.codehaus.mojo"),
                         artifactId("keytool-maven-plugin"),
-                        version("1.2")
+                        version("1.5")
                 ),
                 goal("generateKeyPair"),
                 configuration(
@@ -234,11 +234,11 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
                         element(name("keypass"), keyPassword),
                         element(name("dname"), domainName),
 
-                        element(name("sigalg"), "SHA1withDSA"),
+                        element(name("sigalg"), "SHA256withRSA"),
                         element(name("ext"), ""),
                         element(name("validity"), "100"),
-                        element(name("keyalg"), "DSA"),
-                        element(name("keysize"), "1024")
+                        element(name("keyalg"), "RSA"),
+                        element(name("keysize"), "2048")
                 ),
                 executionEnvironment(
                         project,
