@@ -259,6 +259,21 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             resourceFiles.add(new File(jfxAppOutputDir, jfxMainAppJarName));
 
+            File cfgDir = new File(jfxAppOutputDir, configDir.getName());
+            if (cfgDir.exists() && cfgDir.list().length > 0) {
+                try {
+                    Files.walk(cfgDir.toPath())
+                        .forEach(p -> {
+                            File f = p.toFile();
+                            System.out.println(p.toFile());
+                            if (f.isFile()) {
+                                resourceFiles.add(p.toFile());
+                            }
+                        });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             File libDir = new File(jfxAppOutputDir, "lib");
             if (libDir.exists() && libDir.list().length > 0) {
                 try {
