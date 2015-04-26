@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
+[![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)]()
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2)
+
+
 JavaFX Maven Plugin
 ===================
 
