@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
-[![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)]()
+[![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)(https://search.maven.org/#search|gav|1|g%3A%22com.zenjava%22%20AND%20a%3A%22javafx-maven-plugin%22)
 [![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2)
 
 
