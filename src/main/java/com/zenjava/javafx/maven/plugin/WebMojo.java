@@ -46,7 +46,7 @@ import java.io.File;
  *
  * @goal web
  * @phase package
- * @execute lifecycle="jfxjar" phase="package"
+ * @execute goal="jar"
  */
 public class WebMojo extends AbstractJfxToolsMojo {
 

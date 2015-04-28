@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * @goal native
  * @phase package
- * @execute lifecycle="jfxjar" phase="package"
+ * @execute goal="jar"
  */
 public class NativeMojo extends AbstractJfxToolsMojo {
 
