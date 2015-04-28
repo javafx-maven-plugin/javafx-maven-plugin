@@ -186,7 +186,12 @@ public class WebMojo extends AbstractJfxToolsMojo {
             deployParams.setNeedShortcut(needShortcut);
 
             deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
-            deployParams.addResource(jfxAppOutputDir, "lib");
+            
+            // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
+            File libFolder = new File(jfxAppOutputDir, "lib");
+            if(libFolder.exists()){
+                deployParams.addResource(jfxAppOutputDir, "lib");
+            }
 
             deployParams.setAllPermissions(allPermissions);
 
