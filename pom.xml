@@ -94,14 +94,6 @@
                 <github>boliang-micropole</github>
             </properties>
         </contributor>
-        <contributor>
-            <name>Danny Althoff</name>
-            <email>fibrefox@dynamicfiles.de</email>
-            <url>http://www.dynamicfiles.de/</url>
-            <properties>
-                <github>fibrefox</github>
-            </properties>
-        </contributor>
     </contributors>
 
     <scm>
