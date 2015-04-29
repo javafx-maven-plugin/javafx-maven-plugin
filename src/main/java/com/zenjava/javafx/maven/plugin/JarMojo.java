@@ -28,21 +28,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 /**
- * <p>Builds an executable JAR for the project that has all the trappings needed to run as a JavaFX app. This will
- * include Pre-Launchers and all the other weird and wonderful things that the JavaFX packaging tools allow and/or
- * require.</p>
- *
- * <p>Any runtime dependencies for this project will be included in a separate 'lib' sub-directory alongside the
- * resulting JavaFX friendly JAR. The manifest within the JAR will have a reference to these libraries using the
- * relative 'lib' path so that you can copy the JAR and the lib directory exactly as is and distribute this bundle.</p>
- *
- * <p>The JAR and the 'lib' directory built by this Mojo are used as the inputs to the other distribution bundles. The
- * native and web Mojos for example, will trigger this Mojo first and then will copy the resulting JAR into their own
- * distribution bundles.</p>
- *
- * @goal jar
+ * @goal build-jar
  * @phase package
- * @execute phase="package"
  * @requiresDependencyResolution
  */
 public class JarMojo extends AbstractJfxToolsMojo {
@@ -73,8 +60,20 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean updateExistingJar;
+    
+    /**
+     * Will be set when having goal "build-jar" within package-phase and calling "jfx:jar" or "jfx:native" from CLI. Internal usage only.
+     * 
+     * @parameter default-value=false
+     */
+    protected boolean jfxCallFromCLI;
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if( jfxCallFromCLI ){
+            getLog().info("call from CLI - skipping creation of JavaFX JAR for application");
+            return;
+        }
 
         getLog().info("Building JavaFX JAR for application");
 
