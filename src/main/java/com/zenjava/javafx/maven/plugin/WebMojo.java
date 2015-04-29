@@ -240,7 +240,11 @@ public class WebMojo extends AbstractJfxToolsMojo {
                 signJarParams.setStoreType(keyStoreType);
 
                 signJarParams.addResource(webOutputDir, jfxMainAppJarName);
-                signJarParams.addResource(webOutputDir, "lib");
+                // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
+                File webLibFolder = new File(webOutputDir, "lib");
+                if(webLibFolder.exists()){
+                    signJarParams.addResource(webOutputDir, "lib");
+                }
 
                 getPackagerLib().signJar(signJarParams);
             }
