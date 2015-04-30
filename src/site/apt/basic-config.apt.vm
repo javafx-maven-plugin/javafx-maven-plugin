@@ -9,6 +9,7 @@ Basic Configuration
     <version>${project.version}</version>
     <configuration>
         <mainClass>[put your application main class here]</mainClass>
+        <vendor>[Vendor Name]</vendor>
     </configuration>
 </plugin>
 ------
