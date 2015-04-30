@@ -21,7 +21,6 @@ import com.oracle.tools.packager.ConfigException;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import com.oracle.tools.packager.UnsupportedPlatformException;
-import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -37,18 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <p>Generates native deployment bundles (MSI, EXE, DMG, RPG, etc). This Mojo simply wraps the JavaFX packaging tools
- * so it has all the problems and limitations of those tools. Most importantly, this will only generate a native bundle
- * for the platform you are building on (e.g. if you're on Windows you will get an MSI and an EXE). Additionally you
- * need to first download and install the 3rd-party tools that the JavaFX packaging tools require (e.g. Wix, Inno,
- * etc).</p>
- *
- * <p>For detailed information on generating native packages it is best to first read through the official documentation
- * on the JavaFX packaging tools.</p>
- *
- * @goal native
- * @phase package
- * @execute goal="jar"
+ * @goal build-native
  */
 public class NativeMojo extends AbstractJfxToolsMojo {
 
@@ -174,16 +162,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected boolean needMenu;
 
     /**
-     * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is
-     * useful for showing splash screens or similar 'progress' style windows. For more information on Pre-Loaders, see
-     * the official JavaFX packaging documentation.
-     *
-     * @parameter
-     * @deprecated
-     */
-    protected String preLoader;
-
-    /**
      * A list of bundler arguments.  The particular keys and the meaning of their values are dependent on the bundler
      * that is reading the arguments.  Any argument not recognized by a bundler is silently ignored, so that arguments
      * that are specific to a specific bundler (for example, a Mac OS X Code signing key name) can be configured and
@@ -202,19 +180,29 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value="${project.build.finalName}"
      */
     protected String appName;
+    
+    /**
+     * Will be set when having goal "build-native" within package-phase and calling "jfx:native" from CLI. Internal usage only.
+     * 
+     * @parameter default-value=false
+     */
+    protected boolean jfxCallFromCLI;
 
-
-
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if( jfxCallFromCLI ){
+            getLog().info("call from CLI - skipping creation of Native Installers");
+            return;
+        }
 
         //noinspection deprecation
-        if ("NONE".equals(bundleType)) return;
+        if( "NONE".equalsIgnoreCase(bundleType) ){
+            return;
+        }
 
         getLog().info("Building Native Installers");
 
         try {
-            Build build = project.getBuild();
-
             Map<String, ? super Object> params = new HashMap<>();
 
 
