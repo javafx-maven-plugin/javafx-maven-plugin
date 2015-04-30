@@ -10,7 +10,8 @@ The JavaFX Maven Plugin provides a way to assemble distribution bundles for Java
  
 For information about this plugin including licencing information and how to configure your POM, please refer to the main wiki page: 
 
-* [http://zenjava.com/javafx/maven/](http://zenjava.com/javafx/maven/)
+* [http://zenjava.com/javafx/maven/(Outdated)](http://zenjava.com/javafx/maven/)
+* [javafx-maven-plugin-documentation](http://pgkaila.github.io/javafx-maven-plugin/)
 
 ##How To
 
