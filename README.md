@@ -12,6 +12,21 @@ For information about this plugin including licencing information and how to con
 
 * [http://zenjava.com/javafx/maven/](http://zenjava.com/javafx/maven/)
 
+##How To
+
+To use JavaFX Maven Plugin in your javafx project you need to include following maven plugin
+
+        <plugin>
+            <groupId>com.zenjava</groupId>
+            <artifactId>javafx-maven-plugin</artifactId>
+            <version>8.1.2</version>
+            <configuration>
+                <mainClass>${app.main.class}</mainClass>
+                <vendor>Vendor Name</vendor>
+            </configuration>
+        </plugin>
+        
+To build native installer execute `mvn clean jfx:native`
 
 Release Notes
 ================
