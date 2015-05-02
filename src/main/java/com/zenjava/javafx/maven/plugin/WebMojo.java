@@ -44,8 +44,7 @@ import java.io.File;
  * <p>For detailed information on generating web bundles it is best to first read through the official documentation
  * on the JavaFX packaging tools.</p>
  *
- * @goal web
- * @execute goal="jar"
+ * @goal build-web
  */
 public class WebMojo extends AbstractJfxToolsMojo {
 
