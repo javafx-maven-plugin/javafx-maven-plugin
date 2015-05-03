@@ -45,7 +45,8 @@ import java.io.File;
  * on the JavaFX packaging tools.</p>
  *
  * @goal web
- * @execute lifecycle="jfxjar" phase="package" */
+ * @execute goal="jar"
+ */
 public class WebMojo extends AbstractJfxToolsMojo {
 
     /**

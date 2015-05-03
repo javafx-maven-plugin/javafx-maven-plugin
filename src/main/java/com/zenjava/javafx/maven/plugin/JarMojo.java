@@ -26,6 +26,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @goal build-jar
@@ -60,6 +62,15 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean updateExistingJar;
+
+    /**
+     * <p>Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
+     *
+     * <p>If you are using FXML you will need to set this value to true.</p>
+     *
+     * @parameter default-value=false
+     */
+    protected boolean allPermissions;
     
     /**
      * Will be set when having goal "build-jar" within package-phase and calling "jfx:jar" or "jfx:native" from CLI. Internal usage only.
@@ -116,6 +127,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
         createJarParams.setClasspath(classpath.toString());
+        
+        // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
+        if( allPermissions ){
+            Map<String, String> manifestAttributes = new HashMap<>();
+            manifestAttributes.put("Permissions", "all-permissions");
+            createJarParams.setManifestAttrs(manifestAttributes);
+        }
 
         try {
             getPackagerLib().packageAsJar(createJarParams);
