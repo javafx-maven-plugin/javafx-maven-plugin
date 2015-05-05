@@ -79,6 +79,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     protected boolean jfxCallFromCLI;
 
+    /**
+     * To add custom manifest-entries, just add each entry/value-pair here.
+     * 
+     * @parameter default-value=null
+     */
+    protected Map<String, String> manifestAttributes;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -96,6 +103,12 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setApplicationClass(mainClass);
         createJarParams.setCss2bin(css2bin);
         createJarParams.setPreloader(preLoader);
+
+        if( manifestAttributes == null ) {
+            manifestAttributes = new HashMap<>();
+        }
+        createJarParams.setManifestAttrs(manifestAttributes);
+
         StringBuilder classpath = new StringBuilder();
         File libDir = new File(jfxAppOutputDir, "lib");
         if (!libDir.exists() && !libDir.mkdirs()) {
@@ -130,9 +143,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
         if( allPermissions ){
-            Map<String, String> manifestAttributes = new HashMap<>();
             manifestAttributes.put("Permissions", "all-permissions");
-            createJarParams.setManifestAttrs(manifestAttributes);
         }
 
         try {
