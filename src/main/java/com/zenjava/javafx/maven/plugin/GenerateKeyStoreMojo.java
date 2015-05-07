@@ -224,7 +224,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
                 plugin(
                         groupId("org.codehaus.mojo"),
                         artifactId("keytool-maven-plugin"),
-                        version("1.2")
+                        version("1.5")
                 ),
                 goal("generateKeyPair"),
                 configuration(
