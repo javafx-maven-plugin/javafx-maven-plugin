@@ -227,6 +227,7 @@
                     <settingsFile>src/it/settings.xml</settingsFile>
                     <showErrors>true</showErrors>
                     <streamLogs>true</streamLogs>
+                    <skipInvocation>${skipTests}</skipInvocation>
                 </configuration>
                 <executions>
                     <execution>
