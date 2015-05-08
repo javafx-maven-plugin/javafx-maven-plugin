@@ -21,7 +21,6 @@ import com.oracle.tools.packager.ConfigException;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import com.oracle.tools.packager.UnsupportedPlatformException;
-import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -37,16 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <p>Generates native deployment bundles (MSI, EXE, DMG, RPG, etc). This Mojo simply wraps the JavaFX packaging tools
- * so it has all the problems and limitations of those tools. Most importantly, this will only generate a native bundle
- * for the platform you are building on (e.g. if you're on Windows you will get an MSI and an EXE). Additionally you
- * need to first download and install the 3rd-party tools that the JavaFX packaging tools require (e.g. Wix, Inno,
- * etc).</p>
- *
- * <p>For detailed information on generating native packages it is best to first read through the official documentation
- * on the JavaFX packaging tools.</p>
- *
- * @goal native
+ * @goal build-native
  */
 public class NativeMojo extends AbstractJfxToolsMojo {
 
@@ -94,6 +84,24 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private String bundleType;
 
     /**
+     * <p>Specify the used bundler found by selected bundleType. May not be installed your OS and will fail in that case.</p>
+     * 
+     * <p>By default this will be set to 'ALL', depending on your installed OS following values are possible for installers: </p>
+     * <ul>
+     *     <li>exe <i>(Microsoft Windows EXE Installer, via InnoIDE)</i></li>
+     *     <li>msi <i>(Microsoft Windows MSI Installer, via WiX)</i></li>
+     *     <li>deb <i>(Linux Debian Bundle)</i></li>
+     *     <li>rpm <i>(Redhat Package Manager (RPM) bundler)</i></li>
+     *     <li>dmg <i>(Mac DMG Installer Bundle)</i></li>
+     *     <li>pkg <i>(Mac PKG Installer Bundle)</i></li>
+     *     <li>mac.appStore <i>(Creates a binary bundle ready for deployment into the Mac App Store)</i></li>
+     * </ul>
+     *
+     * @parameter property="bundler" default-value="ALL"
+     */
+    private String bundler;
+
+    /**
      * Properties passed to the Java Virtual Machine when the application is started (i.e. these properties are system
      * properties of the JVM bundled in the native distribution and used to run the application once installed).
      *
@@ -105,9 +113,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * JVM Flags to be passed into the JVM at invocation time.  These are the arguments to the left of the main class
      * name when launching Java on the command line.  For example:
      * <pre>
-     *     <jvmArgs>
-     *         <jvmArg>-Xmx8G</jvmArg>
-     *     </jvmArgs>
+     *     &lt;jvmArgs&gt;
+     *         &lt;jvmArg&gt;-Xmx8G&lt;/jvmArg&gt;
+     *     &lt;/jvmArgs&gt;
      * </pre>
      *
      * @parameter
@@ -154,16 +162,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected boolean needMenu;
 
     /**
-     * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is
-     * useful for showing splash screens or similar 'progress' style windows. For more information on Pre-Loaders, see
-     * the official JavaFX packaging documentation.
-     *
-     * @parameter
-     * @deprecated
-     */
-    protected String preLoader;
-
-    /**
      * A list of bundler arguments.  The particular keys and the meaning of their values are dependent on the bundler
      * that is reading the arguments.  Any argument not recognized by a bundler is silently ignored, so that arguments
      * that are specific to a specific bundler (for example, a Mac OS X Code signing key name) can be configured and
@@ -182,19 +180,29 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value="${project.build.finalName}"
      */
     protected String appName;
+    
+    /**
+     * Will be set when having goal "build-native" within package-phase and calling "jfx:native" from CLI. Internal usage only.
+     * 
+     * @parameter default-value=false
+     */
+    protected boolean jfxCallFromCLI;
 
-
-
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if( jfxCallFromCLI ){
+            getLog().info("call from CLI - skipping creation of Native Installers");
+            return;
+        }
 
         //noinspection deprecation
-        if ("NONE".equals(bundleType)) return;
+        if( "NONE".equalsIgnoreCase(bundleType) ){
+            return;
+        }
 
         getLog().info("Building Native Installers");
 
         try {
-            Build build = project.getBuild();
-
             Map<String, ? super Object> params = new HashMap<>();
 
 
@@ -229,30 +237,24 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             if (userJvmArgs != null) {
                 Map<String, String> userJvmOptions = new HashMap<>();
-                for (String key : jvmProperties.keySet()) {
-                    userJvmOptions.put(key, jvmProperties.get(key));
+                for (String key : userJvmArgs.keySet()) {
+                    userJvmOptions.put(key, userJvmArgs.get(key));
                 }
                 params.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), userJvmOptions);
             }
 
             Set<File> resourceFiles = new HashSet<>();
-
-            resourceFiles.add(new File(jfxAppOutputDir, jfxMainAppJarName));
-
-            File libDir = new File(jfxAppOutputDir, "lib");
-            if (libDir.exists() && libDir.list().length > 0) {
-                try {
-                    Files.walk(libDir.toPath())
-                        .forEach(p -> {
-                            File f = p.toFile();
-                            System.out.println(p.toFile());
-                            if (f.isFile()) {
-                                resourceFiles.add(p.toFile());
-                            }
-                        });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                Files.walk(jfxAppOutputDir.toPath())
+                    .forEach(p -> {
+                        File f = p.toFile();
+                        if (f.isFile()) {
+                            getLog().info(String.format("Add %s file to application resources.", p.toFile()));
+                            resourceFiles.add(p.toFile());
+                        }
+                    });
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
@@ -270,14 +272,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.putAll(bundleArguments);
 
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
+            boolean foundBundler = false;
             for (Bundler b : bundlers.getBundlers()) {
-                Map<String, ? super Object> localParams = new HashMap<>(params);
                 try {
                     //noinspection deprecation
-                    if (bundleType != null && !"ALL".equals(bundleType) && !b.getBundleType().equals(bundleType)) {
+                    if (bundleType != null && !"ALL".equalsIgnoreCase(bundleType) && !b.getBundleType().equalsIgnoreCase(bundleType)) {
                         // not this kind of bundler
-                        return;
+                        continue;
                     }
+                    if (bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(b.getID())){
+                        // this is not the specified bundler
+                        continue;
+                    }
+                    foundBundler = true;
 
                     if (b.validate(params)) {
                         b.execute(params, nativeOutputDir);
@@ -287,6 +294,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 } catch (ConfigException e) {
                     getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
                 }
+            }
+            if(!foundBundler){
+                getLog().warn("No bundler found for given type " + bundleType + ". Please check your configuration.");
             }
         } catch (RuntimeException e) {
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);

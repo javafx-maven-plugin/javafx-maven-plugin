@@ -18,8 +18,8 @@ package com.zenjava.javafx.maven.plugin;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
@@ -30,24 +30,8 @@ import com.sun.javafx.tools.packager.CreateJarParams;
 import com.sun.javafx.tools.packager.PackagerException;
 
 /**
- * <p>
- * Builds an executable JAR for the project that has all the trappings needed to run as a JavaFX app. This will include
- * Pre-Launchers and all the other weird and wonderful things that the JavaFX packaging tools allow and/or require.
- * </p>
- *
- * <p>
- * Any runtime dependencies for this project will be included in a separate 'lib' sub-directory alongside the resulting
- * JavaFX friendly JAR. The manifest within the JAR will have a reference to these libraries using the relative 'lib'
- * path so that you can copy the JAR and the lib directory exactly as is and distribute this bundle.
- * </p>
- *
- * <p>
- * The JAR and the 'lib' directory built by this Mojo are used as the inputs to the other distribution bundles. The
- * native and web Mojos for example, will trigger this Mojo first and then will copy the resulting JAR into their own
- * distribution bundles.
- * </p>
- *
- * @goal jar
+ * @goal build-jar
+ * @phase package
  * @requiresDependencyResolution
  */
 public class JarMojo extends AbstractJfxToolsMojo {
@@ -60,7 +44,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
    *
    * @parameter default-value=false
    */
-  protected boolean css2bin;
+  protected boolean             css2bin;
 
   /**
    * A custom class that can act as a Pre-Loader for your app. The Pre-Loader is run before anything else and is useful
@@ -69,35 +53,60 @@ public class JarMojo extends AbstractJfxToolsMojo {
    *
    * @parameter
    */
-  protected String  preLoader;
-
-//  /**
-//   * Flag to switch on updating the existing jar created with maven. The jar to be updated is taken from
-//   * '${project.basedir}/target/${project.build.finalName}.jar'.
-//   *
-//   * @parameter default-value=false
-//   */
-//  protected boolean updateExistingJar;
+  protected String              preLoader;
 
   /**
-   * Flag to enable the creation of a lib directory, that contains all dependency jars.
-   * If the existingJar parameter is not set, then this parameter has no effect and a lib directory will be created.
+   * <p>
+   * Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.
+   * </p>
+   *
+   * <p>
+   * If you are using FXML you will need to set this value to true.
+   * </p>
+   *
+   * @parameter default-value=false
+   */
+  protected boolean             allPermissions;
+
+  /**
+   * Will be set when having goal "build-jar" within package-phase and calling "jfx:jar" or "jfx:native" from CLI.
+   * Internal usage only.
+   * 
+   * @parameter default-value=false
+   */
+  protected boolean             jfxCallFromCLI;
+
+  /**
+   * To add custom manifest-entries, just add each entry/value-pair here.
+   * 
+   * @parameter default-value=null
+   */
+  protected Map<String, String> manifestAttributes;
+
+  /**
+   * Flag to enable the creation of a lib directory, that contains all dependency jars. If the existingJar parameter is
+   * not set, then this parameter has no effect and a lib directory will be created.
    *
    * @parameter default-value=true
    */
-  protected boolean createLibDir;
+  protected boolean             createLibDir;
 
   /**
-   * The filename of an existing JAR file to be used for building the JavaFX-specific bundles.
-   * If you e.g. run the maven-assembly-plugin:single goal to build a jar-with-dependencies,
-   * then you can specify the corresponding JAR filename here.
-   * If this parameter is not set, then the createLibDir parameter has no effect and a lib directory will be created.
+   * The filename of an existing JAR file to be used for building the JavaFX-specific bundles. If you e.g. run the
+   * maven-assembly-plugin:single goal to build a jar-with-dependencies, then you can specify the corresponding JAR
+   * filename here. If this parameter is not set, then the createLibDir parameter has no effect and a lib directory will
+   * be created.
    *
    * @parameter
    */
-  protected String  existingJar;
+  protected String              existingJar;
 
+  @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+    if (jfxCallFromCLI) {
+      getLog().info("call from CLI - skipping creation of JavaFX JAR for application");
+      return;
+    }
 
     getLog().info("Building JavaFX JAR for application");
 
@@ -109,15 +118,19 @@ public class JarMojo extends AbstractJfxToolsMojo {
     createJarParams.setApplicationClass(mainClass);
     createJarParams.setCss2bin(css2bin);
     createJarParams.setPreloader(preLoader);
-    StringBuilder classpath = new StringBuilder();
+
+    if (manifestAttributes == null) {
+      manifestAttributes = new HashMap<>();
+    }
+    createJarParams.setManifestAttrs(manifestAttributes);
 
     if (existingJar != null) {
-//          createJarParams.addResource(null, new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar"));
       createJarParams.addResource(new File(build.getDirectory()), existingJar);
     } else {
-          createJarParams.addResource(new File(build.getOutputDirectory()), "");
+      createJarParams.addResource(new File(build.getOutputDirectory()), "");
     }
 
+    StringBuilder classpath = new StringBuilder();
     if (createLibDir || existingJar == null) {
       File libDir = new File(jfxAppOutputDir, "lib");
       if (!libDir.exists() && !libDir.mkdirs()) {
@@ -143,6 +156,11 @@ public class JarMojo extends AbstractJfxToolsMojo {
       }
     }
     createJarParams.setClasspath(classpath.toString());
+
+    // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
+    if (allPermissions) {
+      manifestAttributes.put("Permissions", "all-permissions");
+    }
 
     try {
       getPackagerLib().packageAsJar(createJarParams);

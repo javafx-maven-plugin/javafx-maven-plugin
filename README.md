@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
+[![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2)
+
+
 JavaFX Maven Plugin
 ===================
 
@@ -10,6 +15,39 @@ For information about this plugin including licencing information and how to con
 
 Release Notes
 ================
+
+
+upcoming Version (?-2015)
+
+* Add all files from jfxAppOutputDir to application resources
+* fix for bundler-lookup (return instead of continue)
+* add option to select bundler (avoids creation of unwanted native packages)
+* fixed compilation-warning for jvmArgs/jvmArg
+* fixed keystore-generation: certCountry instead of certState
+* added support for travis-ci.org
+* fixed #66: updated version of used keytool-maven-plugin (changed from DSA to RSA)
+* updated URL to repository/scm
+* fixed #92: Fixed copy-paste problem in code related to handling userJvmArgs argument
+* fixed #46: dont put lib-folder to resources when not needed/existing
+* added support for checkstyle
+
+Version 8.1.2 (4-Sep-2014)
+
+* Fix NPE when using jfx:native goal in 8.1.1
+
+Version 8.1.0/8.1.1 (24-Aug-2014)
+
+* Added the parametermap Manifest Entries.
+* Increase version of mojo-executor (fix issue #32) 
+* desktop and menu shortcut
+* port existing options over to new 8u20 API
+* remove fix classpath mojo, no longer needed in JavaFX 8 
+* add bundleArguments configuration option
+* Fix #54 - make app name simply configurable 
+* update to latest mojo-executor
+* update documentation 
+* Add flag to allow update of an existing jar
+* upgraded to maven 3.3 syntax
 
 Version 2.0 (1-Jul-2013)
 
