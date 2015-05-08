@@ -94,6 +94,12 @@
                 <github>boliang-micropole</github>
             </properties>
         </contributor>
+        <contributor>
+        		<name>Francesco Kriegel</name>
+        		<properties>
+        				<github>francesco-kriegel</github>
+        		</properties>
+        </contributor>
     </contributors>
 
     <scm>

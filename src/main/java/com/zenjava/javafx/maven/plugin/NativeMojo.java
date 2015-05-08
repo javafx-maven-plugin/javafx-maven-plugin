@@ -174,7 +174,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected Map<String, String> bundleArguments;
 
     /**
-     * The name of the JavaFX packaged executable to be built into the 'native/bundles' directory. By default this will
+     * The name of the JavaFX packaged executable to be built into the 'native' directory. By default this will
      * be the finalName as set in your project. Change this if you want something nicer.
      *
      * @parameter default-value="${project.build.finalName}"
