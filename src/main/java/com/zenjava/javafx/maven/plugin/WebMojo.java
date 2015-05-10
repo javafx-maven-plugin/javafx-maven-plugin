@@ -167,7 +167,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
     /**
      * This value refers to a platform version of the Java Platform Standard Edition.
      * 
-     * @parameter default-value="1.7"
+     * @parameter default-value="1.7+"
      */
     protected String j2seVersion;
 
