@@ -228,6 +228,7 @@
                     <showErrors>true</showErrors>
                     <streamLogs>true</streamLogs>
                     <skipInvocation>${skipTests}</skipInvocation>
+                    <postBuildHookScript>verify.bsh</postBuildHookScript>
                 </configuration>
                 <executions>
                     <execution>
