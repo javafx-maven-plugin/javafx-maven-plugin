@@ -82,7 +82,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
     /**
      * To add custom manifest-entries, just add each entry/value-pair here.
      * 
-     * @parameter default-value=null
+     * @parameter
      */
     protected Map<String, String> manifestAttributes;
 
