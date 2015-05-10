@@ -7,8 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HelloController
-{
+public class HelloController{
     @FXML private Label lblClassName;
 
     @FXML
