@@ -1,0 +1,6 @@
+import java.io.*;
+
+File file = new File( basedir, "target/jfx" );
+if( file.exists() ){
+    throw new Exception( "no jfx-actions was specified and shouldn't create any jfx-folder!");
+}
