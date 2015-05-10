@@ -261,31 +261,33 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             // bugfix for #83 (by copying additional resources to /jfx/app folder)
             if(additionalAppResources != null && additionalAppResources.exists() ){
                 try {
+                    Path targetFolder = jfxAppOutputDir.toPath();
+                    Path sourceFolder = additionalAppResources.toPath();
                     Files.walkFileTree(additionalAppResources.toPath(), new FileVisitor<Path>() {
 
                         @Override
-                        public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException {
+                        public FileVisitResult preVisitDirectory(Path subfolder, BasicFileAttributes attrs) throws IOException {
                             // do create subfolder (if needed)
-                            Files.createDirectories(jfxAppOutputDir.toPath().resolve(additionalAppResources.toPath().relativize(path)));
+                            Files.createDirectories(targetFolder.resolve(sourceFolder.relativize(subfolder)));
                             return FileVisitResult.CONTINUE;
                         }
 
                         @Override
-                        public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                        public FileVisitResult visitFile(Path sourceFile, BasicFileAttributes attrs) throws IOException {
                             // do copy
-                            java.nio.file.Files.copy(path, jfxAppOutputDir.toPath().resolve(additionalAppResources.toPath().relativize(path)), StandardCopyOption.REPLACE_EXISTING);
+                            Files.copy(sourceFile, targetFolder.resolve(sourceFolder.relativize(sourceFile)), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
                             return FileVisitResult.CONTINUE;
                         }
 
                         @Override
-                        public FileVisitResult visitFileFailed(Path path, IOException ioe) throws IOException {
+                        public FileVisitResult visitFileFailed(Path source, IOException ioe) throws IOException {
                             // don't fail, just inform user
-                            getLog().info(String.format("Couldn't copy additional app resource %s", path.toString()));
+                            getLog().warn(String.format("Couldn't copy additional app resource %s with reason %s", source.toString(), ioe.getLocalizedMessage()));
                             return FileVisitResult.CONTINUE;
                         }
 
                         @Override
-                        public FileVisitResult postVisitDirectory(Path path, IOException ioe) throws IOException {
+                        public FileVisitResult postVisitDirectory(Path source, IOException ioe) throws IOException {
                             // nothing to do here
                             return FileVisitResult.CONTINUE;
                         }
