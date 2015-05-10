@@ -220,7 +220,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
                 deployParams.setTitle(title);
             }
 
-            deployParams.setVersion(j2seVersion);
+            deployParams.setJRE(j2seVersion);
 
             // turn off native bundles for this web build
             //noinspection deprecation
