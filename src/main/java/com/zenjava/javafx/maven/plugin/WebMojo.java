@@ -87,21 +87,27 @@ public class WebMojo extends AbstractJfxToolsMojo {
     protected boolean allPermissions;
 
     /**
+     * 
      * @parameter default-value=800
      */
     protected int width;
 
     /**
+     * 
      * @parameter default-value=600
      */
     protected int height;
 
     /**
+     * If not set, will be the same as width-parameter.
+     * 
      * @parameter
      */
     protected String embeddedWidth;
 
     /**
+     * If not set, will be the same as height-parameter.
+     * 
      * @parameter
      */
     protected String embeddedHeight;
@@ -144,7 +150,28 @@ public class WebMojo extends AbstractJfxToolsMojo {
      */
     protected String keyStoreType;
 
+    /**
+     * A description used within generated JNLP-file.
+     *
+     * @parameter default-value="Sample JavaFX Application."
+     */
+    protected String description;
 
+    /**
+     * A title used within generated JNLP-file.
+     *
+     * @parameter default-value="Sample JavaFX Application"
+     */
+    protected String title;
+
+    /**
+     * This value refers to a platform version of the Java Platform Standard Edition.
+     * 
+     * @parameter default-value="1.7"
+     */
+    protected String j2seVersion;
+
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building Web deployment bundles");
@@ -167,7 +194,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
             deployParams.setNeedShortcut(needShortcut);
 
             deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
-            
+
             // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
             File libFolder = new File(jfxAppOutputDir, "lib");
             if(libFolder.exists()){
@@ -184,6 +211,16 @@ public class WebMojo extends AbstractJfxToolsMojo {
             String embeddedWidth = this.embeddedWidth != null ? this.embeddedWidth : String.valueOf(width);
             String embeddedHeight = this.embeddedHeight != null ? this.embeddedHeight : String.valueOf(height);
             deployParams.setEmbeddedDimensions(embeddedWidth, embeddedHeight);
+
+            // bugfix for bug #40 "jfx:web - Signing Jars"
+            if(!"".equals(description)){
+                deployParams.setDescription(description);
+            }
+            if(!"".equals(title)){
+                deployParams.setTitle(title);
+            }
+
+            deployParams.setVersion(j2seVersion);
 
             // turn off native bundles for this web build
             //noinspection deprecation
