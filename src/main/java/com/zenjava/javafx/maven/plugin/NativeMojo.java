@@ -26,7 +26,12 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -188,6 +193,14 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean jfxCallFromCLI;
 
+    /**
+     * When you need to add additional files to generated app-folder (e.g. README, license, third-party-tools, ...),
+     * you can specify the source-folder here. All files will be copied recursively.
+     * 
+     * @parameter
+     */
+    protected File additionalAppResources;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -244,6 +257,45 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
 
             Set<File> resourceFiles = new HashSet<>();
+
+            // bugfix for #83 (by copying additional resources to /jfx/app folder)
+            if(additionalAppResources != null && additionalAppResources.exists() ){
+                try {
+                    Path targetFolder = jfxAppOutputDir.toPath();
+                    Path sourceFolder = additionalAppResources.toPath();
+                    Files.walkFileTree(additionalAppResources.toPath(), new FileVisitor<Path>() {
+
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path subfolder, BasicFileAttributes attrs) throws IOException {
+                            // do create subfolder (if needed)
+                            Files.createDirectories(targetFolder.resolve(sourceFolder.relativize(subfolder)));
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile(Path sourceFile, BasicFileAttributes attrs) throws IOException {
+                            // do copy
+                            Files.copy(sourceFile, targetFolder.resolve(sourceFolder.relativize(sourceFile)), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFileFailed(Path source, IOException ioe) throws IOException {
+                            // don't fail, just inform user
+                            getLog().warn(String.format("Couldn't copy additional app resource %s with reason %s", source.toString(), ioe.getLocalizedMessage()));
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path source, IOException ioe) throws IOException {
+                            // nothing to do here
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             try {
                 Files.walk(jfxAppOutputDir.toPath())
                     .forEach(p -> {
