@@ -21,6 +21,7 @@ import com.oracle.tools.packager.ConfigException;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import com.oracle.tools.packager.UnsupportedPlatformException;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -185,6 +186,20 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value="${project.build.finalName}"
      */
     protected String appName;
+
+    /**
+     * A description used within generated JNLP-file.
+     *
+     * @parameter default-value="${project.description}"
+     */
+    protected String description;
+
+    /**
+     * A title used within generated JNLP-file.
+     *
+     * @parameter default-value="${project.name}"
+     */
+    protected String title;
     
     /**
      * Will be set when having goal "build-native" within package-phase and calling "jfx:native" from CLI. Internal usage only.
@@ -228,6 +243,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.put(StandardBundlerParam.APP_NAME.getID(), appName);
             params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
             params.put(StandardBundlerParam.VENDOR.getID(), vendor);
+            params.put(StandardBundlerParam.TITLE.getID(), title);
+            params.put(StandardBundlerParam.DESCRIPTION.getID(), description);
             params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
             params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
             params.put(StandardBundlerParam.MAIN_CLASS.getID(), mainClass);
