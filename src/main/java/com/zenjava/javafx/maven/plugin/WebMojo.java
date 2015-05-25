@@ -15,16 +15,18 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
-import com.sun.javafx.tools.packager.DeployParams;
-import com.sun.javafx.tools.packager.PackagerException;
-import com.sun.javafx.tools.packager.SignJarParams;
-import com.sun.javafx.tools.packager.bundlers.Bundler;
+import java.io.File;
+import java.util.List;
+
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.StringUtils;
 
-import java.io.File;
+import com.sun.javafx.tools.packager.DeployParams;
+import com.sun.javafx.tools.packager.PackagerException;
+import com.sun.javafx.tools.packager.SignJarParams;
+import com.sun.javafx.tools.packager.bundlers.Bundler;
 
 /**
  * @goal build-web
@@ -151,16 +153,24 @@ public class WebMojo extends AbstractJfxToolsMojo {
     protected String keyStoreType;
 
     /**
+     * The name of the JavaFX packaged executable to be built into the 'native/bundles' directory. By default this will
+     * be the finalName as set in your project. Change this if you want something nicer.
+     *
+     * @parameter default-value="${project.build.finalName}"
+     */
+    protected String appName;
+
+    /**
      * A description used within generated JNLP-file.
      *
-     * @parameter default-value="Sample JavaFX Application."
+     * @parameter default-value="${project.description}"
      */
     protected String description;
 
     /**
      * A title used within generated JNLP-file.
      *
-     * @parameter default-value="Sample JavaFX Application"
+     * @parameter default-value="${project.name}"
      */
     protected String title;
 
@@ -170,6 +180,14 @@ public class WebMojo extends AbstractJfxToolsMojo {
      * @parameter default-value="1.7+"
      */
     protected String j2seVersion;
+
+    /**
+     * The list of filenames of user-defined HTML templates.
+     * If no files are specified, then the default template will be used.
+     * 
+     * @parameter
+     */
+    protected List<File> templates;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -182,7 +200,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
             DeployParams deployParams = new DeployParams();
             deployParams.setVerbose(verbose);
 
-            deployParams.setAppName(build.getFinalName());
+            deployParams.setAppName(appName);
             deployParams.setVersion(project.getVersion());
             deployParams.setVendor(vendor);
 
@@ -197,7 +215,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
 
             // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
             File libFolder = new File(jfxAppOutputDir, "lib");
-            if(libFolder.exists()){
+            if(libFolder.exists() && libFolder.list().length > 0){
                 deployParams.addResource(jfxAppOutputDir, "lib");
             }
 
@@ -225,6 +243,15 @@ public class WebMojo extends AbstractJfxToolsMojo {
             // turn off native bundles for this web build
             //noinspection deprecation
             deployParams.setBundleType(Bundler.BundleType.NONE);
+            
+            if (templates != null)
+                for (File template : templates) {
+                  final File out = new File(webOutputDir, template.getName());
+                  getLog().info("Using template: " + template);
+                  deployParams.addTemplate(template, out);
+                }
+              else
+                getLog().info("Using default template.");
 
             getPackagerLib().generateDeploymentPackages(deployParams);
 
@@ -260,7 +287,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
                 signJarParams.addResource(webOutputDir, jfxMainAppJarName);
                 // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
                 File webLibFolder = new File(webOutputDir, "lib");
-                if(webLibFolder.exists()){
+                if(webLibFolder.exists() && libFolder.list().length > 0){
                     signJarParams.addResource(webOutputDir, "lib");
                 }
 
