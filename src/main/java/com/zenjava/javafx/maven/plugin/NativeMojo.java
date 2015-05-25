@@ -144,10 +144,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * The release version as passed to the native installer. It would be nice to just use the project's version number
      * but this must be a fairly traditional version string (like '1.34.5') with only numeric characters and dot
-     * separators, otherwise the JFX packaging tools bomb out. We default to 1.0 in case you can't be bothered to set
-     * a version and don't really care.
+     * separators, otherwise the JFX packaging tools bomb out. If the value is not set then all non-numeric characters
+     * (except dots) are removed from '${project.version}' and the resulting string is used.
      *
-     * @parameter default-value="1.0"
+     * @parameter
      */
     private String nativeReleaseVersion;
 
@@ -239,6 +239,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             if (identifier != null) {
                 params.put(StandardBundlerParam.IDENTIFIER.getID(), identifier);
             }
+
+            if (nativeReleaseVersion == null)
+                nativeReleaseVersion = project.getVersion().replaceAll("[^\\d.]", "");
 
             params.put(StandardBundlerParam.APP_NAME.getID(), appName);
             params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
