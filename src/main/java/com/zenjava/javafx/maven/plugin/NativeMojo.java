@@ -21,6 +21,7 @@ import com.oracle.tools.packager.ConfigException;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import com.oracle.tools.packager.UnsupportedPlatformException;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -143,10 +144,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * The release version as passed to the native installer. It would be nice to just use the project's version number
      * but this must be a fairly traditional version string (like '1.34.5') with only numeric characters and dot
-     * separators, otherwise the JFX packaging tools bomb out. We default to 1.0 in case you can't be bothered to set
-     * a version and don't really care.
+     * separators, otherwise the JFX packaging tools bomb out. If the value is not set then all non-numeric characters
+     * (except dots) are removed from '${project.version}' and the resulting string is used.
      *
-     * @parameter default-value="1.0"
+     * @parameter
      */
     private String nativeReleaseVersion;
 
@@ -185,6 +186,20 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value="${project.build.finalName}"
      */
     protected String appName;
+
+    /**
+     * A description used within generated JNLP-file.
+     *
+     * @parameter default-value="${project.description}"
+     */
+    protected String description;
+
+    /**
+     * A title used within generated JNLP-file.
+     *
+     * @parameter default-value="${project.name}"
+     */
+    protected String title;
     
     /**
      * Will be set when having goal "build-native" within package-phase and calling "jfx:native" from CLI. Internal usage only.
@@ -225,9 +240,14 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 params.put(StandardBundlerParam.IDENTIFIER.getID(), identifier);
             }
 
+            if (nativeReleaseVersion == null)
+                nativeReleaseVersion = project.getVersion().replaceAll("[^\\d.]", "");
+
             params.put(StandardBundlerParam.APP_NAME.getID(), appName);
             params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
             params.put(StandardBundlerParam.VENDOR.getID(), vendor);
+            params.put(StandardBundlerParam.TITLE.getID(), title);
+            params.put(StandardBundlerParam.DESCRIPTION.getID(), description);
             params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
             params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
             params.put(StandardBundlerParam.MAIN_CLASS.getID(), mainClass);

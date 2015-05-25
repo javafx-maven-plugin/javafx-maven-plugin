@@ -64,6 +64,22 @@ public class JarMojo extends AbstractJfxToolsMojo {
     protected boolean updateExistingJar;
 
     /**
+     * The filename of an existing JAR file to be used for building the JavaFX-specific bundles. If you e.g. run the
+     * maven-assembly-plugin:single goal to build a jar-with-dependencies then you can specify the corresponding JAR
+     * filename here. The filename is relative to the target directory, and tcd he default value is '${project.build.finalName}.jar'.
+     *
+     * @parameter default-value="${project.build.finalName}.jar"
+     */
+    protected String existingJar;
+
+    /**
+     * Flag to enable the creation of a lib directory, that contains all dependency jars. True by default.
+     *
+     * @parameter default-value=true
+     */
+    protected boolean createLibDir;
+
+    /**
      * <p>Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
      *
      * <p>If you are using FXML you will need to set this value to true.</p>
@@ -109,35 +125,36 @@ public class JarMojo extends AbstractJfxToolsMojo {
         }
         createJarParams.setManifestAttrs(manifestAttributes);
 
-        StringBuilder classpath = new StringBuilder();
-        File libDir = new File(jfxAppOutputDir, "lib");
-        if (!libDir.exists() && !libDir.mkdirs()) {
-            throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
-        }
-
         if (updateExistingJar) {
-            createJarParams.addResource(null, new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar"));
+            createJarParams.addResource(new File(build.getDirectory()), existingJar);
         } else {
             createJarParams.addResource(new File(build.getOutputDirectory()), "");
         }
 
-        try {
-            for (Object object : project.getRuntimeClasspathElements()) {
-                String path = (String) object;
-                File file = new File(path);
-                if (file.isFile()) {
-                    getLog().debug("Including classpath element: " + path);
-                    File dest = new File(libDir, file.getName());
-                    if (!dest.exists()) {
-                        Files.copy(file.toPath(), dest.toPath());
-                    }
-                    classpath.append("lib/").append(file.getName()).append(" ");
-                }
+        StringBuilder classpath = new StringBuilder();
+        if (createLibDir) {
+            File libDir = new File(jfxAppOutputDir, "lib");
+            if (!libDir.exists() && !libDir.mkdirs()) {
+                throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
             }
-        } catch (DependencyResolutionRequiredException e) {
-            throw new MojoExecutionException("Error resolving application classpath to use for application", e);
-        } catch (IOException e) {
-            throw new MojoExecutionException("Error copying dependency for application", e);
+            try {
+                for (Object object : project.getRuntimeClasspathElements()) {
+                    String path = (String) object;
+                    File file = new File(path);
+                    if (file.isFile()) {
+                        getLog().debug("Including classpath element: " + path);
+                        File dest = new File(libDir, file.getName());
+                        if (!dest.exists()) {
+                            Files.copy(file.toPath(), dest.toPath());
+                        }
+                        classpath.append("lib/").append(file.getName()).append(" ");
+                    }
+                }
+            } catch (DependencyResolutionRequiredException e) {
+                throw new MojoExecutionException("Error resolving application classpath to use for application", e);
+            } catch (IOException e) {
+                throw new MojoExecutionException("Error copying dependency for application", e);
+            }
         }
         createJarParams.setClasspath(classpath.toString());
         
