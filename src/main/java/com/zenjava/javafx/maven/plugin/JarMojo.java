@@ -101,7 +101,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setOutdir(jfxAppOutputDir);
 
         // check if we got some filename ending with ".jar" (found this while checking issue 128)
-        if( !jfxMainAppJarName.endsWith(".jar") ){
+        if( !jfxMainAppJarName.toLowerCase().endsWith(".jar") ){
             getLog().error("Please provide a proper value for <jfxMainAppJarName>! It has to end with \".jar\".");
         }
 
