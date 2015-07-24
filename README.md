@@ -1,23 +1,28 @@
 [![Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.2)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.3/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.3)
 
 
 JavaFX Maven Plugin
 ===================
 
-The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (2.2+) from within Maven.
+The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (8+) from within Maven.
  
-For information about this plugin including licencing information and how to configure your POM, please refer to the main wiki page: 
+For information about this plugin including licencing information and how to configure your POM, please refer to the archive of the main wiki page: 
 
-* [http://zenjava.com/javafx/maven/](http://zenjava.com/javafx/maven/)
+* [https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/](https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/)
+
+A new website will be provided soon, so please be patient.
 
 
 Release Notes
 ================
 
-
 upcoming Version (?-2015)
+* nothing changed yet
+
+
+Version 8.1.3 (24-Jul-2015)
 
 * Add all files from jfxAppOutputDir to application resources
 * fix for bundler-lookup (return instead of continue)
@@ -30,10 +35,13 @@ upcoming Version (?-2015)
 * fixed #92: Fixed copy-paste problem in code related to handling userJvmArgs argument
 * fixed #46: dont put lib-folder to resources when not needed/existing
 * added support for checkstyle
+* check "jfxMainAppJarName" ending with JAR
+
 
 Version 8.1.2 (4-Sep-2014)
 
 * Fix NPE when using jfx:native goal in 8.1.1
+
 
 Version 8.1.0/8.1.1 (24-Aug-2014)
 
@@ -49,6 +57,7 @@ Version 8.1.0/8.1.1 (24-Aug-2014)
 * Add flag to allow update of an existing jar
 * upgraded to maven 3.3 syntax
 
+
 Version 2.0 (1-Jul-2013)
 
 * Complete rework of the Maven plugin from the ground up
@@ -58,14 +67,17 @@ Version 2.0 (1-Jul-2013)
 * Renamed the goals to be more inline with Maven standards
 * Added full site documentation now deployed as part of the Maven release process
 
+
 Version 1.5 (20-Feb-2012)
 
 * Fixed 'app name' issue that was causing native bundle builds to fail on Mac
 * Added /src/main/deploy to the build classpath so you can now add things like custom native bundle icons, etc
 
+
 Version 1.4 (16-Feb-2012)
 
 * Merged in contributions from the community to fix some webstart issues and make ccs2bin optional
+
 
 Version 1.3 (25-Nov-2012)
 
@@ -75,11 +87,13 @@ Version 1.3 (25-Nov-2012)
 * Added 'keystore' generation Mojo
 * Added 'run' Mojo to launch app via Maven
 
+
 Version 1.2 (19-Nov-2012)
 
 * JNLP bundle generation including templating (via javafx-deploy-lib)
 * Basic JAR signing (via Oracle JFX packaging lib)
 * General enhancements and improvements to plugin configuration options
+
 
 Version 1.1 (12-Nov-2012)
 
