@@ -20,6 +20,7 @@ import com.sun.javafx.tools.packager.PackagerException;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -56,7 +57,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
     protected String preLoader;
 
     /**
-     * Flag to switch on updating the existing jar created with maven. The jar to be updated is taken from 
+     * Flag to switch on updating the existing jar created with maven. The jar to be updated is taken from
      * '${project.basedir}/target/${project.build.finalName}.jar'.
      *
      * @parameter default-value=false
@@ -64,27 +65,39 @@ public class JarMojo extends AbstractJfxToolsMojo {
     protected boolean updateExistingJar;
 
     /**
-     * <p>Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
+     * <p>
+     * Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
      *
-     * <p>If you are using FXML you will need to set this value to true.</p>
+     * <p>
+     * If you are using FXML you will need to set this value to true.</p>
      *
      * @parameter default-value=false
      */
     protected boolean allPermissions;
-    
+
     /**
      * Will be set when having goal "build-jar" within package-phase and calling "jfx:jar" or "jfx:native" from CLI. Internal usage only.
-     * 
+     *
      * @parameter default-value=false
      */
     protected boolean jfxCallFromCLI;
 
     /**
      * To add custom manifest-entries, just add each entry/value-pair here.
-     * 
+     *
      * @parameter
      */
     protected Map<String, String> manifestAttributes;
+
+    /**
+     * For being able to use &lt;userJvmArgs&gt;, we have to copy some dependency when being used. To disable this feature an not having packager.jar
+     * in your project, set this to false.
+     * To get more information about, please check the documentation here: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/jvm_options_api.html.
+     *
+     * @parameter default-value=true
+     * @since 8.1.4
+     */
+    protected boolean addPackagerJar;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -111,51 +124,72 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setCss2bin(css2bin);
         createJarParams.setPreloader(preLoader);
 
-        if( manifestAttributes == null ) {
+        if( manifestAttributes == null ){
             manifestAttributes = new HashMap<>();
         }
         createJarParams.setManifestAttrs(manifestAttributes);
 
         StringBuilder classpath = new StringBuilder();
         File libDir = new File(jfxAppOutputDir, "lib");
-        if (!libDir.exists() && !libDir.mkdirs()) {
+        if( !libDir.exists() && !libDir.mkdirs() ){
             throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
         }
 
-        if (updateExistingJar) {
+        if( updateExistingJar ){
             createJarParams.addResource(null, new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar"));
         } else {
             createJarParams.addResource(new File(build.getOutputDirectory()), "");
         }
 
-        try {
-            for (Object object : project.getRuntimeClasspathElements()) {
-                String path = (String) object;
+        try{
+            getLog().debug("Check if packager.jar needs to be added");
+            if( addPackagerJar ){
+                getLog().debug("Searching for packager.jar ...");
+                String targetPackagerJarPath = "lib" + File.separator + "packager.jar";
+                for( Dependency dependency : project.getDependencies() ){
+                    // check only system-scoped
+                    if( "system".equalsIgnoreCase(dependency.getScope()) ){
+                        File packagerJarFile = new File(dependency.getSystemPath());
+                        String packagerJarFilePathString = packagerJarFile.toPath().normalize().toString();
+                        if( packagerJarFile.exists() && packagerJarFilePathString.endsWith(targetPackagerJarPath) ){
+                            getLog().debug("Including packager.jar from system-scope: " + packagerJarFilePathString);
+                            File dest = new File(libDir, packagerJarFile.getName());
+                            if( !dest.exists() ){
+                                Files.copy(packagerJarFile.toPath(), dest.toPath());
+                            }
+                            classpath.append("lib/").append(packagerJarFile.getName()).append(" ");
+                        }
+                    }
+                }
+            } else {
+                getLog().debug("No packager.jar will be added");
+            }
+            for( String path : project.getRuntimeClasspathElements() ){
                 File file = new File(path);
-                if (file.isFile()) {
+                if( file.isFile() ){
                     getLog().debug("Including classpath element: " + path);
                     File dest = new File(libDir, file.getName());
-                    if (!dest.exists()) {
+                    if( !dest.exists() ){
                         Files.copy(file.toPath(), dest.toPath());
                     }
                     classpath.append("lib/").append(file.getName()).append(" ");
                 }
             }
-        } catch (DependencyResolutionRequiredException e) {
+        } catch(DependencyResolutionRequiredException e){
             throw new MojoExecutionException("Error resolving application classpath to use for application", e);
-        } catch (IOException e) {
+        } catch(IOException e){
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
         createJarParams.setClasspath(classpath.toString());
-        
+
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
         if( allPermissions ){
             manifestAttributes.put("Permissions", "all-permissions");
         }
 
-        try {
+        try{
             getPackagerLib().packageAsJar(createJarParams);
-        } catch (PackagerException e) {
+        } catch(PackagerException e){
             throw new MojoExecutionException("Unable to build JFX JAR for application", e);
         }
     }
