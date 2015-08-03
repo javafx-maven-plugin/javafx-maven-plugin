@@ -18,8 +18,8 @@ A new website will be provided soon, so please be patient.
 Release Notes
 ================
 
-upcoming Version (?-2015)
-* nothing changed yet
+upcoming Version 8.1.4 (??-Aug-2015)
+* add `packager.jar` from system-scoped dependencies to generated lib-folder, enables the usage of UserJvmOptionsService-class, which requires java 1.8.40 (see https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/jvm_options_api.html)
 
 
 Version 8.1.3 (24-Jul-2015)
