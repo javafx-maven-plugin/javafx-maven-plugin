@@ -17,6 +17,6 @@ if( !jfxAppLibFolder.exists() ){
 }
 
 File packagerJar = new File( jfxAppLibFolder, "packager.jar" );
-if( jfxAppLibFolder.exists() ){
+if( packagerJar.exists() ){
     throw new Exception( "there should NOT be packager.jar, because we added opt-out parameter");
 }
