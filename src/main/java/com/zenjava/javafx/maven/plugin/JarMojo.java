@@ -142,27 +142,33 @@ public class JarMojo extends AbstractJfxToolsMojo {
         }
 
         try{
-            getLog().debug("Check if packager.jar needs to be added");
-            if( addPackagerJar ){
-                getLog().debug("Searching for packager.jar ...");
-                String targetPackagerJarPath = "lib" + File.separator + "packager.jar";
-                for( Dependency dependency : project.getDependencies() ){
-                    // check only system-scoped
-                    if( "system".equalsIgnoreCase(dependency.getScope()) ){
-                        File packagerJarFile = new File(dependency.getSystemPath());
-                        String packagerJarFilePathString = packagerJarFile.toPath().normalize().toString();
-                        if( packagerJarFile.exists() && packagerJarFilePathString.endsWith(targetPackagerJarPath) ){
-                            getLog().debug("Including packager.jar from system-scope: " + packagerJarFilePathString);
-                            File dest = new File(libDir, packagerJarFile.getName());
-                            if( !dest.exists() ){
-                                Files.copy(packagerJarFile.toPath(), dest.toPath());
+            if( checkIfJavaIsHavingPackagerJar() ){
+                getLog().debug("Check if packager.jar needs to be added");
+                if( addPackagerJar ){
+                    getLog().debug("Searching for packager.jar ...");
+                    String targetPackagerJarPath = "lib" + File.separator + "packager.jar";
+                    for( Dependency dependency : project.getDependencies() ){
+                        // check only system-scoped
+                        if( "system".equalsIgnoreCase(dependency.getScope()) ){
+                            File packagerJarFile = new File(dependency.getSystemPath());
+                            String packagerJarFilePathString = packagerJarFile.toPath().normalize().toString();
+                            if( packagerJarFile.exists() && packagerJarFilePathString.endsWith(targetPackagerJarPath) ){
+                                getLog().debug("Including packager.jar from system-scope: " + packagerJarFilePathString);
+                                File dest = new File(libDir, packagerJarFile.getName());
+                                if( !dest.exists() ){
+                                    Files.copy(packagerJarFile.toPath(), dest.toPath());
+                                }
+                                classpath.append("lib/").append(packagerJarFile.getName()).append(" ");
                             }
-                            classpath.append("lib/").append(packagerJarFile.getName()).append(" ");
                         }
                     }
+                } else {
+                    getLog().debug("No packager.jar will be added");
                 }
             } else {
-                getLog().debug("No packager.jar will be added");
+                if( addPackagerJar ){
+                    getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
+                }
             }
             for( String path : project.getRuntimeClasspathElements() ){
                 File file = new File(path);
@@ -192,5 +198,19 @@ public class JarMojo extends AbstractJfxToolsMojo {
         } catch(PackagerException e){
             throw new MojoExecutionException("Unable to build JFX JAR for application", e);
         }
+    }
+
+    private boolean checkIfJavaIsHavingPackagerJar() {
+        String javaVersion = System.getProperty("java.version");
+        boolean isJava8 = javaVersion.startsWith("1.8");
+        boolean isJava9 = javaVersion.startsWith("1.9");
+        String[] javaVersionSplitted = javaVersion.split("_");
+        if( isJava8 && javaVersionSplitted.length > 1 && Integer.parseInt(javaVersionSplitted[1], 10) >= 40 ){
+            return true;
+        }
+        if( isJava9 ){ // NOSONAR
+            return true;
+        }
+        return false;
     }
 }
