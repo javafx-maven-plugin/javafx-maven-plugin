@@ -27,6 +27,9 @@
                 <version>@project.version@</version>
                 <configuration>
                     <mainClass>com.zenjava.test.Main</mainClass>
+                    <bundleArguments>
+                        <runtime />
+                    </bundleArguments>
                 </configuration>
                 <executions>
                     <!-- required before build-native -->
