@@ -36,7 +36,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     /**
      * The Maven Project Object
      *
-     * @parameter property="project"
+     * @parameter
      * @required
      * @readonly
      */
@@ -45,14 +45,14 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     /**
      * Flag to turn on verbose logging. Set this to true if you are having problems and what more detailed information.
      *
-     * @parameter property="verbose" default-value="false"
+     * @parameter default-value="false"
      */
     protected Boolean verbose;
 
     /**
      * The main JavaFX application class that acts as the entry point to the JavaFX application.
      *
-     * @parameter property="mainClass"
+     * @parameter
      * @required
      */
     protected String mainClass;

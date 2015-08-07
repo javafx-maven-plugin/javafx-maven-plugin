@@ -84,7 +84,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * native bundles for your OS, based on whatever tools you have installed. If you want to get more fancy than that
      * then you are probably best to read the official JavaFX packaging tool documentation for more info. </p>
      *
-     * @parameter property="bundleType" default-value="ALL"
+     * @parameter default-value="ALL"
      */
     private String bundleType;
 
@@ -102,7 +102,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      *     <li>mac.appStore <i>(Creates a binary bundle ready for deployment into the Mac App Store)</i></li>
      * </ul>
      *
-     * @parameter property="bundler" default-value="ALL"
+     * @parameter default-value="ALL"
      */
     private String bundler;
 
