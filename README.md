@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.3/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.3)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.4/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.1.4)
 
 
 JavaFX Maven Plugin
@@ -8,7 +8,8 @@ JavaFX Maven Plugin
 
 The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (8+) from within Maven.
  
-For information about this plugin including licencing information and how to configure your POM, please refer to the archive of the main wiki page: 
+For easy configuration please use our new website:
+* [http://javafx-maven-plugin.github.io](http://javafx-maven-plugin.github.io)
 
 * [https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/](https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/)
 
@@ -18,8 +19,18 @@ A new website will be provided soon, so please be patient.
 Release Notes
 ================
 
-upcoming Version 8.1.4 (??-Aug-2015)
+upcoming Version 8.1.5 (??-2015)
+* nothing changed yet
+
+
+Version 8.1.4 (12-Sep-2015)
 * add `packager.jar` from system-scoped dependencies to generated lib-folder, enables the usage of UserJvmOptionsService-class, which requires java 1.8.40 (see https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/jvm_options_api.html)
+* introduced `.editorconfig`-file (more about this feature can be found [on their website](http://editorconfig.org/)) for better pull-requests (this is just an experiment, maybe it helps)
+* added missing runtime-dependency for running `mvn jfx:generate-key-store`
+* exluded JRE from native-bundles on IT-projects (reduces build-time and avoids unneeded file-generation, nicer for SSDs)
+* new goal available for generating keystore using maven-lifecycle
+* fixed some typos
+* new website online
 
 
 Version 8.1.3 (24-Jul-2015)

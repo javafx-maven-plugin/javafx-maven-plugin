@@ -1,0 +1,22 @@
+# this is the main configuration file
+root = true
+
+# unix-style line-endings with empty line ending
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+# indent is spaces (4 spaces = 1 tab)
+[*.java]
+indent_style = space
+indent_size = 4
+
+# don't touch license-file
+[license.header]
+insert_final_newline = false
+
+# yaml-files are special ;)
+[.travis.yml]
+indent_style = space
+indent_size = 2

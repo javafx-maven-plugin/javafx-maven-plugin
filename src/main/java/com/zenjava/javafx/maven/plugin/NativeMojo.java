@@ -171,6 +171,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * that is reading the arguments.  Any argument not recognized by a bundler is silently ignored, so that arguments
      * that are specific to a specific bundler (for example, a Mac OS X Code signing key name) can be configured and
      * ignored by bundlers that don't use the particular argument.
+     * 
+     * To disable creating native bundles with JRE in it, just add "&lt;runtime /&gt;" to bundleArguments.
      *
      * If there are bundle arguments that override other fields in the configuration, then it is an execution error.
      *

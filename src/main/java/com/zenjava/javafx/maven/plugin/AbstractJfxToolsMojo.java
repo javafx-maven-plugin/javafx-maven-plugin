@@ -43,7 +43,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     protected MavenProject project;
 
     /**
-     * Flag to turn on verbose logging. Set this to true if you are having problems and what more detailed information.
+     * Flag to turn on verbose logging. Set this to true if you are having problems and want more detailed information.
      *
      * @parameter property="verbose" default-value="false"
      */

@@ -326,6 +326,12 @@
             <version>2.2.0</version>
         </dependency>
         <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>keytool-maven-plugin</artifactId>
+            <version>1.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>javafx-packager</groupId>
             <artifactId>javafx-packager</artifactId>
             <version>1.8.0_20</version>
