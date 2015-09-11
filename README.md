@@ -26,7 +26,6 @@ upcoming Version 8.1.5 (??-2015)
 Version 8.1.4 (12-Sep-2015)
 * add `packager.jar` from system-scoped dependencies to generated lib-folder, enables the usage of UserJvmOptionsService-class, which requires java 1.8.40 (see https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/jvm_options_api.html)
 * introduced `.editorconfig`-file (more about this feature can be found [on their website](http://editorconfig.org/)) for better pull-requests (this is just an experiment, maybe it helps)
-* removed unneeded property-javadocs
 * added missing runtime-dependency for running `mvn jfx:generate-key-store`
 * exluded JRE from native-bundles on IT-projects (reduces build-time and avoids unneeded file-generation, nicer for SSDs)
 * new goal available for generating keystore using maven-lifecycle

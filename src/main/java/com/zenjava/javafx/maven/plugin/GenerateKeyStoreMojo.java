@@ -81,7 +81,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * already exists, this Mojo will fail with an error. This is just to stop you inadvertantly overwritting a keystore
      * you really didn't want to lose.
      *
-     * @parameter default-value="false"
+     * @parameter default-value="false" property="overwriteKeyStore"
      */
     protected boolean overwriteKeyStore;
 
@@ -118,28 +118,28 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     /**
      * The 'domain' to use for the certificate. Typically this is your company's domain name.
      *
-     * @parameter
+     * @parameter property="certDomain"
      */
     protected String certDomain;
 
     /**
      * The 'organisational unit' to use for the certificate. Your department or team name typically.
      *
-     * @parameter
+     * @parameter property="certOrgUnit"
      */
     protected String certOrgUnit;
 
     /**
      * The 'organisation' name to use for the certificate.
      *
-     * @parameter
+     * @parameter property="certOrg"
      */
     protected String certOrg;
 
     /**
      * The 'state' (province, etc) that your organisation is based in.
      *
-     * @parameter
+     * @parameter property="certState"
      */
     protected String certState;
 
@@ -147,7 +147,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * The 'country' code that your organisation is based in. This should be a proper country code, e.g. Australia is
      * 'AU'
      *
-     * @parameter
+     * @parameter property="certCountry"
      */
     protected String certCountry;
 
