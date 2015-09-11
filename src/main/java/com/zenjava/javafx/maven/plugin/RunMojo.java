@@ -34,6 +34,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * @requiresDependencyResolution
  * @deprecated This mojo will be dropped, because it's creating too much false issues.
  */
+@Deprecated
 public class RunMojo extends AbstractMojo {
 
     /**
