@@ -39,7 +39,7 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * should get a legitimate certificate from a certifier and include that keystore in your codebase. Using this testing
  * keystore will result in your users seeing the ugly warning about untrusted code.
  *
- * @goal generate-key-store
+ * @goal build-keystore
  * @phase validate
  * @requiresDependencyResolution
  */
@@ -77,7 +77,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     protected BuildPluginManager pluginManager;
 
     /**
-     * Set this to true to sliently overwrite the keystore. If this is set to false (the default) then if a keystore
+     * Set this to true to silently overwrite the keystore. If this is set to false (the default) then if a keystore
      * already exists, this Mojo will fail with an error. This is just to stop you inadvertantly overwritting a keystore
      * you really didn't want to lose.
      *
