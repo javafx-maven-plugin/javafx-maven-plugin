@@ -201,11 +201,9 @@ public class JarMojo extends AbstractJfxToolsMojo {
     }
 
     private boolean checkIfJavaIsHavingPackagerJar() {
-        String javaVersion = System.getProperty("java.version");
-        boolean isJava8 = javaVersion.startsWith("1.8");
-        boolean isJava9 = javaVersion.startsWith("1.9");
-        String[] javaVersionSplitted = javaVersion.split("_");
-        if( isJava8 && javaVersionSplitted.length > 1 && Integer.parseInt(javaVersionSplitted[1], 10) >= 40 ){
+        boolean isJava8 = isJavaVersion(8);
+        boolean isJava9 = isJavaVersion(9);
+        if( isJava8 && isAtLeastOracleJavaUpdateVersion(40) ){
             return true;
         }
         if( isJava9 ){ // NOSONAR

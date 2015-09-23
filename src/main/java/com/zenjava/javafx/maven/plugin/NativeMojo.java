@@ -342,6 +342,27 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
                     if (b.validate(params)) {
                         b.execute(params, nativeOutputDir);
+
+                        // Workaround for "Native package for Ubuntu doesn't work"
+                        // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
+                        // real bug: linux-launcher from oracle-jdk starting from 1.8.0u40 logic to determine .cfg-filename
+                        if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) ){
+                            if( "linux.app".equals(b.getID()) ){
+                                // check appName containing any dots
+                                boolean needsWorkaround = appName.contains(".");
+                                if( needsWorkaround ){
+                                    getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40");
+                                    // rename .cfg-file (makes it able to create running applications again, even within installer)
+                                    String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
+                                    Path oldConfigFile = nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(appName + ".cfg");
+                                    try{
+                                        Files.move(oldConfigFile, nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(newConfigFileName + ".cfg"), StandardCopyOption.ATOMIC_MOVE);
+                                    } catch(IOException ex){ // NOSONAR
+                                        getLog().warn(String.format("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details."));
+                                    }
+                                }
+                            }
+                        }
                     }
                 } catch (UnsupportedPlatformException e) {
                     // quietly ignore
