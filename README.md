@@ -19,8 +19,13 @@ A new website will be provided soon, so please be patient.
 Release Notes
 ================
 
-upcoming Version 8.1.5 (??-2015)
+upcoming Version 8.1.6 (??-2015)
 * nothing changed yet
+
+
+Version 8.1.5 (24-Sep-2015)
+* added workaround for bug #124 regarding native launcher, bug is inside Oracle JDK since 1.8.0 Update 40 (thanks to Jens Deters and Stefan Helfrich for testing/reporting helping information)
+* added new property to disable workaround `<skipNativeLauncherWorkaround124>true</skipNativeLauncherWorkaround124>`
 
 
 Version 8.1.4 (12-Sep-2015)
