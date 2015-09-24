@@ -202,6 +202,28 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter
      */
     protected File additionalAppResources;
+    
+    /**
+     * Since Java version 1.8.0 Update 40 the native launcher for linux was changed and includes a bug
+     * while searching for the generated configfile. This results in wrong ouput like this:
+     * <pre>
+     * client-1.1 No main class specified
+     * client-1.1 Failed to launch JVM
+     * </pre>
+     *
+     * Scenario (which would work on windows):
+     * <ul>
+     * <li>generated launcher: i-am.working.1.2.0-SNAPSHOT</li>
+     * <li>launcher-algorithm extracts the "extension" (a concept not known in linux-space for executables) and now searches for i-am.working.1.2.cfg</li>
+     * </ul>
+     *
+     * Change this to "true" when you don't want this workaround.
+     *
+     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
+     *
+     * @parameter default-value=false
+     */
+    protected boolean skipNativeLauncherWorkaround124;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -210,7 +232,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             return;
         }
 
-        //noinspection deprecation
         if( "NONE".equalsIgnoreCase(bundleType) ){
             return;
         }
@@ -219,7 +240,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
         try {
             Map<String, ? super Object> params = new HashMap<>();
-
 
             params.put(StandardBundlerParam.VERBOSE.getID(), verbose);
 
@@ -342,9 +362,32 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
                     if (b.validate(params)) {
                         b.execute(params, nativeOutputDir);
+
+                        // Workaround for "Native package for Ubuntu doesn't work"
+                        // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
+                        // real bug: linux-launcher from oracle-jdk starting from 1.8.0u40 logic to determine .cfg-filename
+                        if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) ){
+                            if( "linux.app".equals(b.getID()) ){
+                                // check appName containing any dots
+                                boolean needsWorkaround = appName.contains(".");
+                                if( !skipNativeLauncherWorkaround124 && needsWorkaround ){
+                                    getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40");
+                                    // rename .cfg-file (makes it able to create running applications again, even within installer)
+                                    String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
+                                    Path oldConfigFile = nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(appName + ".cfg");
+                                    try{
+                                        Files.move(oldConfigFile, nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(newConfigFileName + ".cfg"), StandardCopyOption.ATOMIC_MOVE);
+                                    } catch(IOException ex){
+                                        getLog().warn("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details.", ex);
+                                    }
+                                }else{
+                                    getLog().info("Skipped workaround for native linux launcher.");
+                                }
+                            }
+                        }
                     }
                 } catch (UnsupportedPlatformException e) {
-                    // quietly ignore
+                    // quietly ignored
                 } catch (ConfigException e) {
                     getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
                 }
