@@ -21,7 +21,7 @@
 
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.1.6-SNAPSHOT</version>
+    <version>9.0.0-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
@@ -311,8 +311,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.9</maven.compiler.target>
+        <maven.compiler.source>1.9</maven.compiler.source>
     
         <!-- profile-triggers -->
         <doSign>false</doSign>
@@ -334,9 +334,9 @@
         <dependency>
             <groupId>javafx-packager</groupId>
             <artifactId>javafx-packager</artifactId>
-            <version>1.8.0_20</version>
+            <version>1.9.0_b82</version>
             <scope>system</scope>
-            <systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>
+            <systemPath>${java.home}/lib/ant-javafx.jar</systemPath>
         </dependency>
 
     </dependencies>
