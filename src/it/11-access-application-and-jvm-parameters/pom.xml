@@ -22,23 +22,22 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
-        <!-- version-management -->
-        
-        <version.maven-compiler-plugin>3.2</version.maven-compiler-plugin>
 
-        <version.java.source>1.8</version.java.source>
-        <version.java.target>1.8</version.java.target>
+        <!-- version-management -->
+        <version.maven-compiler-plugin>3.3</version.maven-compiler-plugin>
+
+        <version.java.source>1.9</version.java.source>
+        <version.java.target>1.9</version.java.target>
     </properties>
-    
+
     <dependencies>
         <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
         <dependency>
             <groupId>javafx-packager</groupId>
             <artifactId>packager-jar</artifactId>
-            <version>1.8.0_45</version>
+            <version>1.9.0_b82</version>
             <scope>system</scope>
-            <systemPath>${java.home}/../lib/packager.jar</systemPath>
+            <systemPath>${java.home}/lib/packager.jar</systemPath>
         </dependency>
     </dependencies>
 

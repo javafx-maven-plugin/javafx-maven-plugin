@@ -18,20 +18,39 @@
     <organization>
         <name>ZenJava</name>
     </organization>
-    
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <maven.compiler.target>1.9</maven.compiler.target>
+        <maven.compiler.source>1.9</maven.compiler.source>
+    </properties>
+
     <dependencies>
         <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
         <dependency>
             <groupId>javafx-packager</groupId>
             <artifactId>packager-jar</artifactId>
-            <version>1.8.0_45</version>
+            <version>1.9.0_b82</version>
             <scope>system</scope>
-            <systemPath>${java.home}/../lib/packager.jar</systemPath>
+            <systemPath>${java.home}/lib/packager.jar</systemPath>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
