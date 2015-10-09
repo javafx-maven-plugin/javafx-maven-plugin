@@ -71,6 +71,12 @@
 
     <contributors>
         <contributor>
+            <name>Curtis Rueden</name>
+            <properties>
+                <github>ctrueden</github>
+            </properties>
+        </contributor>
+        <contributor>
             <name>Danno Ferrin</name>
             <email>danno.ferrin@gmail.com</email>
             <properties>
