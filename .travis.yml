@@ -11,6 +11,8 @@ install: true
 script:
   - mvn install -B
 
+## openjdk8 currently does not provide openjfx, so every PR has to get checked by looking at the oraclejdk-build
+
 jdk:
   - oraclejdk8
   - openjdk8
