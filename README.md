@@ -20,7 +20,7 @@ Release Notes
 ================
 
 upcoming Version 8.1.6 (??-2015)
-* nothing changed yet
+* bugfix #159 added support for openjdk/openjfx (version-checker failed with NumberFormatException due to wrong expectations)
 
 
 Version 8.1.5 (24-Sep-2015)
