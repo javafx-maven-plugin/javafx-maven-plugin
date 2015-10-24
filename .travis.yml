@@ -1,18 +1,21 @@
 language: java
 
-## https://github.com/travis-ci/travis-ci/issues/3259
+## http://blog.travis-ci.com/2015-10-14-opening-up-ubuntu-trusty-beta/
 sudo: required
+dist: trusty
+
 install: true
 
 ## maven-invoker-plugin is called after deploying javafx-maven-plugin into local repository, so change default-test-call to "install" (because its called at that maven-phase)
 
 script:
-  - sudo apt-get update && sudo apt-get install oracle-java8-installer
-  - java -version
   - mvn install -B
+
 
 jdk:
   - oraclejdk8
+## openjdk8 currently does not provide openjfx, so every PR would have to get checked by looking at the oraclejdk-build
+#  - openjdk8
 
 branches:
   only:
