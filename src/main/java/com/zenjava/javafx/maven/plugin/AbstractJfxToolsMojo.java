@@ -139,6 +139,9 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
         if( javaVersionSplitted.length <= 1 ) {
             return false;
         }
-        return Integer.parseInt(javaVersionSplitted[1], 10) >= updateNumber;
+        String javaUpdateVersionRaw = javaVersionSplitted[1];
+        // issue #159 NumberFormatException on openjdk (the reported Java version is "1.8.0_45-internal")
+        String javaUpdateVersion = javaUpdateVersionRaw.replaceAll("[^\\d]", "");
+        return Integer.parseInt(javaUpdateVersion, 10) >= updateNumber;
     }
 }
