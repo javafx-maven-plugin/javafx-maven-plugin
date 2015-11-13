@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @goal build-native
@@ -224,6 +225,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean skipNativeLauncherWorkaround124;
+    
+    /**
+     * @parameter
+     */
+    protected List<Launcher> secondaryLaunchers;
 
     /**
      * Since Java version 1.8.0 Update 60 the native launcher configuration for windows was changed
@@ -357,6 +363,16 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
 
             params.putAll(bundleArguments);
+            
+            if( secondaryLaunchers != null && !secondaryLaunchers.isEmpty() ) {
+                params.put(StandardBundlerParam.SECONDARY_LAUNCHERS.getID(), secondaryLaunchers.stream().map(launcher -> {
+                    Map<String, Object> secondaryLauncher = new HashMap<>();
+                    secondaryLauncher.put(StandardBundlerParam.APP_NAME.getID(), launcher.getAppName());
+                    secondaryLauncher.put(StandardBundlerParam.MAIN_CLASS.getID(), launcher.getMainClass());
+                    secondaryLauncher.put(StandardBundlerParam.MAIN_JAR.getID(), launcher.getJfxMainAppJarName());
+                    return secondaryLauncher;
+                }).collect(Collectors.toList()));
+            }
 
             // bugfix for "bundler not being able to produce native bundle without JRE on windows"
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
