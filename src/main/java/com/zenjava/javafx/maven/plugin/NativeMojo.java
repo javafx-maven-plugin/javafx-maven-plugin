@@ -365,11 +365,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.putAll(bundleArguments);
             
             if( secondaryLaunchers != null && !secondaryLaunchers.isEmpty() ) {
+                for(Launcher launcher: secondaryLaunchers ){
+                    // check for misconfiguration, requires to be different as this would overwrite primary launcher
+                    if( appName.equals(launcher.getAppName()) ){
+                        throw new MojoExecutionException("Secondary launcher needs to have different name, please adjust appName inside your configuration.");
+                    }
+                }
+                
                 params.put(StandardBundlerParam.SECONDARY_LAUNCHERS.getID(), secondaryLaunchers.stream().map(launcher -> {
                     Map<String, Object> secondaryLauncher = new HashMap<>();
-                    secondaryLauncher.put(StandardBundlerParam.APP_NAME.getID(), launcher.getAppName());
-                    secondaryLauncher.put(StandardBundlerParam.MAIN_CLASS.getID(), launcher.getMainClass());
-                    secondaryLauncher.put(StandardBundlerParam.MAIN_JAR.getID(), launcher.getJfxMainAppJarName());
+                    addToMapWhenNotNull(launcher.getAppName(), StandardBundlerParam.APP_NAME.getID(), secondaryLauncher);
+                    addToMapWhenNotNull(launcher.getMainClass(), StandardBundlerParam.MAIN_CLASS.getID(), secondaryLauncher);
+                    addToMapWhenNotNull(launcher.getJfxMainAppJarName(), StandardBundlerParam.MAIN_JAR.getID(), secondaryLauncher);
                     return secondaryLauncher;
                 }).collect(Collectors.toList()));
             }
@@ -449,5 +456,12 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         } catch (RuntimeException e) {
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
         }
+    }
+
+    private void addToMapWhenNotNull(Object value, String key, Map<String, Object> map) {
+        if( value == null ) {
+            return;
+        }
+        map.put(key, value);
     }
 }

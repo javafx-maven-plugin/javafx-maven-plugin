@@ -14,3 +14,10 @@ File jfxNativeFolder = new File( jfxFolder, "native" );
 if( !jfxNativeFolder.exists() ){
     throw new Exception( "there should be a jfx-native-folder!");
 }
+
+File generatedConfigFileOne = new File( basedir, "target/jfx/native/javafx-maven-plugin-test-17-secondary-launchers-1.0/app/javafx-maven-plugin-test-17-secondary-launchers-1.0.cfg" );
+File generatedConfigFileTwo = new File( basedir, "target/jfx/native/javafx-maven-plugin-test-17-secondary-launchers-1.0/app/SecondaryMainLauncher.cfg" );
+
+if( !(generatedConfigFileOne.exists() && generatedConfigFileTwo.exists()) ){
+    throw new Exception( "there should be two generated config-files, one for each launcher!");
+}
