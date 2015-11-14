@@ -426,20 +426,24 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         // real bug: linux-launcher from oracle-jdk starting from 1.8.0u40 logic to determine .cfg-filename
                         if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) ){
                             if( "linux.app".equals(b.getID()) ){
-                                // check appName containing any dots
-                                boolean needsWorkaround = appName.contains(".");
-                                if( !skipNativeLauncherWorkaround124 && needsWorkaround ){
-                                    getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40");
-                                    // rename .cfg-file (makes it able to create running applications again, even within installer)
-                                    String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
-                                    Path oldConfigFile = nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(appName + ".cfg");
-                                    try{
-                                        Files.move(oldConfigFile, nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(newConfigFileName + ".cfg"), StandardCopyOption.ATOMIC_MOVE);
-                                    } catch(IOException ex){
-                                        getLog().warn("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details.", ex);
+                                getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40");
+                                if( !skipNativeLauncherWorkaround124 ){
+                                    // apply on main launcher
+                                    applyNativeLauncherWorkaround(appName);
+
+                                    // check on secondary launchers too
+                                    if( secondaryLaunchers != null && !secondaryLaunchers.isEmpty() ){
+                                        secondaryLaunchers.stream().map(launcher -> {
+                                            return launcher.getAppName();
+                                        }).filter(launcherAppName -> {
+                                            // check appName containing any dots (which is the bug)
+                                            return launcherAppName.contains(".");
+                                        }).forEach(launcherAppname -> {
+                                            applyNativeLauncherWorkaround(launcherAppname);
+                                        });
                                     }
-                                }else{
-                                    getLog().info("Skipped workaround for native linux launcher.");
+                                } else {
+                                    getLog().info("Skipped workaround for native linux launcher(s).");
                                 }
                             }
                         }
@@ -463,5 +467,21 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             return;
         }
         map.put(key, value);
+    }
+
+    private void applyNativeLauncherWorkaround(String appName) {
+        // check appName containing any dots
+        boolean needsWorkaround = appName.contains(".");
+        if( !needsWorkaround ){
+            return;
+        }
+        // rename .cfg-file (makes it able to create running applications again, even within installer)
+        String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
+        Path oldConfigFile = nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(appName + ".cfg");
+        try{
+            Files.move(oldConfigFile, nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(newConfigFileName + ".cfg"), StandardCopyOption.ATOMIC_MOVE);
+        } catch(IOException ex){
+            getLog().warn("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details.", ex);
+        }
     }
 }
