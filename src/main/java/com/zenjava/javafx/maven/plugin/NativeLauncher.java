@@ -23,7 +23,15 @@ import java.util.Map;
  *
  * @author Danny Althoff
  */
-public class Launcher {
+public class NativeLauncher {
+
+    /**
+     * As all existing parameter are copied, this has to be different than original appname, as this would be overwritten.
+     *
+     * @parameter
+     * @required
+     */
+    private String appName = null;
 
     /**
      * @parameter
@@ -34,13 +42,6 @@ public class Launcher {
      * @parameter
      */
     private File jfxMainAppJarName = null;
-
-    /**
-     * As all existing parameter are copied, this has to be different than original appname, as this would be overwritten.
-     * @parameter
-     * @required
-     */
-    private String appName = null;
 
     /**
      * @parameter

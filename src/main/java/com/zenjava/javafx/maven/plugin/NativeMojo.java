@@ -229,7 +229,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * @parameter
      */
-    protected List<Launcher> secondaryLaunchers;
+    protected List<NativeLauncher> secondaryLaunchers;
 
     /**
      * Since Java version 1.8.0 Update 60 the native launcher configuration for windows was changed
@@ -365,7 +365,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.putAll(bundleArguments);
             
             if( secondaryLaunchers != null && !secondaryLaunchers.isEmpty() ) {
-                for(Launcher launcher: secondaryLaunchers ){
+                for(NativeLauncher launcher: secondaryLaunchers ){
                     // check for misconfiguration, requires to be different as this would overwrite primary launcher
                     if( appName.equals(launcher.getAppName()) ){
                         throw new MojoExecutionException("Secondary launcher needs to have different name, please adjust appName inside your configuration.");
