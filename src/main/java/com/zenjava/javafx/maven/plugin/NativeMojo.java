@@ -345,6 +345,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             params.putAll(bundleArguments);
 
+            // bugfix for "bundler not being able to produce native bundle without JRE on windows"
+            // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
+            if( params.containsKey("runtime")){
+                if(params.get("runtime") == null){
+                    // the problem is com.oracle.tools.packager.windows.WinAppBundler within createLauncherForEntryPoint-Method
+                    // it does NOT respect runtime-setting while calling "writeCfgFile"-method of com.oracle.tools.packager.AbstractImageBundler
+                    // since newer java versions (they added possability to have INI-file-format of generated cfg-file).
+                    // Because we want to have backward-compatibility within java 8, we will use parameter-name as hardcoded string!
+                    // Our workaround: use prop-file-format
+                    params.put("launcher-cfg-format", "prop");
+                }
+            }
+
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
             boolean foundBundler = false;
             for (Bundler b : bundlers.getBundlers()) {
@@ -360,8 +373,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     }
                     foundBundler = true;
 
-                    if (b.validate(params)) {
-                        b.execute(params, nativeOutputDir);
+                    Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
+                    if (b.validate(paramsToBundleWith)) {
+                        b.execute(paramsToBundleWith, nativeOutputDir);
 
                         // Workaround for "Native package for Ubuntu doesn't work"
                         // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
