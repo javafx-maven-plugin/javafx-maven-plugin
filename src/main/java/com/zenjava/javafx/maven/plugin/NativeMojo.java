@@ -225,6 +225,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean skipNativeLauncherWorkaround124;
 
+    /**
+     * Since Java version 1.8.0 Update 60 the native launcher configuration for windows was changed
+     * and includes a bug: the file-format before was "property-file", now it's "INI-file" per default,
+     * but the runtime-configuration isn't honored like in property-files.
+     * This workaround enforces the property-file-format.
+     *
+     * Change this to "true" when you don't want this workaround.
+     * 
+     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
+     * @parameter default-value=false
+     */
+    protected boolean skipNativeLauncherWorkaround167;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -345,6 +358,27 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             params.putAll(bundleArguments);
 
+            // bugfix for "bundler not being able to produce native bundle without JRE on windows"
+            // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
+            // windows only bug
+            if(System.getProperty("os.name").toLowerCase().startsWith("win")){
+                if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) ){
+                    if(!skipNativeLauncherWorkaround167){
+                        if( params.containsKey("runtime")){
+                            getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60");
+                            // the problem is com.oracle.tools.packager.windows.WinAppBundler within createLauncherForEntryPoint-Method
+                            // it does NOT respect runtime-setting while calling "writeCfgFile"-method of com.oracle.tools.packager.AbstractImageBundler
+                            // since newer java versions (they added possability to have INI-file-format of generated cfg-file, since 1.8.0_60).
+                            // Because we want to have backward-compatibility within java 8, we will use parameter-name as hardcoded string!
+                            // Our workaround: use prop-file-format
+                            params.put("launcher-cfg-format", "prop");
+                        }
+                    }else{
+                        getLog().info("Skipped workaround for native windows launcher regarding cfg-file-format.");
+                    }
+                }
+            }
+
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
             boolean foundBundler = false;
             for (Bundler b : bundlers.getBundlers()) {
@@ -360,8 +394,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     }
                     foundBundler = true;
 
-                    if (b.validate(params)) {
-                        b.execute(params, nativeOutputDir);
+                    Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
+                    if (b.validate(paramsToBundleWith)) {
+                        b.execute(paramsToBundleWith, nativeOutputDir);
 
                         // Workaround for "Native package for Ubuntu doesn't work"
                         // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
