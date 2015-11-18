@@ -225,6 +225,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean skipNativeLauncherWorkaround124;
 
+    /**
+     * Since Java version 1.8.0 Update 40 the native launcher configuration for windows was changed
+     * and includes a bug: the file-format before was "property-file", now it's "INI-file" per default,
+     * but the runtime-configuration isn't honored like in property-files.
+     * This workaround enforces the property-file-format.
+     *
+     * Change this to "true" when you don't want this workaround.
+     * 
+     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
+     * @parameter default-value=false
+     */
+    protected boolean skipNativeLauncherWorkaround167;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -345,16 +358,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             params.putAll(bundleArguments);
 
-            // bugfix for "bundler not being able to produce native bundle without JRE on windows"
-            // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
-            if( params.containsKey("runtime")){
-                if(params.get("runtime") == null){
-                    // the problem is com.oracle.tools.packager.windows.WinAppBundler within createLauncherForEntryPoint-Method
-                    // it does NOT respect runtime-setting while calling "writeCfgFile"-method of com.oracle.tools.packager.AbstractImageBundler
-                    // since newer java versions (they added possability to have INI-file-format of generated cfg-file).
-                    // Because we want to have backward-compatibility within java 8, we will use parameter-name as hardcoded string!
-                    // Our workaround: use prop-file-format
-                    params.put("launcher-cfg-format", "prop");
+            if(!skipNativeLauncherWorkaround167){
+                // windows only bug
+                if(System.getProperty("os.name").toLowerCase().startsWith("win")){
+                    // bugfix for "bundler not being able to produce native bundle without JRE on windows"
+                    // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
+                    if( params.containsKey("runtime")){
+                        // the problem is com.oracle.tools.packager.windows.WinAppBundler within createLauncherForEntryPoint-Method
+                        // it does NOT respect runtime-setting while calling "writeCfgFile"-method of com.oracle.tools.packager.AbstractImageBundler
+                        // since newer java versions (they added possability to have INI-file-format of generated cfg-file, since 1.8.0_40 or so).
+                        // Because we want to have backward-compatibility within java 8, we will use parameter-name as hardcoded string!
+                        // Our workaround: use prop-file-format
+                        params.put("launcher-cfg-format", "prop");
+                    }
                 }
             }
 
