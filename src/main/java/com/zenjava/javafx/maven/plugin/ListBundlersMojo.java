@@ -15,11 +15,14 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import com.oracle.tools.packager.BundlerParamInfo;
 import com.oracle.tools.packager.Bundlers;
 import com.oracle.tools.packager.ConfigException;
 import com.oracle.tools.packager.UnsupportedPlatformException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -50,7 +53,19 @@ public class ListBundlersMojo extends AbstractMojo {
             getLog().info("ID: " + bundler.getID());
             getLog().info("Name: " + bundler.getName());
             getLog().info("Description: " + bundler.getDescription());
-            getLog().info("");
+
+            Collection<BundlerParamInfo<?>> bundleParameters = bundler.getBundleParameters();
+            Optional.ofNullable(bundleParameters).ifPresent(nonNullBundleArguments -> {
+                getLog().info("Available bundle arguments: ");
+                nonNullBundleArguments.stream().forEach(bundleArgument -> {
+                    getLog().info("\t\tArgument ID: " + bundleArgument.getID());
+                    getLog().info("\t\tArgument Type: " + bundleArgument.getValueType().getName());
+                    getLog().info("\t\tArgument Name: " + bundleArgument.getName());
+                    getLog().info("\t\tArgument Description: " + bundleArgument.getDescription());
+                    getLog().info("");
+                });
+            });
+            getLog().info("-------------------");
         });
     }
 
