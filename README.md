@@ -24,7 +24,7 @@ upcoming Version 8.1.6 (??-Nov-2015) **available as snapshot-version**
 * added workaround for bug #167 regarding native windows launcher configuration-file (cfg-file), bug is inside Oracle JDK since 1.8.0 Update 60 (to work around this, this plugin tries to enforce property-file-format, which does not contain the problem)
 * added new property to disable workaround `<skipNativeLauncherWorkaround167>true</skipNativeLauncherWorkaround167>`
 * added some IT-tests and updated others
-
+* added new mojo: calling `mvn jfx:list-bundlers` shows currently available bundlers with ID, name and descriptions, including their specific arguments able to be passed via `<bundleArguments>`-configuration
 
 Version 8.1.5 (24-Sep-2015)
 * added workaround for bug #124 regarding native launcher, bug is inside Oracle JDK since 1.8.0 Update 40 (thanks to Jens Deters and Stefan Helfrich for testing/reporting helping information)
