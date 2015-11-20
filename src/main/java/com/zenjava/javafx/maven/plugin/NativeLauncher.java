@@ -26,7 +26,7 @@ import java.util.Map;
 public class NativeLauncher {
 
     /**
-     * As all existing parameter are copied, this has to be different than original appname, as this would be overwritten.
+     * This has to be different than original appname, as all existing parameter are copied and this would be overwritten.
      *
      * @parameter
      * @required
