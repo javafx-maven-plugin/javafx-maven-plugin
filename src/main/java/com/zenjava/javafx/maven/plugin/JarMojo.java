@@ -165,10 +165,8 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 } else {
                     getLog().debug("No packager.jar will be added");
                 }
-            } else {
-                if( addPackagerJar ){
-                    getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
-                }
+            } else if( addPackagerJar ){
+                getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
             }
             for( String path : project.getRuntimeClasspathElements() ){
                 File file = new File(path);
@@ -197,6 +195,12 @@ public class JarMojo extends AbstractJfxToolsMojo {
             getPackagerLib().packageAsJar(createJarParams);
         } catch(PackagerException e){
             throw new MojoExecutionException("Unable to build JFX JAR for application", e);
+        }
+
+        // cleanup
+        if( libDir.list().length == 0 ){
+            // remove lib-folder, when nothing ended up there
+            libDir.delete();
         }
     }
 
