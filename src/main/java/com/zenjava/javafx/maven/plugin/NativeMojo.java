@@ -366,13 +366,15 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             launcherNames.add(appName);
             final AtomicBoolean nullLauncherNameFound = new AtomicBoolean(false);
             // check "no launcher names" and gather all names
-            Optional.ofNullable(secondaryLaunchers).filter(List::isEmpty).ifPresent(launchers -> {
+            Optional.ofNullable(secondaryLaunchers).filter(list -> !list.isEmpty()).ifPresent(launchers -> {
+                getLog().info("Adding configuration for secondary native launcher");
                 nullLauncherNameFound.set(launchers.stream().anyMatch(launcher -> launcher.getAppName() == null));
                 if( !nullLauncherNameFound.get() ){
                     launcherNames.addAll(launchers.stream().map(launcher -> launcher.getAppName()).collect(Collectors.toList()));
 
                     // assume we have valid entry here
                     params.put(StandardBundlerParam.SECONDARY_LAUNCHERS.getID(), launchers.stream().map(launcher -> {
+                        getLog().debug("Adding secondary launcher: " + launcher.getAppName());
                         Map<String, Object> secondaryLauncher = new HashMap<>();
                         addToMapWhenNotNull(launcher.getAppName(), StandardBundlerParam.APP_NAME.getID(), secondaryLauncher);
                         addToMapWhenNotNull(launcher.getMainClass(), StandardBundlerParam.MAIN_CLASS.getID(), secondaryLauncher);
