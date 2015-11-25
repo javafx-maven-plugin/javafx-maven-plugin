@@ -21,6 +21,6 @@ package com.zenjava.javafx.maven.plugin;
  * @phase validate
  * @requiresDependencyResolution
  */
-public class CliGenerateKeyStoreMojo extends GenerateKeyStoreMojo{
+public class CliGenerateKeyStoreMojo extends GenerateKeyStoreMojo {
 
 }

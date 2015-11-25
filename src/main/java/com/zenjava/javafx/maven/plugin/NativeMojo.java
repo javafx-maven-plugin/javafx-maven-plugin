@@ -38,7 +38,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +50,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
     /**
      * Used as the 'id' of the application, and is used as the CFBundleDisplayName on Mac. See the official JavaFX
-     * Packaging tools documentation for other information on this.
+     * Packaging tools documentation for other information on this. Will be used as GUID on some installers too.
      *
      * @parameter
      */
@@ -65,43 +67,52 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected String vendor;
 
     /**
-     * <p>The output directory that the native bundles are to be built into. This will be the base directory only as the
-     * JavaFX packaging tools use sub-directories that can't be customised. Generally just have a rummage through the
-     * sub-directories until you find what you are looking for.</p>
      *
-     * <p>This defaults to 'target/jfx/native' and the interesting files are usually under 'bundles'.</p>
+     * The output directory that the native bundles are to be built into. This will be the base directory only as the
+     * JavaFX packaging tools use sub-directories that can't be customised. Generally just have a rummage through the
+     * sub-directories until you find what you are looking for.
+     * <p>
+     * This defaults to 'target/jfx/native' and the interesting files are usually under 'bundles'.
      *
      * @parameter default-value="${project.build.directory}/jfx/native"
      */
     protected File nativeOutputDir;
 
     /**
-     * <p>A magic parameter used by the underlying JavaFX packaging tools to specify which types of native bundles you
+     * A magic parameter used by the underlying JavaFX packaging tools to specify which types of native bundles you
      * want built. On the whole quite confusing and not overly useful as you are limited to the native installer options
      * of your OS and the tools you have installed. Furthermore the terms used as the 'bundleType' options rarely relate
-     * directly back to the options you have available to you.</p>
-     *
-     * <p>By default this will be set to 'ALL' which is usually the easiest and the safest. You will end up with the
+     * directly back to the options you have available to you.
+     * <p>
+     * By default this will be set to 'ALL' which is usually the easiest and the safest. You will end up with the
      * native bundles for your OS, based on whatever tools you have installed. If you want to get more fancy than that
-     * then you are probably best to read the official JavaFX packaging tool documentation for more info. </p>
+     * then you are probably best to read the official JavaFX packaging tool documentation for more info.
      *
      * @parameter property="bundleType" default-value="ALL"
+     * @deprecated will be removed soon, as this is replaced by 'bundlers'-parameter
+     *
      */
+    @Deprecated
     private String bundleType;
 
     /**
-     * <p>Specify the used bundler found by selected bundleType. May not be installed your OS and will fail in that case.</p>
-     * 
-     * <p>By default this will be set to 'ALL', depending on your installed OS following values are possible for installers: </p>
+     * Specify the used bundler found by selected bundleType. May not be installed your OS and will fail in that case.
+     *
+     * <p>
+     * By default this will be set to 'ALL', depending on your installed OS following values are possible for installers:
+     * <p>
      * <ul>
-     *     <li>exe <i>(Microsoft Windows EXE Installer, via InnoIDE)</i></li>
-     *     <li>msi <i>(Microsoft Windows MSI Installer, via WiX)</i></li>
-     *     <li>deb <i>(Linux Debian Bundle)</i></li>
-     *     <li>rpm <i>(Redhat Package Manager (RPM) bundler)</i></li>
-     *     <li>dmg <i>(Mac DMG Installer Bundle)</i></li>
-     *     <li>pkg <i>(Mac PKG Installer Bundle)</i></li>
-     *     <li>mac.appStore <i>(Creates a binary bundle ready for deployment into the Mac App Store)</i></li>
+     * <li>exe <i>(Microsoft Windows EXE Installer, via InnoIDE)</i></li>
+     * <li>msi <i>(Microsoft Windows MSI Installer, via WiX)</i></li>
+     * <li>deb <i>(Linux Debian Bundle)</i></li>
+     * <li>rpm <i>(Redhat Package Manager (RPM) bundler)</i></li>
+     * <li>dmg <i>(Mac DMG Installer Bundle)</i></li>
+     * <li>pkg <i>(Mac PKG Installer Bundle)</i></li>
+     * <li>mac.appStore <i>(Creates a binary bundle ready for deployment into the Mac App Store)</i></li>
      * </ul>
+     *
+     * <p>
+     * For a full list of available bundlers on your system, call 'mvn jfx:list-bundler' inside your project
      *
      * @parameter property="bundler" default-value="ALL"
      */
@@ -116,8 +127,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private Map<String, String> jvmProperties;
 
     /**
-     * JVM Flags to be passed into the JVM at invocation time.  These are the arguments to the left of the main class
-     * name when launching Java on the command line.  For example:
+     * JVM Flags to be passed into the JVM at invocation time. These are the arguments to the left of the main class
+     * name when launching Java on the command line. For example:
      * <pre>
      *     &lt;jvmArgs&gt;
      *         &lt;jvmArg&gt;-Xmx8G&lt;/jvmArg&gt;
@@ -128,13 +139,12 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     private List<String> jvmArgs;
 
-
     /**
      * Optional command line arguments passed to the application when it is started. These will be included in the
      * native bundle that is generated and will be accessible via the main(String[] args) method on the main class that
      * is launched at runtime.
-     *
-     * These options are user overridable for the value part of the entry via user preferences.  The key and the value
+     * <p>
+     * These options are user overridable for the value part of the entry via user preferences. The key and the value
      * are concated without a joining character when invoking the JVM.
      *
      * @parameter
@@ -168,13 +178,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected boolean needMenu;
 
     /**
-     * A list of bundler arguments.  The particular keys and the meaning of their values are dependent on the bundler
-     * that is reading the arguments.  Any argument not recognized by a bundler is silently ignored, so that arguments
+     * A list of bundler arguments. The particular keys and the meaning of their values are dependent on the bundler
+     * that is reading the arguments. Any argument not recognized by a bundler is silently ignored, so that arguments
      * that are specific to a specific bundler (for example, a Mac OS X Code signing key name) can be configured and
      * ignored by bundlers that don't use the particular argument.
-     * 
+     * <p>
      * To disable creating native bundles with JRE in it, just add "&lt;runtime /&gt;" to bundleArguments.
-     *
+     * <p>
      * If there are bundle arguments that override other fields in the configuration, then it is an execution error.
      *
      * @parameter
@@ -183,15 +193,17 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
     /**
      * The name of the JavaFX packaged executable to be built into the 'native/bundles' directory. By default this will
-     * be the finalName as set in your project. Change this if you want something nicer.
+     * be the finalName as set in your project. Change this if you want something nicer. This also has effect on the
+     * filename of icon-files, e.g. having 'NiceApp' as appName means you have to place that icon
+     * at 'src/main/deploy/package/[os]/NiceApp.[icon-extension]' for having it picked up by the bundler.
      *
      * @parameter default-value="${project.build.finalName}"
      */
     protected String appName;
-    
+
     /**
      * Will be set when having goal "build-native" within package-phase and calling "jfx:native" from CLI. Internal usage only.
-     * 
+     *
      * @parameter default-value=false
      */
     protected boolean jfxCallFromCLI;
@@ -199,11 +211,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * When you need to add additional files to generated app-folder (e.g. README, license, third-party-tools, ...),
      * you can specify the source-folder here. All files will be copied recursively.
-     * 
+     *
      * @parameter
      */
     protected File additionalAppResources;
-    
+
     /**
      * Since Java version 1.8.0 Update 40 the native launcher for linux was changed and includes a bug
      * while searching for the generated configfile. This results in wrong ouput like this:
@@ -211,13 +223,14 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * client-1.1 No main class specified
      * client-1.1 Failed to launch JVM
      * </pre>
-     *
+     * <p>
      * Scenario (which would work on windows):
+     * <p>
      * <ul>
      * <li>generated launcher: i-am.working.1.2.0-SNAPSHOT</li>
      * <li>launcher-algorithm extracts the "extension" (a concept not known in linux-space for executables) and now searches for i-am.working.1.2.cfg</li>
      * </ul>
-     *
+     * <p>
      * Change this to "true" when you don't want this workaround.
      *
      * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
@@ -225,7 +238,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean skipNativeLauncherWorkaround124;
-    
+
     /**
      * @parameter
      */
@@ -236,9 +249,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * and includes a bug: the file-format before was "property-file", now it's "INI-file" per default,
      * but the runtime-configuration isn't honored like in property-files.
      * This workaround enforces the property-file-format.
-     *
+     * <p>
      * Change this to "true" when you don't want this workaround.
-     * 
+     *
      * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
      * @parameter default-value=false
      */
@@ -257,14 +270,14 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
         getLog().info("Building Native Installers");
 
-        try {
+        try{
             Map<String, ? super Object> params = new HashMap<>();
 
             params.put(StandardBundlerParam.VERBOSE.getID(), verbose);
 
-            if (identifier != null) {
-                params.put(StandardBundlerParam.IDENTIFIER.getID(), identifier);
-            }
+            Optional.ofNullable(identifier).ifPresent(id -> {
+                params.put(StandardBundlerParam.IDENTIFIER.getID(), id);
+            });
 
             params.put(StandardBundlerParam.APP_NAME.getID(), appName);
             params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
@@ -273,38 +286,22 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
             params.put(StandardBundlerParam.MAIN_CLASS.getID(), mainClass);
 
-            if (jvmProperties != null) {
-                Map<String, String> jvmProps = new HashMap<>();
-                for (String key : jvmProperties.keySet()) {
-                    jvmProps.put(key, jvmProperties.get(key));
-                }
-                params.put(StandardBundlerParam.JVM_PROPERTIES.getID(), jvmProps);
-            }
-
-            if (jvmArgs != null) {
-                List<String> jvmOptions = new ArrayList<>();
-                for (String arg : jvmArgs) {
-                    jvmOptions.add(arg);
-                }
-                params.put(StandardBundlerParam.JVM_OPTIONS.getID(), jvmOptions);
-            }
-
-            if (userJvmArgs != null) {
-                Map<String, String> userJvmOptions = new HashMap<>();
-                for (String key : userJvmArgs.keySet()) {
-                    userJvmOptions.put(key, userJvmArgs.get(key));
-                }
-                params.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), userJvmOptions);
-            }
-
-            Set<File> resourceFiles = new HashSet<>();
+            Optional.ofNullable(jvmProperties).ifPresent(jvmProps -> {
+                params.put(StandardBundlerParam.JVM_PROPERTIES.getID(), new HashMap<>(jvmProps));
+            });
+            Optional.ofNullable(jvmArgs).ifPresent(jvmOptions -> {
+                params.put(StandardBundlerParam.JVM_OPTIONS.getID(), new ArrayList<>(jvmOptions));
+            });
+            Optional.ofNullable(userJvmArgs).ifPresent(userJvmOptions -> {
+                params.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), new HashMap<>(userJvmOptions));
+            });
 
             // bugfix for #83 (by copying additional resources to /jfx/app folder)
-            if(additionalAppResources != null && additionalAppResources.exists() ){
-                try {
+            Optional.ofNullable(additionalAppResources).filter(File::exists).ifPresent(appResources -> {
+                try{
                     Path targetFolder = jfxAppOutputDir.toPath();
-                    Path sourceFolder = additionalAppResources.toPath();
-                    Files.walkFileTree(additionalAppResources.toPath(), new FileVisitor<Path>() {
+                    Path sourceFolder = appResources.toPath();
+                    Files.walkFileTree(appResources.toPath(), new FileVisitor<Path>() {
 
                         @Override
                         public FileVisitResult preVisitDirectory(Path subfolder, BasicFileAttributes attrs) throws IOException {
@@ -333,92 +330,105 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             return FileVisitResult.CONTINUE;
                         }
                     });
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch(IOException e){
+                    getLog().warn(e);
                 }
-            }
-            try {
-                Files.walk(jfxAppOutputDir.toPath())
-                    .forEach(p -> {
-                        File f = p.toFile();
-                        if (f.isFile()) {
-                            getLog().info(String.format("Add %s file to application resources.", p.toFile()));
-                            resourceFiles.add(p.toFile());
-                        }
-                    });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            });
 
+            Set<File> resourceFiles = new HashSet<>();
+            try{
+                Files.walk(jfxAppOutputDir.toPath())
+                        .map(p -> p.toFile())
+                        .filter(File::isFile)
+                        .filter(File::canRead)
+                        .forEach(f -> {
+                            getLog().info(String.format("Add %s file to application resources.", f));
+                            resourceFiles.add(f);
+                        });
+            } catch(IOException e){
+                getLog().warn(e);
+            }
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
 
-            if (bundleArguments == null) {
-            	bundleArguments = new HashMap<>();
-            }
+            Collection<String> duplicateKeys = new HashSet<>();
+            Optional.ofNullable(bundleArguments).ifPresent(bArguments -> {
+                duplicateKeys.addAll(params.keySet());
+                duplicateKeys.retainAll(bArguments.keySet());
+                params.putAll(bArguments);
+            });
 
-            Collection<String> duplicateKeys = new HashSet<>(params.keySet());
-            duplicateKeys.retainAll(bundleArguments.keySet());
-            if (!duplicateKeys.isEmpty()) {
+            if( !duplicateKeys.isEmpty() ){
                 throw new MojoExecutionException("The following keys in <bundleArguments> duplicate other settings, please remove one or the other: " + duplicateKeys.toString());
             }
 
-            params.putAll(bundleArguments);
-            
-            if( secondaryLaunchers != null && !secondaryLaunchers.isEmpty() ) {
-                for(NativeLauncher launcher: secondaryLaunchers ){
-                    // check for misconfiguration, requires to be different as this would overwrite primary launcher
-                    if( appName.equals(launcher.getAppName()) ){
-                        throw new MojoExecutionException("Secondary launcher needs to have different name, please adjust appName inside your configuration.");
-                    }
+            // check for misconfiguration, requires to be different as this would overwrite primary launche
+            Collection<String> launcherNames = new ArrayList<>();
+            launcherNames.add(appName);
+            final AtomicBoolean nullLauncherNameFound = new AtomicBoolean(false);
+            // check "no launcher names" and gather all names
+            Optional.ofNullable(secondaryLaunchers).filter(List::isEmpty).ifPresent(launchers -> {
+                nullLauncherNameFound.set(launchers.stream().anyMatch(launcher -> launcher.getAppName() == null));
+                if( !nullLauncherNameFound.get() ){
+                    launcherNames.addAll(launchers.stream().map(launcher -> launcher.getAppName()).collect(Collectors.toList()));
+
+                    // assume we have valid entry here
+                    params.put(StandardBundlerParam.SECONDARY_LAUNCHERS.getID(), launchers.stream().map(launcher -> {
+                        Map<String, Object> secondaryLauncher = new HashMap<>();
+                        addToMapWhenNotNull(launcher.getAppName(), StandardBundlerParam.APP_NAME.getID(), secondaryLauncher);
+                        addToMapWhenNotNull(launcher.getMainClass(), StandardBundlerParam.MAIN_CLASS.getID(), secondaryLauncher);
+                        addToMapWhenNotNull(launcher.getJfxMainAppJarName(), StandardBundlerParam.MAIN_JAR.getID(), secondaryLauncher);
+                        // TODO implement secondary launcher mapping
+                        return secondaryLauncher;
+                    }).collect(Collectors.toList()));
                 }
-                
-                params.put(StandardBundlerParam.SECONDARY_LAUNCHERS.getID(), secondaryLaunchers.stream().map(launcher -> {
-                    Map<String, Object> secondaryLauncher = new HashMap<>();
-                    addToMapWhenNotNull(launcher.getAppName(), StandardBundlerParam.APP_NAME.getID(), secondaryLauncher);
-                    addToMapWhenNotNull(launcher.getMainClass(), StandardBundlerParam.MAIN_CLASS.getID(), secondaryLauncher);
-                    addToMapWhenNotNull(launcher.getJfxMainAppJarName(), StandardBundlerParam.MAIN_JAR.getID(), secondaryLauncher);
-                    return secondaryLauncher;
-                }).collect(Collectors.toList()));
+            });
+
+            // check "no launcher names"
+            if( nullLauncherNameFound.get() ){
+                throw new MojoExecutionException("Not all secondary launchers have been configured properly.");
+            }
+            // check "duplicate launcher names"
+            Set<String> duplicateLauncherNamesCheckSet = new HashSet<>();
+            launcherNames.stream().forEach(launcherName -> duplicateLauncherNamesCheckSet.add(launcherName));
+            if( duplicateLauncherNamesCheckSet.size() != launcherNames.size() ){
+                throw new MojoExecutionException("Secondary launcher needs to have different name, please adjust appName inside your configuration.");
             }
 
             // bugfix for "bundler not being able to produce native bundle without JRE on windows"
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
-            // windows only bug
-            if(System.getProperty("os.name").toLowerCase().startsWith("win")){
-                if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) ){
-                    if(!skipNativeLauncherWorkaround167){
-                        if( params.containsKey("runtime")){
-                            getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60");
-                            // the problem is com.oracle.tools.packager.windows.WinAppBundler within createLauncherForEntryPoint-Method
-                            // it does NOT respect runtime-setting while calling "writeCfgFile"-method of com.oracle.tools.packager.AbstractImageBundler
-                            // since newer java versions (they added possability to have INI-file-format of generated cfg-file, since 1.8.0_60).
-                            // Because we want to have backward-compatibility within java 8, we will use parameter-name as hardcoded string!
-                            // Our workaround: use prop-file-format
-                            params.put("launcher-cfg-format", "prop");
-                        }
-                    }else{
-                        getLog().info("Skipped workaround for native windows launcher regarding cfg-file-format.");
+            if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) ){
+                if( !skipNativeLauncherWorkaround167 ){
+                    if( params.containsKey("runtime") ){
+                        getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60");
+                        // the problem is com.oracle.tools.packager.windows.WinAppBundler within createLauncherForEntryPoint-Method
+                        // it does NOT respect runtime-setting while calling "writeCfgFile"-method of com.oracle.tools.packager.AbstractImageBundler
+                        // since newer java versions (they added possability to have INI-file-format of generated cfg-file, since 1.8.0_60).
+                        // Because we want to have backward-compatibility within java 8, we will use parameter-name as hardcoded string!
+                        // Our workaround: use prop-file-format
+                        params.put("launcher-cfg-format", "prop");
                     }
+                } else {
+                    getLog().info("Skipped workaround for native launcher regarding cfg-file-format.");
                 }
             }
 
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
             boolean foundBundler = false;
-            for (Bundler b : bundlers.getBundlers()) {
-                try {
+            for( Bundler b : bundlers.getBundlers() ){
+                try{
                     //noinspection deprecation
-                    if (bundleType != null && !"ALL".equalsIgnoreCase(bundleType) && !b.getBundleType().equalsIgnoreCase(bundleType)) {
+                    if( bundleType != null && !"ALL".equalsIgnoreCase(bundleType) && !b.getBundleType().equalsIgnoreCase(bundleType) ){
                         // not this kind of bundler
                         continue;
                     }
-                    if (bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(b.getID())){
+                    if( bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(b.getID()) ){
                         // this is not the specified bundler
                         continue;
                     }
                     foundBundler = true;
 
                     Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
-                    if (b.validate(paramsToBundleWith)) {
+                    if( b.validate(paramsToBundleWith) ){
                         b.execute(paramsToBundleWith, nativeOutputDir);
 
                         // Workaround for "Native package for Ubuntu doesn't work"
@@ -448,22 +458,22 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             }
                         }
                     }
-                } catch (UnsupportedPlatformException e) {
+                } catch(UnsupportedPlatformException e){
                     // quietly ignored
-                } catch (ConfigException e) {
+                } catch(ConfigException e){
                     getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
                 }
             }
-            if(!foundBundler){
+            if( !foundBundler ){
                 getLog().warn("No bundler found for given type " + bundleType + ". Please check your configuration.");
             }
-        } catch (RuntimeException e) {
+        } catch(RuntimeException e){
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
         }
     }
 
     private void addToMapWhenNotNull(Object value, String key, Map<String, Object> map) {
-        if( value == null ) {
+        if( value == null ){
             return;
         }
         map.put(key, value);
@@ -477,9 +487,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         }
         // rename .cfg-file (makes it able to create running applications again, even within installer)
         String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
-        Path oldConfigFile = nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(appName + ".cfg");
+        Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app");
+        String configfileExtension = ".cfg";
+        Path oldConfigFile = appPath.resolve(appName + configfileExtension);
         try{
-            Files.move(oldConfigFile, nativeOutputDir.toPath().resolve(appName).resolve("app").resolve(newConfigFileName + ".cfg"), StandardCopyOption.ATOMIC_MOVE);
+            Files.move(oldConfigFile, appPath.resolve(newConfigFileName + configfileExtension), StandardCopyOption.ATOMIC_MOVE);
         } catch(IOException ex){
             getLog().warn("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details.", ex);
         }
