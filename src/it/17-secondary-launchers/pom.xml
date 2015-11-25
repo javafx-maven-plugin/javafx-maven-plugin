@@ -32,10 +32,10 @@
                         <runtime />
                     </bundleArguments>
                     <secondaryLaunchers>
-                        <launcher>
+                        <nativeLauncher>
                             <appName>SecondaryMainLauncher</appName>
                             <mainClass>com.zenjava.test.SecondaryMain</mainClass>
-                        </launcher>
+                        </nativeLauncher>
                     </secondaryLaunchers>
                 </configuration>
             </plugin>

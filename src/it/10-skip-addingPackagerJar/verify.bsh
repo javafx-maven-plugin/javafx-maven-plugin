@@ -10,13 +10,8 @@ if( !jfxAppFolder.exists() ){
     throw new Exception( "there should be a jfx-app-folder!");
 }
 
-// this may exist
 File jfxAppLibFolder = new File( jfxAppFolder, "lib" );
-if( !jfxAppLibFolder.exists() ){
-    throw new Exception( "there should be a lib-folder within jfx-app-folder!");
-}
-
 File packagerJar = new File( jfxAppLibFolder, "packager.jar" );
-if( packagerJar.exists() ){
-    throw new Exception( "there should NOT be packager.jar, because we added opt-out parameter");
+if( jfxAppLibFolder.exists() || packagerJar.exists() ){
+    throw new Exception( "there should be a NO lib-folder within jfx-app-folder, and there should NOT be packager.jar, because we added opt-out parameter!");
 }
