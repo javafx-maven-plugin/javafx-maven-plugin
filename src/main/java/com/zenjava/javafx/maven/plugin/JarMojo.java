@@ -100,11 +100,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @since 8.1.4
      */
     protected boolean addPackagerJar;
-    
+
     /**
-     * 
+     * In the case you don't want some dependency landing in the generated lib-folder (e.g. complex maven-dependencies),
+     * you now can manually exclude that dependency by added it's coordinates here.
+     *
      * @parameter
-     * @since 8.1.6
+     * @since 8.2.0
      */
     protected List<Dependency> classpathExcludes = new ArrayList<>();
 
@@ -183,7 +185,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 File artifactFile = artifact.getFile();
                 return artifactFile.isFile() && artifactFile.canRead();
             }).filter(artifact -> {
-                if( classpathExcludes.isEmpty() ) {
+                if( classpathExcludes.isEmpty() ){
                     return true;
                 }
                 boolean isListedInList = isListedInExclusionList(artifact);
@@ -203,7 +205,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 }
                 classpath.append("lib/").append(artifactFile.getName()).append(" ");
             });
-            if(!brokenArtifacts.isEmpty()){
+            if( !brokenArtifacts.isEmpty() ){
                 throw new MojoExecutionException("Error copying dependencies for application");
             }
         } catch(IOException e){
