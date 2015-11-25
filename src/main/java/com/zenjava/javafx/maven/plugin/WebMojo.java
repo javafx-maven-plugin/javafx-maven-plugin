@@ -27,8 +27,10 @@ import org.codehaus.plexus.util.StringUtils;
 import java.io.File;
 
 /**
+ * @deprecated is gonna to be replaced in the oraclejdk by normal bundler with id &quot;jnlp&quot;
  * @goal build-web
  */
+@Deprecated
 public class WebMojo extends AbstractJfxToolsMojo {
 
     /**
@@ -40,7 +42,8 @@ public class WebMojo extends AbstractJfxToolsMojo {
     protected String vendor;
 
     /**
-     * <p>The output directory that the web bundle is to be built into. Both the webstart and applet bundle are
+     * <p>
+     * The output directory that the web bundle is to be built into. Both the webstart and applet bundle are
      * generated into the same output directory and share the same JNLP and JAR files.</p>
      *
      * @parameter default-value="${project.build.directory}/jfx/web"
@@ -73,45 +76,47 @@ public class WebMojo extends AbstractJfxToolsMojo {
     protected String preLoader;
 
     /**
-     * <p>Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
+     * <p>
+     * Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
      *
-     * <p>By setting this value, you are implicitly saying that your app needs to be signed. As such, this Mojo will
+     * <p>
+     * By setting this value, you are implicitly saying that your app needs to be signed. As such, this Mojo will
      * automatically attempt to sign your JARs if this is set, and in this case the various keyStore parameters need to
      * be set correctly and a keyStore must be present. Use the generate-key-store Mojo to generate a local keyStore for
      * testing.</p>
      *
-     * <p>If you are using FXML you will need to set this value to true.</p>
+     * <p>
+     * If you are using FXML you will need to set this value to true.</p>
      *
      * @parameter default-value=false
      */
     protected boolean allPermissions;
 
     /**
-     * 
+     *
      * @parameter default-value=800
      */
     protected int width;
 
     /**
-     * 
+     *
      * @parameter default-value=600
      */
     protected int height;
 
     /**
      * If not set, will be the same as width-parameter.
-     * 
+     *
      * @parameter
      */
     protected String embeddedWidth;
 
     /**
      * If not set, will be the same as height-parameter.
-     * 
+     *
      * @parameter
      */
     protected String embeddedHeight;
-
 
     /**
      * The location of the keystore. If not set, this will default to src/main/deploy/kesytore.jks which is usually fine
@@ -166,17 +171,18 @@ public class WebMojo extends AbstractJfxToolsMojo {
 
     /**
      * This value refers to a platform version of the Java Platform Standard Edition.
-     * 
+     *
      * @parameter default-value="1.7+"
      */
     protected String j2seVersion;
 
     @Override
+    @SuppressWarnings("deprecation")
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         getLog().info("Building Web deployment bundles");
 
-        try {
+        try{
             Build build = project.getBuild();
 
             DeployParams deployParams = new DeployParams();
@@ -197,7 +203,7 @@ public class WebMojo extends AbstractJfxToolsMojo {
 
             // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
             File libFolder = new File(jfxAppOutputDir, "lib");
-            if(libFolder.exists()){
+            if( libFolder.exists() ){
                 deployParams.addResource(jfxAppOutputDir, "lib");
             }
 
@@ -213,10 +219,10 @@ public class WebMojo extends AbstractJfxToolsMojo {
             deployParams.setEmbeddedDimensions(embeddedWidth, embeddedHeight);
 
             // bugfix for bug #40 "jfx:web - Signing Jars"
-            if(!"".equals(description)){
+            if( !"".equals(description) ){
                 deployParams.setDescription(description);
             }
-            if(!"".equals(title)){
+            if( !"".equals(title) ){
                 deployParams.setTitle(title);
             }
 
@@ -229,23 +235,23 @@ public class WebMojo extends AbstractJfxToolsMojo {
             getPackagerLib().generateDeploymentPackages(deployParams);
 
             // if permissions have been requested then we need to sign the JAR file
-            if (allPermissions) {
+            if( allPermissions ){
 
                 getLog().info("Permissions requested, signing JAR files for webstart bundle");
 
-                if (!keyStore.exists()) {
+                if( !keyStore.exists() ){
                     throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
                 }
 
-                if (StringUtils.isEmpty(keyStoreAlias)) {
+                if( StringUtils.isEmpty(keyStoreAlias) ){
                     throw new MojoFailureException("A 'keyStoreAlias' is required for signing JARs");
                 }
 
-                if (StringUtils.isEmpty(keyStorePassword)) {
+                if( StringUtils.isEmpty(keyStorePassword) ){
                     throw new MojoFailureException("A 'keyStorePassword' is required for signing JARs");
                 }
 
-                if (keyPassword == null) {
+                if( keyPassword == null ){
                     keyPassword = keyStorePassword;
                 }
 
@@ -260,14 +266,14 @@ public class WebMojo extends AbstractJfxToolsMojo {
                 signJarParams.addResource(webOutputDir, jfxMainAppJarName);
                 // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
                 File webLibFolder = new File(webOutputDir, "lib");
-                if(webLibFolder.exists()){
+                if( webLibFolder.exists() ){
                     signJarParams.addResource(webOutputDir, "lib");
                 }
 
                 getPackagerLib().signJar(signJarParams);
             }
 
-        } catch (PackagerException e) {
+        } catch(PackagerException e){
             throw new MojoExecutionException("An error occurred while generating web deployment bundle", e);
         }
     }

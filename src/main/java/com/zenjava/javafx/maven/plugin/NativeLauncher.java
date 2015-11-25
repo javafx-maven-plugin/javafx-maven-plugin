@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Data transfer object for configuring secondary native launchers.
  *
  * @author Danny Althoff
  */

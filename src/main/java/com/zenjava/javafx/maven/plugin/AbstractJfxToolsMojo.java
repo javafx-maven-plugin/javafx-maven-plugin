@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.zenjava.javafx.maven.plugin;
 
 import com.oracle.tools.packager.Log;
@@ -23,7 +22,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -62,7 +63,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * libraries (place in the 'lib' sub-directory). The resulting JAR in this directory will be ready for distribution,
      * including Pre-Loaders, signing, etc. This JAR will also be the one bundled into the other distribution bundles
      * (i.e. web or native) if you run the relevant commands for that.
-     * <p/>
+     * <p>
      * This defaults to 'target/jfx/app' and in most cases there is no real need to change this.
      *
      * @parameter default-value="${project.build.directory}/jfx/app"
@@ -79,50 +80,46 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     protected String jfxMainAppJarName;
 
     /**
-     * <p>The directory contain deployment specific files, such as icons and splash screen images. This directory is added
+     * The directory contain deployment specific files, such as icons and splash screen images. This directory is added
      * to the classpath of the Mojo when it runs, so that any files within this directory are accessible to the
-     * JavaFX packaging tools.</p>
-     *
-     * <p>This defaults to src/main/deploy and typically this is good enough. Just put your deployment specific files in
-     * this directory and they will be automatically picked up.</p>
-     *
-     * <p>The most common usage for this is to provide platform specific icons for native bundles. In this case you need
-     * to follow the convention of the JavaFX packaging tools to ensure your icons get picked up.</p>
+     * JavaFX packaging tools.
+     * <p>
+     * This defaults to src/main/deploy and typically this is good enough. Just put your deployment specific files in
+     * this directory and they will be automatically picked up.
+     * <p>
+     * The most common usage for this is to provide platform specific icons for native bundles. In this case you need
+     * to follow the convention of the JavaFX packaging tools to ensure your icons get picked up.
      *
      * <ul>
-     *     <li>for <b>windows</b> put an icon at src/main/deploy/package/windows/your-app-name.ico</li>
-     *     <li>for <b>mac</b> put an icon at src/main/deploy/package/macosx/your-app-name.icns</li>
+     * <li>for <b>windows</b> put an icon at src/main/deploy/package/windows/your-app-name.ico</li>
+     * <li>for <b>mac</b> put an icon at src/main/deploy/package/macosx/your-app-name.icns</li>
      * </ul>
      *
      * @parameter default-value="${project.basedir}/src/main/deploy"
      */
     protected String deployDir;
 
-
     private PackagerLib packagerLib;
-
 
     public PackagerLib getPackagerLib() throws MojoExecutionException {
 
-        if (packagerLib == null) {
+        if( packagerLib == null ){
 
             // add deployDir to system classpath
-            if (deployDir != null) {
+            if( deployDir != null ){
                 getLog().info("Adding 'deploy' directory to Mojo classpath: " + deployDir);
                 URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
                 Class<URLClassLoader> sysclass = URLClassLoader.class;
-                try {
+                try{
                     Method method = sysclass.getDeclaredMethod("addURL", URL.class);
                     method.setAccessible(true);
                     method.invoke(sysloader, new File(deployDir).toURI().toURL());
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    throw new MojoExecutionException("Error, could not add URL to system classloader");
+                } catch(NoSuchMethodException | SecurityException | MalformedURLException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex){
+                    throw new MojoExecutionException("Error, could not add URL to system classloader", ex);
                 }
             }
 
-            Log.Logger logger = new Log.Logger(verbose);
-            Log.setLogger(logger);
+            Log.setLogger(new Log.Logger(verbose));
             this.packagerLib = new PackagerLib();
         }
         return this.packagerLib;
@@ -136,7 +133,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     protected boolean isAtLeastOracleJavaUpdateVersion(int updateNumber) {
         String javaVersion = System.getProperty("java.version");
         String[] javaVersionSplitted = javaVersion.split("_");
-        if( javaVersionSplitted.length <= 1 ) {
+        if( javaVersionSplitted.length <= 1 ){
             return false;
         }
         String javaUpdateVersionRaw = javaVersionSplitted[1];

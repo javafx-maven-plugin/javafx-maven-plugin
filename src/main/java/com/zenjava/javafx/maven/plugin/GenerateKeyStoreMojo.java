@@ -44,9 +44,10 @@ import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
  * @requiresDependencyResolution
  */
 public class GenerateKeyStoreMojo extends AbstractMojo {
-    
+
     @FunctionalInterface
-    private interface RequiredFieldAlternativeCallback{
+    private interface RequiredFieldAlternativeCallback {
+
         String getValue();
     }
 
@@ -154,9 +155,9 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        if (keyStore.exists()) {
-            if (overwriteKeyStore) {
-                if (!keyStore.delete()) {
+        if( keyStore.exists() ){
+            if( overwriteKeyStore ){
+                if( !keyStore.delete() ){
                     throw new MojoFailureException("Unable to delete existing keystore at: " + keyStore);
                 }
             } else {
@@ -167,13 +168,13 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
         checkKeystoreRequiredParameter(keyStoreAlias, "keyStoreAlias");
         checkKeystoreRequiredParameter(keyStorePassword, "keyStorePassword");
 
-        if (keyPassword == null) {
+        if( keyPassword == null ){
             keyPassword = keyStorePassword;
         }
 
         List<String> distinguishedNameParts = new ArrayList<>();
         Organization projectOrganization = project.getOrganization();
-        
+
         checkAndAddRequiredField(distinguishedNameParts, "certDomain", certDomain, "cn", () -> {
             if( projectOrganization != null && !StringUtils.isEmpty(projectOrganization.getUrl()) ){
                 String url = projectOrganization.getUrl();
@@ -190,7 +191,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
             return "none";
         });
         checkAndAddRequiredField(distinguishedNameParts, "certOrg", certOrg, "o", () -> {
-            if (projectOrganization != null && !StringUtils.isEmpty(projectOrganization.getName())) {
+            if( projectOrganization != null && !StringUtils.isEmpty(projectOrganization.getName()) ){
                 return projectOrganization.getName();
             }
             return null;
@@ -199,18 +200,17 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
         checkAndAddRequiredField(distinguishedNameParts, "certCountry", certCountry, "c");
 
         generateKeyStore(
-            keyStore, keyStoreAlias, keyStorePassword, keyPassword, String.join(", ", distinguishedNameParts)
+                keyStore, keyStoreAlias, keyStorePassword, keyPassword, String.join(", ", distinguishedNameParts)
         );
     }
 
     protected void generateKeyStore(File keyStore,
-                                    String keyStoreAlias,
-                                    String keyStorePassword,
-                                    String keyPassword,
-                                    String distinguishedName)
-
+            String keyStoreAlias,
+            String keyStorePassword,
+            String keyPassword,
+            String distinguishedName)
             throws MojoExecutionException,
-                   MojoFailureException {
+            MojoFailureException {
 
         getLog().info("Generating keystore in: " + keyStore);
 
@@ -227,7 +227,6 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
                         element(name("storepass"), keyStorePassword),
                         element(name("keypass"), keyPassword),
                         element(name("dname"), distinguishedName),
-
                         element(name("sigalg"), "SHA256withRSA"),
                         element(name("ext"), ""),
                         element(name("validity"), "100"),
@@ -255,12 +254,10 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     private void checkAndAddRequiredField(List<String> distinguishedNameParts, String propertyName, String value, String fieldName, RequiredFieldAlternativeCallback alternative) throws MojoExecutionException {
         if( !StringUtils.isEmpty(value) ){
             distinguishedNameParts.add(fieldName + "=" + value);
+        } else if( alternative == null || StringUtils.isEmpty(alternative.getValue()) ){
+            throw new MojoExecutionException("The property '" + propertyName + "' must be provided to generate a new certificate.");
         } else {
-            if( alternative == null || StringUtils.isEmpty(alternative.getValue()) ){
-                throw new MojoExecutionException("The property '" + propertyName + "' must be provided to generate a new certificate.");
-            } else {
-                distinguishedNameParts.add(fieldName + "=" + alternative.getValue());
-            }
+            distinguishedNameParts.add(fieldName + "=" + alternative.getValue());
         }
     }
 

@@ -48,6 +48,7 @@ public class ListBundlersMojo extends AbstractMojo {
                 return;
             } catch(ConfigException ex){
                 // NO-OP
+                // bundler is supported on this OS
             }
 
             getLog().info("ID: " + bundler.getID());
