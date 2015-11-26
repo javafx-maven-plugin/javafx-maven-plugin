@@ -152,6 +152,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private Map<String, String> userJvmArgs;
 
     /**
+     * You can specify arguments that gonna be passed when calling your application.
+     *
+     * @parameter
+     */
+    private List<String> launcherArguments;
+
+    /**
      * The release version as passed to the native installer. It would be nice to just use the project's version number
      * but this must be a fairly traditional version string (like '1.34.5') with only numeric characters and dot
      * separators, otherwise the JFX packaging tools bomb out. We default to 1.0 in case you can't be bothered to set
@@ -295,6 +302,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             Optional.ofNullable(userJvmArgs).ifPresent(userJvmOptions -> {
                 params.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), new HashMap<>(userJvmOptions));
             });
+            Optional.ofNullable(launcherArguments).ifPresent(arguments -> {
+                params.put(StandardBundlerParam.ARGUMENTS.getID(), new ArrayList<>(arguments));
+            });
 
             // bugfix for #83 (by copying additional resources to /jfx/app folder)
             Optional.ofNullable(additionalAppResources).filter(File::exists).ifPresent(appResources -> {
@@ -397,6 +407,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         });
                         Optional.ofNullable(launcher.getUserJvmArgs()).ifPresent(userJvmOptions -> {
                             secondaryLauncher.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), new HashMap<>(userJvmOptions));
+                        });
+                        Optional.ofNullable(launcher.getLauncherArguments()).ifPresent(arguments -> {
+                            params.put(StandardBundlerParam.ARGUMENTS.getID(), new ArrayList<>(arguments));
                         });
                         return secondaryLauncher;
                     }).collect(Collectors.toList()));
