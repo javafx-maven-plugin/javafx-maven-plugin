@@ -24,6 +24,8 @@ build_script:
   - mvn clean package --batch-mode -DskipTest
 test_script:
   - mvn clean install --batch-mode
+
+## http://help.appveyor.com/discussions/problems/3535-unable-to-add-userprofilenode-gyp-to-cache
 cache:
-  - C:\maven\
-  - %userprofile%\.m2
+  '- C:\maven\'
+  '- %userprofile%\.m2'
