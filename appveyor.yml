@@ -1,0 +1,27 @@
+## thanks to https://dzone.com/articles/continuous-integration-windows
+## with some adjustments and exported yaml-settings
+
+version: '{build}'
+os: Windows Server 2012
+pull_requests:
+  do_not_increment_build_number: true
+branches:
+  only:
+  - master
+skip_tags: true
+install:
+  - ps: |
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      if (!(Test-Path -Path "C:\maven" )) {
+        (new-object System.Net.WebClient).DownloadFile(
+          'http://www.us.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.zip',
+          'C:\maven-bin.zip'
+        )
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
+      }
+      $env:Path +=";C:\maven\apache-maven-3.2.5\bin;%JAVA_HOME%\bin"
+build_script:
+  - mvn clean package --batch-mode -DskipTest
+test_script:
+  - mvn clean install --batch-mode
+

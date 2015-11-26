@@ -18,7 +18,6 @@ package com.zenjava.javafx.maven.plugin;
 import com.sun.javafx.tools.packager.CreateJarParams;
 import com.sun.javafx.tools.packager.PackagerException;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -27,8 +26,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.apache.maven.artifact.Artifact;
 
 /**
  * @goal build-jar
@@ -65,11 +67,9 @@ public class JarMojo extends AbstractJfxToolsMojo {
     protected boolean updateExistingJar;
 
     /**
+     * Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.
      * <p>
-     * Set this to true if your app needs to break out of the standard web sandbox and do more powerful functions.</p>
-     *
-     * <p>
-     * If you are using FXML you will need to set this value to true.</p>
+     * If you are using FXML you will need to set this value to true.
      *
      * @parameter default-value=false
      */
@@ -92,12 +92,38 @@ public class JarMojo extends AbstractJfxToolsMojo {
     /**
      * For being able to use &lt;userJvmArgs&gt;, we have to copy some dependency when being used. To disable this feature an not having packager.jar
      * in your project, set this to false.
+     * <p>
      * To get more information about, please check the documentation here: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/jvm_options_api.html.
      *
      * @parameter default-value=true
      * @since 8.1.4
      */
     protected boolean addPackagerJar;
+
+    /**
+     * In the case you don't want some dependency landing in the generated lib-folder (e.g. complex maven-dependencies),
+     * you now can manually exclude that dependency by added it's coordinates here.
+     *
+     * @parameter
+     * @since 8.2.0
+     */
+    protected List<Dependency> classpathExcludes = new ArrayList<>();
+
+    /**
+     * Per default all listed classpath excludes are ment to be transivie, that means when any direct declared dependency
+     * requires another dependency.
+     * <p>
+     * When having &lt;classpathExcludes&gt; contains any dependency, that dependency including all transitive dependencies
+     * are filtered while processing lib-files, it's the default behaviour. In the rare case you have some very special setup,
+     * and just want to exlude these dependency, but want to preserve all transitive dependencies going into the lib-folder,
+     * this can be set via this property.
+     * <p>
+     * Set this to false when you want to have the direct declared dependency excluded from lib-file-processing.
+     *
+     * @parameter default-value=true
+     * @since 8.2.0
+     */
+    protected boolean classpathExcludesTransient;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -153,7 +179,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                             File packagerJarFile = new File(dependency.getSystemPath());
                             String packagerJarFilePathString = packagerJarFile.toPath().normalize().toString();
                             if( packagerJarFile.exists() && packagerJarFilePathString.endsWith(targetPackagerJarPath) ){
-                                getLog().debug("Including packager.jar from system-scope: " + packagerJarFilePathString);
+                                getLog().debug(String.format("Including packager.jar from system-scope: %s", packagerJarFilePathString));
                                 File dest = new File(libDir, packagerJarFile.getName());
                                 if( !dest.exists() ){
                                     Files.copy(packagerJarFile.toPath(), dest.toPath());
@@ -165,24 +191,38 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 } else {
                     getLog().debug("No packager.jar will be added");
                 }
-            } else {
-                if( addPackagerJar ){
-                    getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
-                }
+            } else if( addPackagerJar ){
+                getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
             }
-            for( String path : project.getRuntimeClasspathElements() ){
-                File file = new File(path);
-                if( file.isFile() ){
-                    getLog().debug("Including classpath element: " + path);
-                    File dest = new File(libDir, file.getName());
-                    if( !dest.exists() ){
-                        Files.copy(file.toPath(), dest.toPath());
+            List<String> brokenArtifacts = new ArrayList<>();
+            project.getArtifacts().stream().filter(artifact -> {
+                // filter all unreadable, non-file artifacts
+                File artifactFile = artifact.getFile();
+                return artifactFile.isFile() && artifactFile.canRead();
+            }).filter(artifact -> {
+                if( classpathExcludes.isEmpty() ){
+                    return true;
+                }
+                boolean isListedInList = isListedInExclusionList(artifact);
+                return !isListedInList;
+            }).forEach(artifact -> {
+                File artifactFile = artifact.getFile();
+                getLog().debug(String.format("Including classpath element: %s", artifactFile.getAbsolutePath()));
+                File dest = new File(libDir, artifactFile.getName());
+                if( !dest.exists() ){
+                    try{
+                        Files.copy(artifactFile.toPath(), dest.toPath());
+                    } catch(IOException ex){
+                        getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
+                        getLog().debug(ex);
+                        brokenArtifacts.add(artifactFile.getAbsolutePath());
                     }
-                    classpath.append("lib/").append(file.getName()).append(" ");
                 }
+                classpath.append("lib/").append(artifactFile.getName()).append(" ");
+            });
+            if( !brokenArtifacts.isEmpty() ){
+                throw new MojoExecutionException("Error copying dependencies for application");
             }
-        } catch(DependencyResolutionRequiredException e){
-            throw new MojoExecutionException("Error resolving application classpath to use for application", e);
         } catch(IOException e){
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
@@ -198,6 +238,12 @@ public class JarMojo extends AbstractJfxToolsMojo {
         } catch(PackagerException e){
             throw new MojoExecutionException("Unable to build JFX JAR for application", e);
         }
+
+        // cleanup
+        if( libDir.list().length == 0 ){
+            // remove lib-folder, when nothing ended up there
+            libDir.delete();
+        }
     }
 
     private boolean checkIfJavaIsHavingPackagerJar() {
@@ -210,5 +256,20 @@ public class JarMojo extends AbstractJfxToolsMojo {
             return true;
         }
         return false;
+    }
+
+    private boolean isListedInExclusionList(Artifact artifact) {
+        return classpathExcludes.stream().filter(dependency -> {
+            // we are checking for "groupID:artifactId:" because we don't care about versions nor types (jar, war, source, ...)
+            String dependencyTrailIdentifier = dependency.getGroupId() + ":" + dependency.getArtifactId() + ":";
+
+            // when not transitive, look at the artifact information
+            if( !classpathExcludesTransient ){
+                return dependencyTrailIdentifier.startsWith(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":");
+            }
+
+            // when transitive, look at the trail
+            return artifact.getDependencyTrail().stream().anyMatch((dependencyTrail) -> (dependencyTrail.startsWith(dependencyTrailIdentifier)));
+        }).count() > 0;
     }
 }
