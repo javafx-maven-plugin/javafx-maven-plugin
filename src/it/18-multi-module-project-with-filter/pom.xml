@@ -44,6 +44,7 @@
         <!-- all plugins -->
         <module>plugins/plugin-one</module>
         <module>plugins/plugin-two</module>
+        <module>plugins/plugin-three</module>
 
         <!-- executable application -->
         <module>application-bundle</module>

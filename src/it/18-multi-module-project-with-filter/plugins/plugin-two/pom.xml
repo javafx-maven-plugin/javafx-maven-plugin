@@ -32,4 +32,12 @@
             </plugin>
         </plugins>
     </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>com.zenjava</groupId>
+            <artifactId>plugin-three</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
 </project>
