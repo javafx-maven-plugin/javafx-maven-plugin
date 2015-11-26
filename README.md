@@ -104,6 +104,7 @@ New:
 * added possibility for "secondary launchers", makes it possible to have more than one native launcher
 * added possibility to filter dependencies while putting required JAR-files into the generated lib-folder
 * added property to disable transitive filtering
+* added CONTRIBUTING-file (fixes #125)
 
 Improvements:
 * added some IT-projects and updated others

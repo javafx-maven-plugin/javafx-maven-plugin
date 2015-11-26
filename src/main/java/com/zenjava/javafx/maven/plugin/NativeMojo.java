@@ -374,7 +374,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
                     // assume we have valid entry here
                     params.put(StandardBundlerParam.SECONDARY_LAUNCHERS.getID(), launchers.stream().map(launcher -> {
-                        getLog().debug("Adding secondary launcher: " + launcher.getAppName());
+                        getLog().info("Adding secondary launcher: " + launcher.getAppName());
                         Map<String, Object> secondaryLauncher = new HashMap<>();
                         addToMapWhenNotNull(launcher.getAppName(), StandardBundlerParam.APP_NAME.getID(), secondaryLauncher);
                         addToMapWhenNotNull(launcher.getMainClass(), StandardBundlerParam.MAIN_CLASS.getID(), secondaryLauncher);
