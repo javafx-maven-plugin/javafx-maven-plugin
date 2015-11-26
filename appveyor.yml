@@ -28,4 +28,3 @@ test_script:
 ## http://help.appveyor.com/discussions/problems/3535-unable-to-add-userprofilenode-gyp-to-cache
 cache:
   '- C:\maven\'
-  '- %userprofile%\.m2'
