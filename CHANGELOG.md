@@ -1,6 +1,26 @@
 Release Notes
 =============
 
+
+Version 8.2.0 (26-Nov-2015)
+Bugfixes:
+* bugfix #159 added support for openjdk/openjfx (version-checker failed with NumberFormatException due to wrong expectations)
+* added workaround for bug #167 regarding native windows launcher configuration-file (cfg-file), bug is inside Oracle JDK since 1.8.0 Update 60 (to work around this, this plugin tries to enforce property-file-format, which does not contain the problem)
+
+New:
+* added new property to disable workaround `<skipNativeLauncherWorkaround167>true</skipNativeLauncherWorkaround167>`
+* added new mojo: calling `mvn jfx:list-bundlers` shows currently available bundlers with ID, name and descriptions, including their specific arguments able to be passed via `<bundleArguments>`-configuration
+* added possibility for "secondary launchers", makes it possible to have more than one native launcher
+* added possibility to filter dependencies while putting required JAR-files into the generated lib-folder
+* added property to disable transitive filtering
+* added CONTRIBUTING-file (fixes #125)
+
+Improvements:
+* added some IT-projects and updated others
+* updated to more Java 8 syntax
+* added [Windows-CI via AppVeyor](http://www.appveyor.com/) (including status badge)
+
+
 Version 8.1.5 (24-Sep-2015)
 * added workaround for bug #124 regarding native launcher, bug is inside Oracle JDK since 1.8.0 Update 40 (thanks to Jens Deters and Stefan Helfrich for testing/reporting helping information)
 * added new property to disable workaround `<skipNativeLauncherWorkaround124>true</skipNativeLauncherWorkaround124>`

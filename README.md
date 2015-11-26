@@ -92,7 +92,7 @@ Set version to new SNAPSHOT-version:
 Last Release Notes
 ==================
 
-**Version 8.2.0 (??-Nov-2015)**
+**Version 8.2.0 (26-Nov-2015)**
 
 Bugfixes:
 * bugfix #159 added support for openjdk/openjfx (version-checker failed with NumberFormatException due to wrong expectations)
