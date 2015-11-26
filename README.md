@@ -102,6 +102,8 @@ New:
 * added new property to disable workaround `<skipNativeLauncherWorkaround167>true</skipNativeLauncherWorkaround167>`
 * added new mojo: calling `mvn jfx:list-bundlers` shows currently available bundlers with ID, name and descriptions, including their specific arguments able to be passed via `<bundleArguments>`-configuration
 * added possibility for "secondary launchers", makes it possible to have more than one native launcher
+* added possibility to filter dependencies while putting required JAR-files into the generated lib-folder
+* added property to disable transitive filtering
 
 Improvements:
 * added some IT-projects and updated others
