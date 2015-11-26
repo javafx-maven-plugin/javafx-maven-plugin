@@ -54,6 +54,8 @@
                     <bundleArguments>
                         <runtime />
                     </bundleArguments>
+                    <!-- might break IT-test verification, so disable workaround on linux -->
+                    <skipNativeLauncherWorkaround124>true</skipNativeLauncherWorkaround124>
                     <secondaryLaunchers>
                         <nativeLauncher>
                             <appName>SecondaryMainLauncher</appName>
