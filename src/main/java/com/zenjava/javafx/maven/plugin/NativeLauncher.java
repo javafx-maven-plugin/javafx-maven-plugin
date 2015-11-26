@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Data transfer object for configuring secondary native launchers.
+ * Data transfer object for configuring secondary native launchers. These fields are all like when calling 'mvn jfx:native'.
  *
  * @author Danny Althoff
  */
@@ -62,7 +62,7 @@ public class NativeLauncher {
     /**
      * @parameter default-value="1.0"
      */
-    private String nativeReleaseVersion;
+    private String nativeReleaseVersion = null;
 
     /**
      * @parameter default-value=false
@@ -73,6 +73,23 @@ public class NativeLauncher {
      * @parameter default-value=false
      */
     private boolean needMenu;
+
+    /**
+     * @parameter
+     */
+    private String vendor = null;
+
+    /**
+     * @parameter
+     */
+    private String identifier = null;
+
+    /**
+     * To override default generated classpath, set this to your wanted value.
+     *
+     * @parameter
+     */
+    private String classpath = null;
 
     public String getMainClass() {
         return mainClass;
@@ -108,6 +125,30 @@ public class NativeLauncher {
 
     public boolean isNeedMenu() {
         return needMenu;
+    }
+
+    public String getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(String vendor) {
+        this.vendor = vendor;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getClasspath() {
+        return classpath;
+    }
+
+    public void setClasspath(String classpath) {
+        this.classpath = classpath;
     }
 
 }
