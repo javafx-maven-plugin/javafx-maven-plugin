@@ -257,6 +257,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean skipNativeLauncherWorkaround167;
 
+    /**
+     * @parameter
+     */
+    private List<FileAssociation> fileAssociations;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
