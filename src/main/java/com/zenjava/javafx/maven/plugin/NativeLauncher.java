@@ -91,6 +91,8 @@ public class NativeLauncher {
      */
     private String classpath = null;
 
+    private List<String> launcherArguments = null;
+
     public String getMainClass() {
         return mainClass;
     }
@@ -149,6 +151,14 @@ public class NativeLauncher {
 
     public void setClasspath(String classpath) {
         this.classpath = classpath;
+    }
+
+    public List<String> getLauncherArguments() {
+        return launcherArguments;
+    }
+
+    public void setLauncherArguments(List<String> launcherArguments) {
+        this.launcherArguments = launcherArguments;
     }
 
 }
