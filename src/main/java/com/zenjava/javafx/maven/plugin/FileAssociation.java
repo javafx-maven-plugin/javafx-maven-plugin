@@ -12,14 +12,17 @@ public class FileAssociation {
      * @parameter
      */
     private String description = null;
+
     /**
      * @parameter
      */
     private String extensions = null;
+
     /**
      * @parameter
      */
     private String contentType = null;
+
     /**
      * @parameter
      */

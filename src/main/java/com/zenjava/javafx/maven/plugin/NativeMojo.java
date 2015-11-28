@@ -261,6 +261,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * It is possible to create file associations when using native installers. When specified,
      * all file associations are bound to the main native launcher. There is no support for bunding
      * them to second launchers.
+     * <p>
+     * For more informatione, please see official information source: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/javafx_ant_task_reference.html#CIAIDHBJ
      *
      * @parameter
      */
