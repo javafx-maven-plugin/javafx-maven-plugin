@@ -116,4 +116,4 @@ Improvements:
 ==================
 
 upcoming Version 8.2.1 (??-2015)
-* nothing yet changed
+* added possibility for adding file associations
