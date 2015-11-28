@@ -257,6 +257,17 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean skipNativeLauncherWorkaround167;
 
+    /**
+     * It is possible to create file associations when using native installers. When specified,
+     * all file associations are bound to the main native launcher. There is no support for bunding
+     * them to second launchers.
+     * <p>
+     * For more informatione, please see official information source: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/javafx_ant_task_reference.html#CIAIDHBJ
+     *
+     * @parameter
+     */
+    private List<FileAssociation> fileAssociations;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -413,6 +424,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             if( duplicateLauncherNamesCheckSet.size() != launcherNames.size() ){
                 throw new MojoExecutionException("Secondary launcher needs to have different name, please adjust appName inside your configuration.");
             }
+
+            Optional.ofNullable(fileAssociations).ifPresent(associations -> {
+                final List<Map<String, ? super Object>> allAssociations = new ArrayList<>();
+                associations.stream().forEach(association -> {
+                    Map<String, ? super Object> settings = new HashMap<>();
+                    settings.put(StandardBundlerParam.FA_DESCRIPTION.getID(), association.getDescription());
+                    settings.put(StandardBundlerParam.FA_ICON.getID(), association.getIcon());
+                    settings.put(StandardBundlerParam.FA_EXTENSIONS.getID(), association.getExtensions());
+                    settings.put(StandardBundlerParam.FA_CONTENT_TYPE.getID(), association.getContentType());
+                    allAssociations.add(settings);
+                });
+                params.put(StandardBundlerParam.FILE_ASSOCIATIONS.getID(), allAssociations);
+            });
 
             // bugfix for "bundler not being able to produce native bundle without JRE on windows"
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
