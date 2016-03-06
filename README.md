@@ -115,5 +115,12 @@ Improvements:
 (Not yet) Release(d) Notes
 ==================
 
-upcoming Version 8.2.1 (??-2015)
+upcoming Version 8.3.0 (??-2016)
+
+Bugfixes:
+* bugfix #182 replace backslash with normal slash within JNLP-files
+* bugfix #185 add signing-feature for bundler with ID "jnlp" (by setting bundleArguments)
+* fixed size-attributes within JNLP-files when using bundler with ID "jnlp"
+
+New:
 * added possibility for adding file associations
