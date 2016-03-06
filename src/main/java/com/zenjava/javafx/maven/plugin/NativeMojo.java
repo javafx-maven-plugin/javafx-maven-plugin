@@ -33,6 +33,7 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,6 +44,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -309,6 +312,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected String keyStoreType;
     
+    public static final String JNLP_JAR_PATTERN = "(.*)href=(\".*?\")(.*)size=(\".*?\")(.*)";
+    
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -541,23 +546,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         }
 
                         if( "jnlp".equals(b.getID()) ){
-                            if(File.separator.equals("\\")){
+                            if( File.separator.equals("\\") ){
                                 // Workaround for "JNLP-generation: path for dependency-lib on windows with backslash"
                                 // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/182
                                 // jnlp-bundler uses RelativeFileSet, and generates system-dependent dividers (\ on windows, / on others)
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60 regarding jar-path inside generated JNLP-files.");
                                 if( !skipNativeLauncherWorkaround182 ){
-                                    // try-ressource, because walking on files is lazy, resulting in file-handler left open otherwise
-                                    try(Stream<Path> walkstream = Files.walk(nativeOutputDir.toPath())){
-                                        walkstream.forEach(fileEntry -> {
-                                            String fileName = fileEntry.toFile().getName();
-                                            if(fileName.endsWith(".jnlp")){
-                                                // TODO replace \ with /
-                                            }
-                                        });
-                                    } catch(IOException ex){
-                                        //Logger.getLogger(NativeMojo.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
+                                    fixPathsInsideJNLPFiles();
                                 } else {
                                     getLog().info("Skipped workaround for jar-paths jar-path inside generated JNLP-files.");
                                 }
@@ -611,7 +606,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             getLog().warn("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details.", ex);
         }
     }
-    
+
     private void signJarFiles() throws MojoFailureException, PackagerException, MojoExecutionException {
         getLog().info("Permissions requested, signing JAR files for webstart bundle");
 
@@ -641,15 +636,116 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
         signJarParams.addResource(nativeOutputDir, jfxMainAppJarName);
 
-        // TODO get all jars by searching inside generated JNLP-files and check all entries: "<jar href="
-        // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
-        File webLibFolder = new File(nativeOutputDir, "lib");
-        if( webLibFolder.exists() ){
-            signJarParams.addResource(nativeOutputDir, "lib");
-        }
+        // add all gathered jar-files as resources so be signed
+        getJARFilesFromJNLPFiles().forEach(jarFile -> signJarParams.addResource(nativeOutputDir, jarFile));
 
         getPackagerLib().signJar(signJarParams);
 
-        // TODO after signing, we have to adjust sizes !! they changed since they are modified
+        fixFileSizesWithinGeneratedJNLPFiles();
+    }
+
+    private List<File> getGeneratedJNLPFiles() {
+        List<File> generatedFiles = new ArrayList<>();
+
+        // try-ressource, because walking on files is lazy, resulting in file-handler left open otherwise
+        try(Stream<Path> walkstream = Files.walk(nativeOutputDir.toPath())){
+            walkstream.forEach(fileEntry -> {
+                File possibleJNLPFile = fileEntry.toFile();
+                String fileName = possibleJNLPFile.getName();
+                if( fileName.endsWith(".jnlp") ){
+                    generatedFiles.add(possibleJNLPFile);
+                }
+            });
+        } catch(IOException ignored){
+            // NO-OP
+        }
+
+        return generatedFiles;
+    }
+
+    private List<String> getJARFilesFromJNLPFiles() {
+        List<String> jarFiles = new ArrayList<>();
+        getGeneratedJNLPFiles().stream().map(jnlpFile -> jnlpFile.toPath()).forEach(jnlpPath -> {
+            try{
+                List<String> allLines = Files.readAllLines(jnlpPath);
+                allLines.stream().filter(line -> line.trim().startsWith("<jar href=")).forEach(line -> {
+                    String jarFile = line.replaceAll(JNLP_JAR_PATTERN, "$2");
+                    jarFiles.add(jarFile.substring(1, jarFile.length() - 1));
+                });
+            } catch(IOException ignored){
+                // NO-OP
+            }
+        });
+        return jarFiles;
+    }
+
+    private Map<String, Long> getFileSizes(List<String> files) {
+        final Map<String, Long> fileSizes = new HashMap<>();
+        files.stream().forEach(relativeFilePath -> {
+            File file = new File(nativeOutputDir, relativeFilePath);
+            // add the size for each file
+            fileSizes.put(relativeFilePath, file.length());
+        });
+        return fileSizes;
+    }
+
+    private void fixPathsInsideJNLPFiles() {
+        List<File> generatedJNLPFiles = getGeneratedJNLPFiles();
+        Pattern pattern = Pattern.compile(JNLP_JAR_PATTERN);
+        generatedJNLPFiles.forEach(file -> {
+            try{
+                List<String> allLines = Files.readAllLines(file.toPath());
+                List<String> newLines = new ArrayList<>();
+                allLines.stream().forEach(line -> {
+                    if( line.matches(JNLP_JAR_PATTERN) ){
+                        // get jar-file
+                        Matcher matcher = pattern.matcher(line);
+                        matcher.find();
+                        String rawJarName = matcher.group(2);
+                        // replace \ with /
+                        newLines.add(line.replace(rawJarName, rawJarName.replaceAll("\\\\", "\\/")));
+                    } else {
+                        newLines.add(line);
+                    }
+                });
+                Files.write(file.toPath(), newLines, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch(IOException ignored){
+                // NO-OP
+            }
+        });
+    }
+
+    private void fixFileSizesWithinGeneratedJNLPFiles() {
+        // after signing, we have to adjust sizes, because they have changed (since they are modified with the signature)
+        List<String> jarFiles = getJARFilesFromJNLPFiles();
+        Map<String, Long> newFileSizes = getFileSizes(jarFiles);
+        List<File> generatedJNLPFiles = getGeneratedJNLPFiles();
+        Pattern pattern = Pattern.compile(JNLP_JAR_PATTERN);
+        generatedJNLPFiles.forEach(file -> {
+            try{
+                List<String> allLines = Files.readAllLines(file.toPath());
+                List<String> newLines = new ArrayList<>();
+                allLines.stream().forEach(line -> {
+                    if( line.matches(JNLP_JAR_PATTERN) ){
+                        // get jar-file
+                        Matcher matcher = pattern.matcher(line);
+                        matcher.find();
+                        String rawJarName = matcher.group(2);
+                        String jarName = rawJarName.substring(1, rawJarName.length() - 1);
+                        if( newFileSizes.containsKey(jarName) ){
+                            // replace old size with new one
+                            newLines.add(line.replace(matcher.group(4), "\"" + newFileSizes.get(jarName) + "\""));
+                        } else {
+                            newLines.add(line);
+                        }
+                    } else {
+                        newLines.add(line);
+                    }
+                });
+                Files.write(file.toPath(), newLines, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch(IOException ignored){
+                // NO-OP
+            }
+        });
     }
 }
