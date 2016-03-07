@@ -1,6 +1,19 @@
 Release Notes
 =============
 
+Version 8.3.0 (07-Mar-2015)
+
+Bugfixes:
+* bugfix #182 replace backslash with normal slash within JNLP-files
+* bugfix #185 add signing-feature for bundler with ID "jnlp" (by setting `<jnlp.allPermisions>true</jnlp.allPermisions>` inside bundleArguments)
+* fixed size-attributes within JNLP-files when using bundler with ID "jnlp" and requesting to sign the jars
+
+New:
+* added possibility for adding file associations
+* added new property to disable backslash-fix `<skipNativeLauncherWorkaround182>true</skipNativeLauncherWorkaround182>`
+* added new property to disable signing referenced jar-files `<skipSigningJarFilesJNLP185>true</skipSigningJarFilesJNLP185>`
+* added new property to skip size-recalculation for jar-files inside generated JNLP-files `<skipSizeRecalculationForJNLP185>true</skipSizeRecalculationForJNLP185>`
+
 
 Version 8.2.0 (26-Nov-2015)
 Bugfixes:
