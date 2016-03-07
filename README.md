@@ -1,7 +1,7 @@
 [![Travis Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/64700ul3m9y88agi/branch/master?svg=true)](https://ci.appveyor.com/project/FibreFoX/javafx-maven-plugin/branch/master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.2.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.2.0)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.3.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.3.0)
 
 
 JavaFX Maven Plugin
