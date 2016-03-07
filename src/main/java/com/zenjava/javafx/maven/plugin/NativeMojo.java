@@ -273,7 +273,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * <p>
      * Change this to "true" when you don't want this workaround.
      */
-    protected boolean skipNativeLauncherWorkaround182;
+    protected boolean skipJNLPRessourcePathWorkaround182;
 
     /**
      * The location of the keystore. If not set, this will default to src/main/deploy/kesytore.jks which is usually fine
@@ -311,9 +311,31 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value="jks"
      */
     protected String keyStoreType;
-    
-    public static final String JNLP_JAR_PATTERN = "(.*)href=(\".*?\")(.*)size=(\".*?\")(.*)";
-    
+
+    /**
+     * Since Java version 1.8.0 Update 60 a new bundler for generating JNLP-files was introduced,
+     * but lacks the ability to sign jar-files by passing some flag. We are signing the files in the
+     * case of having "jnlp" as bundler. The MOJO with the goal "build-web" was deprecated in favor
+     * of that new bundler (mostly because the old one does not fit the bundler-list strategy).
+     * <p>
+     * Change this to "true" when you don't want signing jar-files.
+     *
+     * @parameter default-value=false
+     */
+    protected boolean skipSigningJarFilesJNLP185;
+
+    /**
+     * After signing is done, the sizes inside generated JNLP-files still point to unsigned jar-file sizes,
+     * so we have to fix these sizes to be correct. This sizes-fix even lacks in the old web-MOJO.
+     * <p>
+     * Change this to "true" when you don't want to recalculate sizes of jar-files.
+     *
+     * @parameter default-value=false
+     */
+    protected boolean skipSizeRecalculationForJNLP185;
+
+    private static final String JNLP_JAR_PATTERN = "(.*)href=(\".*?\")(.*)size=(\".*?\")(.*)";
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -551,7 +573,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                                 // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/182
                                 // jnlp-bundler uses RelativeFileSet, and generates system-dependent dividers (\ on windows, / on others)
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60 regarding jar-path inside generated JNLP-files.");
-                                if( !skipNativeLauncherWorkaround182 ){
+                                if( !skipJNLPRessourcePathWorkaround182 ){
                                     fixPathsInsideJNLPFiles();
                                 } else {
                                     getLog().info("Skipped workaround for jar-paths jar-path inside generated JNLP-files.");
@@ -562,7 +584,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             // hopefully when oracle reworked the process inside the JNLP-bundler.
                             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/185
                             if( params.containsKey("jnlp.allPermisions") && Boolean.parseBoolean(String.valueOf(params.get("jnlp.allPermisions"))) ){
-                                signJarFiles();
+                                getLog().info("Signing jar-files referenced inside generated JNLP-files.");
+                                if( !skipSigningJarFilesJNLP185 ){
+                                    signJarFiles();
+                                    if( !skipSizeRecalculationForJNLP185 ){
+                                        getLog().info("Fixing sizes of JAR files within JNLP-files");
+                                        fixFileSizesWithinGeneratedJNLPFiles();
+                                    } else {
+                                        getLog().info("Skipped fixing sizes of JAR files within JNLP-files");
+                                    }
+                                } else {
+                                    getLog().info("Skipped signing jar-files referenced inside JNLP-files.");
+                                }
                             }
                         }
                     }
@@ -608,8 +641,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     }
 
     private void signJarFiles() throws MojoFailureException, PackagerException, MojoExecutionException {
-        getLog().info("Permissions requested, signing JAR files for webstart bundle");
-
         if( !keyStore.exists() ){
             throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
         }
@@ -639,9 +670,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         // add all gathered jar-files as resources so be signed
         getJARFilesFromJNLPFiles().forEach(jarFile -> signJarParams.addResource(nativeOutputDir, jarFile));
 
+        getLog().info("Signing JAR files for webstart bundle");
         getPackagerLib().signJar(signJarParams);
-
-        fixFileSizesWithinGeneratedJNLPFiles();
     }
 
     private List<File> getGeneratedJNLPFiles() {

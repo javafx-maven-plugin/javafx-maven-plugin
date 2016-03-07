@@ -27,7 +27,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.2.0</version>
+    <version>8.3.0</version>
     <configuration>
         <mainClass>your.package.with.Launcher</mainClass>
     </configuration>
@@ -46,7 +46,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.2.0</version>
+    <version>8.3.0</version>
     <configuration>
         <vendor>YourCompany</vendor>
         <mainClass>your.package.with.Launcher</mainClass>
@@ -88,39 +88,29 @@ Set version to new SNAPSHOT-version:
 </plugin>
 ```
 
+*Some notes: as this isn't the main branch, a lot of features aren't present in that branch yet, deployment of new "-SNAPSHOT"-version are on-demand*
+
 
 Last Release Notes
 ==================
 
-**Version 8.2.0 (26-Nov-2015)**
+**Version 8.3.0 (07-Mar-2015)**
 
 Bugfixes:
-* bugfix #159 added support for openjdk/openjfx (version-checker failed with NumberFormatException due to wrong expectations)
-* added workaround for bug #167 regarding native windows launcher configuration-file (cfg-file), bug is inside Oracle JDK since 1.8.0 Update 60 (to work around this, this plugin tries to enforce property-file-format, which does not contain the problem)
+* bugfix #182 replace backslash with normal slash within JNLP-files
+* bugfix #185 add signing-feature for bundler with ID "jnlp" (by setting `<jnlp.allPermisions>true</jnlp.allPermisions>` inside bundleArguments)
+* fixed size-attributes within JNLP-files when using bundler with ID "jnlp" and requesting to sign the jars
 
 New:
-* added new property to disable workaround `<skipNativeLauncherWorkaround167>true</skipNativeLauncherWorkaround167>`
-* added new mojo: calling `mvn jfx:list-bundlers` shows currently available bundlers with ID, name and descriptions, including their specific arguments able to be passed via `<bundleArguments>`-configuration
-* added possibility for "secondary launchers", makes it possible to have more than one native launcher
-* added possibility to filter dependencies while putting required JAR-files into the generated lib-folder
-* added property to disable transitive filtering
-* added CONTRIBUTING-file (fixes #125)
-
-Improvements:
-* added some IT-projects and updated others
-* updated to more Java 8 syntax
-* added [Windows-CI via AppVeyor](http://www.appveyor.com/) (including status badge)
+* added possibility for adding file associations
+* added new property to disable backslash-fix `<skipNativeLauncherWorkaround182>true</skipNativeLauncherWorkaround182>`
+* added new property to disable signing referenced jar-files `<skipSigningJarFilesJNLP185>true</skipSigningJarFilesJNLP185>`
+* added new property to skip size-recalculation for jar-files inside generated JNLP-files `<skipSizeRecalculationForJNLP185>true</skipSizeRecalculationForJNLP185>`
 
 
 (Not yet) Release(d) Notes
 ==================
 
-upcoming Version 8.3.0 (??-2016)
+upcoming Version 8.3.1 (???-2016)
 
-Bugfixes:
-* bugfix #182 replace backslash with normal slash within JNLP-files
-* bugfix #185 add signing-feature for bundler with ID "jnlp" (by setting bundleArguments)
-* fixed size-attributes within JNLP-files when using bundler with ID "jnlp"
-
-New:
-* added possibility for adding file associations
+- nothing changed yet
