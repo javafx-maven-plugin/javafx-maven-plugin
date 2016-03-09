@@ -26,11 +26,9 @@ import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 /**
  * Generates a development keysstore that can be used for signing web based distribution bundles based on POM settings.
@@ -78,6 +76,13 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * @required
      */
     protected BuildPluginManager pluginManager;
+
+    /**
+     * Flag to turn on verbose logging. Set this to true if you are having problems and want more detailed information.
+     *
+     * @parameter property="verbose" default-value="false"
+     */
+    protected Boolean verbose;
 
     /**
      * Set this to true to silently overwrite the keystore. If this is set to false (the default) then if a keystore
@@ -217,6 +222,9 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
         getLog().info("Generating keystore in: " + keyStore);
 
         try{
+            // generated folder if it does not exist
+            Files.createDirectories(keyStore.getParentFile().toPath());
+
             ProcessBuilder pb = new ProcessBuilder(
                     "keytool",
                     "-genkeypair",
@@ -237,17 +245,18 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
                     "-keyalg",
                     "RSA",
                     "-keysize",
-                    "2048"
+                    "2048",
+                    (verbose) ? "-v" : ""
             );
-            //File log = File.createTempFile("javafxdebugging", ".log");
-            pb.redirectErrorStream(true);
-            // pb.redirectOutput(Redirect.appendTo(log));
+            if( verbose ){
+                File log = File.createTempFile("javafx-maven-plugin", ".log");
+                pb.redirectErrorStream(true);
+                pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
+            }
             Process p = pb.start();
             p.waitFor();
-        } catch(IOException ex){
-            Logger.getLogger(GenerateKeyStoreMojo.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(InterruptedException ex){
-            Logger.getLogger(GenerateKeyStoreMojo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(IOException | InterruptedException ex){
+            throw new MojoExecutionException("There was an exception while generating keystore.", ex);
         }
     }
 
