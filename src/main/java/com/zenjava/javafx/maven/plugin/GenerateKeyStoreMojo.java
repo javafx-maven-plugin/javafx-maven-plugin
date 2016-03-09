@@ -25,10 +25,12 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
  * Generates a development keysstore that can be used for signing web based distribution bundles based on POM settings.
@@ -214,31 +216,39 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
         getLog().info("Generating keystore in: " + keyStore);
 
-        executeMojo(
-                plugin(
-                        groupId("org.codehaus.mojo"),
-                        artifactId("keytool-maven-plugin"),
-                        version("1.5")
-                ),
-                goal("generateKeyPair"),
-                configuration(
-                        element(name("keystore"), keyStore.getPath()),
-                        element(name("alias"), keyStoreAlias),
-                        element(name("storepass"), keyStorePassword),
-                        element(name("keypass"), keyPassword),
-                        element(name("dname"), distinguishedName),
-                        element(name("sigalg"), "SHA256withRSA"),
-                        element(name("ext"), ""),
-                        element(name("validity"), "100"),
-                        element(name("keyalg"), "RSA"),
-                        element(name("keysize"), "2048")
-                ),
-                executionEnvironment(
-                        project,
-                        session,
-                        pluginManager
-                )
-        );
+        try{
+            ProcessBuilder pb = new ProcessBuilder(
+                    "keytool",
+                    "-genkeypair",
+                    "-keystore",
+                    keyStore.getPath(),
+                    "-alias",
+                    keyStoreAlias,
+                    "-storepass",
+                    keyStorePassword,
+                    "-keypass",
+                    keyPassword,
+                    "-dname",
+                    distinguishedName,
+                    "-sigalg",
+                    "SHA256withRSA",
+                    "-validity",
+                    "100",
+                    "-keyalg",
+                    "RSA",
+                    "-keysize",
+                    "2048"
+            );
+            //File log = File.createTempFile("javafxdebugging", ".log");
+            pb.redirectErrorStream(true);
+            // pb.redirectOutput(Redirect.appendTo(log));
+            Process p = pb.start();
+            p.waitFor();
+        } catch(IOException ex){
+            Logger.getLogger(GenerateKeyStoreMojo.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(InterruptedException ex){
+            Logger.getLogger(GenerateKeyStoreMojo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void checkKeystoreRequiredParameter(String value, String valueName) throws MojoExecutionException {
