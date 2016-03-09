@@ -15,36 +15,21 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 
-import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
- * A convenience class for running the JavaFX application defined by the POM. This is really just a wrapper around the
- * standard Maven exec command, however it pulls the mainClass from the JavaFX plugin configuration so you don't have to
- * respecify it. This does not trigger the configured preloader, because we bypass it by calling main directly.
  *
  * @goal run
- * @execute phase="compile"
- * @requiresDependencyResolution
- * @deprecated This mojo will be dropped, because it's creating too much false issues.
+ * @execute goal="jar"
  */
-@Deprecated
-public class RunMojo extends AbstractMojo {
-
-    /**
-     * The Maven Project Object
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
-     */
-    protected MavenProject project;
+public class RunMojo extends AbstractJfxToolsMojo {
 
     /**
      * The Maven Session Object
@@ -63,33 +48,27 @@ public class RunMojo extends AbstractMojo {
      */
     protected BuildPluginManager pluginManager;
 
-    /**
-     * The main JavaFX application class that acts as the entry point to the JavaFX application.
-     *
-     * @parameter property="mainClass"
-     * @required
-     */
-    protected String mainClass;
-
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-
         getLog().info("Running JavaFX Application");
 
-        executeMojo(
-                plugin(
-                        groupId("org.codehaus.mojo"),
-                        artifactId("exec-maven-plugin"),
-                        version("1.4.0")
-                ),
-                goal("java"),
-                configuration(
-                        element(name("mainClass"), mainClass)
-                ),
-                executionEnvironment(
-                        project,
-                        session,
-                        pluginManager
-                )
-        );
+        List<String> command = new ArrayList<>();
+        command.add("java");
+        command.add("-jar");
+        command.add(jfxMainAppJarName);
+
+        try{
+            ProcessBuilder pb = new ProcessBuilder()
+                    .inheritIO()
+                    .directory(jfxAppOutputDir)
+                    .command(command);
+            Process p = pb.start();
+            p.waitFor();
+            if( p.exitValue() != 0 ){
+                throw new MojoExecutionException("There was an exception while executing JavaFX Application. Please check build-log.");
+            }
+        } catch(IOException | InterruptedException ex){
+            throw new MojoExecutionException("There was an exception while executing JavaFX Application.", ex);
+        }
     }
 }
