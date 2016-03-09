@@ -225,7 +225,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
             // generated folder if it does not exist
             Files.createDirectories(keyStore.getParentFile().toPath());
 
-            ProcessBuilder pb = new ProcessBuilder(
+            ProcessBuilder pb = new ProcessBuilder().inheritIO().command(
                     "keytool",
                     "-genkeypair",
                     "-keystore",
@@ -248,11 +248,6 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
                     "2048",
                     (verbose) ? "-v" : ""
             );
-            if( verbose ){
-                File log = File.createTempFile("javafx-maven-plugin", ".log");
-                pb.redirectErrorStream(true);
-                pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
-            }
             Process p = pb.start();
             p.waitFor();
         } catch(IOException | InterruptedException ex){
