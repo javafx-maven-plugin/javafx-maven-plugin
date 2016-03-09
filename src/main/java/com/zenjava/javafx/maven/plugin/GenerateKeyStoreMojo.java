@@ -25,10 +25,10 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.twdata.maven.mojoexecutor.MojoExecutor.*;
 
 /**
  * Generates a development keysstore that can be used for signing web based distribution bundles based on POM settings.
@@ -76,6 +76,13 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * @required
      */
     protected BuildPluginManager pluginManager;
+
+    /**
+     * Flag to turn on verbose logging. Set this to true if you are having problems and want more detailed information.
+     *
+     * @parameter property="verbose" default-value="false"
+     */
+    protected Boolean verbose;
 
     /**
      * Set this to true to silently overwrite the keystore. If this is set to false (the default) then if a keystore
@@ -214,31 +221,42 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
         getLog().info("Generating keystore in: " + keyStore);
 
-        executeMojo(
-                plugin(
-                        groupId("org.codehaus.mojo"),
-                        artifactId("keytool-maven-plugin"),
-                        version("1.5")
-                ),
-                goal("generateKeyPair"),
-                configuration(
-                        element(name("keystore"), keyStore.getPath()),
-                        element(name("alias"), keyStoreAlias),
-                        element(name("storepass"), keyStorePassword),
-                        element(name("keypass"), keyPassword),
-                        element(name("dname"), distinguishedName),
-                        element(name("sigalg"), "SHA256withRSA"),
-                        element(name("ext"), ""),
-                        element(name("validity"), "100"),
-                        element(name("keyalg"), "RSA"),
-                        element(name("keysize"), "2048")
-                ),
-                executionEnvironment(
-                        project,
-                        session,
-                        pluginManager
-                )
-        );
+        try{
+            // generated folder if it does not exist
+            Files.createDirectories(keyStore.getParentFile().toPath());
+
+            List<String> command = new ArrayList<>();
+
+            command.add("keytool");
+            command.add("-genkeypair");
+            command.add("-keystore");
+            command.add(keyStore.getPath());
+            command.add("-alias");
+            command.add(keyStoreAlias);
+            command.add("-storepass");
+            command.add(keyStorePassword);
+            command.add("-keypass");
+            command.add(keyPassword);
+            command.add("-dname");
+            command.add(distinguishedName);
+            command.add("-sigalg");
+            command.add("SHA256withRSA");
+            command.add("-validity");
+            command.add("100");
+            command.add("-keyalg");
+            command.add("RSA");
+            command.add("-keysize");
+            command.add("2048");
+            if( verbose ){
+                command.add("-v");
+            }
+
+            ProcessBuilder pb = new ProcessBuilder().inheritIO().command(command);
+            Process p = pb.start();
+            p.waitFor();
+        } catch(IOException | InterruptedException ex){
+            throw new MojoExecutionException("There was an exception while generating keystore.", ex);
+        }
     }
 
     private void checkKeystoreRequiredParameter(String value, String valueName) throws MojoExecutionException {
