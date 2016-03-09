@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -333,6 +334,19 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean skipSizeRecalculationForJNLP185;
+    
+    /**
+     * JavaFX introduced a new way for signing jar-files, which was called "BLOB signing".
+     * <p>
+     * The tool "jarsigner" is not able to verify that signature and webstart doesn't
+     * accept that format either. For not having to call jarsigner yourself, set this to "true"
+     * for having your jar-files getting signed when generating JNLP-files.
+     *
+     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/190
+     * 
+     * @parameter default-value=false
+     */
+    protected boolean noBlobSigning;
 
     private static final String JNLP_JAR_PATTERN = "(.*)href=(\".*?\")(.*)size=(\".*?\")(.*)";
 
@@ -586,7 +600,15 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             if( params.containsKey("jnlp.allPermisions") && Boolean.parseBoolean(String.valueOf(params.get("jnlp.allPermisions"))) ){
                                 getLog().info("Signing jar-files referenced inside generated JNLP-files.");
                                 if( !skipSigningJarFilesJNLP185 ){
-                                    signJarFiles();
+                                    // JavaFX signing using BLOB method will get dropped on JDK 9: "blob signing is going away in JDK9. "
+                                    // https://bugs.openjdk.java.net/browse/JDK-8088866?focusedCommentId=13889898#comment-13889898
+                                    if( !noBlobSigning ){
+                                        getLog().info("Signing jar-files using BLOB method.");
+                                        signJarFilesUsingBlobSigning();
+                                    } else {
+                                        getLog().info("Signing jar-files using jarsigner.");
+                                        signJarFiles();
+                                    }
                                     if( !skipSizeRecalculationForJNLP185 ){
                                         getLog().info("Fixing sizes of JAR files within JNLP-files");
                                         fixFileSizesWithinGeneratedJNLPFiles();
@@ -640,22 +662,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         }
     }
 
-    private void signJarFiles() throws MojoFailureException, PackagerException, MojoExecutionException {
-        if( !keyStore.exists() ){
-            throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
-        }
-
-        if( keyStoreAlias == null || keyStoreAlias.isEmpty() ){
-            throw new MojoFailureException("A 'keyStoreAlias' is required for signing JARs");
-        }
-
-        if( keyStorePassword == null || keyStorePassword.isEmpty() ){
-            throw new MojoFailureException("A 'keyStorePassword' is required for signing JARs");
-        }
-
-        if( keyPassword == null ){
-            keyPassword = keyStorePassword;
-        }
+    private void signJarFilesUsingBlobSigning() throws MojoFailureException, PackagerException, MojoExecutionException {
+        checkSigningConfiguration();
 
         SignJarParams signJarParams = new SignJarParams();
         signJarParams.setVerbose(verbose);
@@ -672,6 +680,44 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
         getLog().info("Signing JAR files for webstart bundle");
         getPackagerLib().signJar(signJarParams);
+    }
+
+    private void signJarFiles() throws MojoFailureException, PackagerException, MojoExecutionException {
+        checkSigningConfiguration();
+
+        AtomicReference<MojoExecutionException> exception = new AtomicReference<>();
+        getJARFilesFromJNLPFiles().stream().map(relativeJarFilePath -> new File(nativeOutputDir, relativeJarFilePath)).forEach(jarFile -> {
+            try{
+                // only sign when there wasn't already some problem
+                if( exception.get() == null ){
+                    signJar(jarFile.getAbsoluteFile());
+                }
+            } catch(MojoExecutionException ex){
+                // rethrow later (same trick is done inside apache-tomee project ;D)
+                exception.set(ex);
+            }
+        });
+        if( exception.get() != null ){
+            throw exception.get();
+        }
+    }
+
+    private void checkSigningConfiguration() throws MojoFailureException {
+        if( !keyStore.exists() ){
+            throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
+        }
+
+        if( keyStoreAlias == null || keyStoreAlias.isEmpty() ){
+            throw new MojoFailureException("A 'keyStoreAlias' is required for signing JARs");
+        }
+
+        if( keyStorePassword == null || keyStorePassword.isEmpty() ){
+            throw new MojoFailureException("A 'keyStorePassword' is required for signing JARs");
+        }
+
+        if( keyPassword == null ){
+            keyPassword = keyStorePassword;
+        }
     }
 
     private List<File> getGeneratedJNLPFiles() {
@@ -777,5 +823,36 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 // NO-OP
             }
         });
+    }
+
+    private void signJar(File jarFile) throws MojoExecutionException {
+        List<String> command = new ArrayList<>();
+        command.add("jarsigner");
+        command.add("-strict");
+        command.add("-keystore");
+        command.add(keyStore.getAbsolutePath());
+        command.add("-storepass");
+        command.add(keyStorePassword);
+        command.add("-keypass");
+        command.add(keyPassword);
+        command.add(jarFile.getAbsolutePath());
+        command.add(keyStoreAlias);
+        if( verbose ){
+            command.add("-verbose");
+        }
+
+        try{
+            ProcessBuilder pb = new ProcessBuilder()
+                    .inheritIO()
+                    .directory(project.getBasedir())
+                    .command(command);
+            Process p = pb.start();
+            p.waitFor();
+            if( p.exitValue() != 0 ){
+                throw new MojoExecutionException("Signing jar using jarsigner wasn't successful! Please check build-log.");
+            }
+        } catch(IOException | InterruptedException ex){
+            throw new MojoExecutionException("There was an exception while signing jar-file: " + jarFile.getAbsolutePath(), ex);
+        }
     }
 }
