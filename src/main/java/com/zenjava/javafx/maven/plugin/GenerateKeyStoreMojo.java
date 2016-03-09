@@ -225,29 +225,33 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
             // generated folder if it does not exist
             Files.createDirectories(keyStore.getParentFile().toPath());
 
-            ProcessBuilder pb = new ProcessBuilder().inheritIO().command(
-                    "keytool",
-                    "-genkeypair",
-                    "-keystore",
-                    keyStore.getPath(),
-                    "-alias",
-                    keyStoreAlias,
-                    "-storepass",
-                    keyStorePassword,
-                    "-keypass",
-                    keyPassword,
-                    "-dname",
-                    distinguishedName,
-                    "-sigalg",
-                    "SHA256withRSA",
-                    "-validity",
-                    "100",
-                    "-keyalg",
-                    "RSA",
-                    "-keysize",
-                    "2048",
-                    (verbose) ? "-v" : ""
-            );
+            List<String> command = new ArrayList<>();
+
+            command.add("keytool");
+            command.add("-genkeypair");
+            command.add("-keystore");
+            command.add(keyStore.getPath());
+            command.add("-alias");
+            command.add(keyStoreAlias);
+            command.add("-storepass");
+            command.add(keyStorePassword);
+            command.add("-keypass");
+            command.add(keyPassword);
+            command.add("-dname");
+            command.add(distinguishedName);
+            command.add("-sigalg");
+            command.add("SHA256withRSA");
+            command.add("-validity");
+            command.add("100");
+            command.add("-keyalg");
+            command.add("RSA");
+            command.add("-keysize");
+            command.add("2048");
+            if( verbose ){
+                command.add("-v");
+            }
+
+            ProcessBuilder pb = new ProcessBuilder().inheritIO().command(command);
             Process p = pb.start();
             p.waitFor();
         } catch(IOException | InterruptedException ex){
