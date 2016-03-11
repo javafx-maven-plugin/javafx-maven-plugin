@@ -1,6 +1,20 @@
 Release Notes
 =============
 
+
+Version 8.4.0 (11-Mar-2015)
+
+New:
+* when creating JNLP-files, your can now choose between Blob Signing (which was introduced since JavaFX but seems has never worked, and will be removed from Java 9) or normal signing done by `jarsigner` by providing the new proverty `<noBlobSigning>true</noBlobSigning>`
+* the `run` goal got its deprecation removed, you can call `mvn jfx:run` now again to start your application like you would start a normal executable-jar (no more calling `java -jar yourProject-jfx.jar`)
+
+Improvements:
+* removed `org.twdata.maven:mojo-executor`-dependency
+* fixed maven-plugin dependencies
+* generating keystore now directly uses `keytool`
+* changed appveyor to build/test using x86 and x64
+
+
 Version 8.3.0 (07-Mar-2015)
 
 Bugfixes:

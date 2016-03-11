@@ -1,7 +1,7 @@
 [![Travis Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/64700ul3m9y88agi/branch/master?svg=true)](https://ci.appveyor.com/project/FibreFoX/javafx-maven-plugin/branch/master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.3.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.3.0)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.4.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.4.0)
 
 
 JavaFX Maven Plugin
@@ -27,7 +27,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.3.0</version>
+    <version>8.4.0</version>
     <configuration>
         <mainClass>your.package.with.Launcher</mainClass>
     </configuration>
@@ -46,7 +46,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.3.0</version>
+    <version>8.4.0</version>
     <configuration>
         <vendor>YourCompany</vendor>
         <mainClass>your.package.with.Launcher</mainClass>
@@ -94,23 +94,22 @@ Set version to new SNAPSHOT-version:
 Last Release Notes
 ==================
 
-**Version 8.3.0 (07-Mar-2015)**
-
-Bugfixes:
-* bugfix #182 replace backslash with normal slash within JNLP-files
-* bugfix #185 add signing-feature for bundler with ID "jnlp" (by setting `<jnlp.allPermisions>true</jnlp.allPermisions>` inside bundleArguments)
-* fixed size-attributes within JNLP-files when using bundler with ID "jnlp" and requesting to sign the jars
+**Version 8.4.0 (11-Mar-2015)**
 
 New:
-* added possibility for adding file associations
-* added new property to disable backslash-fix `<skipNativeLauncherWorkaround182>true</skipNativeLauncherWorkaround182>`
-* added new property to disable signing referenced jar-files `<skipSigningJarFilesJNLP185>true</skipSigningJarFilesJNLP185>`
-* added new property to skip size-recalculation for jar-files inside generated JNLP-files `<skipSizeRecalculationForJNLP185>true</skipSizeRecalculationForJNLP185>`
+* when creating JNLP-files, your can now choose between Blob Signing (which was introduced since JavaFX but seems has never worked, and will be removed from Java 9) or normal signing done by `jarsigner` by providing the new proverty `<noBlobSigning>true</noBlobSigning>`
+* the `run` goal got its deprecation removed, you can call `mvn jfx:run` now again to start your application like you would start a normal executable-jar (no more calling `java -jar yourProject-jfx.jar`)
+
+Improvements:
+* removed `org.twdata.maven:mojo-executor`-dependency
+* fixed maven-plugin dependencies
+* generating keystore now directly uses `keytool`
+* changed appveyor to build/test using x86 and x64
 
 
 (Not yet) Release(d) Notes
-==================
+==========================
 
-upcoming Version 8.3.1 (???-2016)
+upcoming Version 8.4.1 (???-2016)
 
-- nothing changed yet
+* nothing changed yet
