@@ -54,7 +54,7 @@ Add this to your pom.xml within to your build-plugin:
 </plugin>
 ```
 
-To create your executable file with JavaFX-magic, call `mvn jfx:native`. The jar-file will be placed at `target/jfx/native`.
+To create your executable file with JavaFX-magic and some installers (please see official oracle-documentation which applications are required for this), call `mvn jfx:native`. The installers will be placed at `target/jfx/native`.
 
 
 
