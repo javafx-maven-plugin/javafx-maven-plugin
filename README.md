@@ -112,4 +112,5 @@ Improvements:
 
 upcoming Version 8.4.1 (???-2016)
 
-* nothing changed yet
+Bugfixes:
+* updated workaround-detection for creating native bundles without JRE, because [it got fixed by latest Oracle JDK 1.8.0u92](http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html)

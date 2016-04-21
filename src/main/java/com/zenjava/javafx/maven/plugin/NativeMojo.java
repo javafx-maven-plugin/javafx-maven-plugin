@@ -524,7 +524,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             // bugfix for "bundler not being able to produce native bundle without JRE on windows"
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
-            if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) ){
+            // this has been fixed and made available since 1.8.0u92:
+            // http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html
+            if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) && !isAtLeastOracleJavaUpdateVersion(92)){
                 if( !skipNativeLauncherWorkaround167 ){
                     if( params.containsKey("runtime") ){
                         getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60 regarding cfg-file-format");
