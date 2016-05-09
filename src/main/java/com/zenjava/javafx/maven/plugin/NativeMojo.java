@@ -347,6 +347,17 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean noBlobSigning;
+    
+    /**
+     * As it is possible to extend existing bundlers, you don't have to use your private
+     * version of the javafx-maven-plugin. Just provide a list with the java-classes you
+     * want to use, declare them as compile-depencendies and run `mvn jfx:native`
+     * or by using maven lifecycle.
+     * You have to implement the Bundler-interface (@see com.oracle.tools.packager.Bundler).
+     * 
+     * @parameter
+     */
+    protected List<String> customBundlers;
 
     private static final String JNLP_JAR_PATTERN = "(.*)href=(\".*?\")(.*)size=(\".*?\")(.*)";
 
@@ -526,7 +537,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
             // this has been fixed and made available since 1.8.0u92:
             // http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html
-            if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) && !isAtLeastOracleJavaUpdateVersion(92)){
+            if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) && !isAtLeastOracleJavaUpdateVersion(92) ){
                 if( !skipNativeLauncherWorkaround167 ){
                     if( params.containsKey("runtime") ){
                         getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60 regarding cfg-file-format");
@@ -543,6 +554,29 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
 
             Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
+
+            // don't allow to overwrite existing bundler IDs
+            List<String> existingBundlerIds = bundlers.getBundlers().stream().map(existingBundler -> existingBundler.getID()).collect(Collectors.toList());
+
+            Optional.ofNullable(customBundlers).ifPresent(customBundlerList -> {
+                customBundlerList.stream().map(customBundlerClassName -> {
+                    try{
+                        Class<?> customBundlerClass = Class.forName(customBundlerClassName);
+                        Bundler newCustomBundler = (Bundler) customBundlerClass.newInstance();
+                        // if already existing (or already registered), skip this instance
+                        if( existingBundlerIds.contains(newCustomBundler.getID()) ){
+                            return null;
+                        }
+                        return newCustomBundler;
+                    } catch(ClassNotFoundException | InstantiationException | IllegalAccessException | ClassCastException ex){
+                        getLog().warn("There was an exception while creating a new instance of custom bundler: " + customBundlerClassName, ex);
+                    }
+                    return null;
+                }).filter(customBundler -> customBundler != null).forEach(customBundler -> {
+                    bundlers.loadBundler(customBundler);
+                });
+            });
+
             boolean foundBundler = false;
             for( Bundler b : bundlers.getBundlers() ){
                 try{
