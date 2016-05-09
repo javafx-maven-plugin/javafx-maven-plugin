@@ -94,7 +94,7 @@ Set version to new SNAPSHOT-version:
 Last Release Notes
 ==================
 
-**Version 8.4.0 (11-Mar-2015)**
+**Version 8.4.0 (11-Mar-2016)**
 
 New:
 * when creating JNLP-files, your can now choose between Blob Signing (which was introduced since JavaFX but seems has never worked, and will be removed from Java 9) or normal signing done by `jarsigner` by providing the new proverty `<noBlobSigning>true</noBlobSigning>`
@@ -110,7 +110,13 @@ Improvements:
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.4.1 (???-2016)
+upcoming Version 8.5.0 (???-2016)
 
 Bugfixes:
 * updated workaround-detection for creating native bundles without JRE, because [it got fixed by latest Oracle JDK 1.8.0u92](http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html)
+
+New:
+* Added ability to write and use custom bundlers! This makes it possible to customize the work which is required for your bundling-process.
+
+Improvements:
+* added IT-project "23-simple-custom-bundler"
