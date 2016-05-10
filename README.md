@@ -120,3 +120,4 @@ New:
 
 Improvements:
 * added IT-project "23-simple-custom-bundler"
+* added IT-project "24-simple-custom-bundler-failed", which fails to use custom bundler, but does not fail (normal behaviour)
