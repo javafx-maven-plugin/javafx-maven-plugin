@@ -33,7 +33,6 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,10 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @goal build-native
@@ -359,7 +355,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected List<String> customBundlers;
 
-    private static final String JNLP_JAR_PATTERN = "(.*)href=(\".*?\")(.*)size=(\".*?\")(.*)";
+    protected Workarounds workarounds = null;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -369,6 +365,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         }
 
         getLog().info("Building Native Installers");
+
+        workarounds = new Workarounds(nativeOutputDir, getLog());
 
         try{
             Map<String, ? super Object> params = new HashMap<>();
@@ -539,15 +537,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             // http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html
             if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) && !isAtLeastOracleJavaUpdateVersion(92) ){
                 if( !skipNativeLauncherWorkaround167 ){
-                    if( params.containsKey("runtime") ){
-                        getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60 regarding cfg-file-format");
-                        // the problem is com.oracle.tools.packager.windows.WinAppBundler within createLauncherForEntryPoint-Method
-                        // it does NOT respect runtime-setting while calling "writeCfgFile"-method of com.oracle.tools.packager.AbstractImageBundler
-                        // since newer java versions (they added possability to have INI-file-format of generated cfg-file, since 1.8.0_60).
-                        // Because we want to have backward-compatibility within java 8, we will use parameter-name as hardcoded string!
-                        // Our workaround: use prop-file-format
-                        params.put("launcher-cfg-format", "prop");
-                    }
+                    workarounds.applyWorkaround167(params);
                 } else {
                     getLog().info("Skipped workaround for native launcher regarding cfg-file-format.");
                 }
@@ -588,6 +578,15 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
                     Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
                     if( b.validate(paramsToBundleWith) ){
+                        // Workaround for native installer bundle not creating executable native launcher
+                        // (this is somekind of a comeback of issue 124)
+                        // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
+                        // 
+                        // To work around this problem issue, we let the app-bundler create an additional
+                        // cfg-file, which gets the filename-workaround
+                        if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) ){
+                            workarounds.applyWorkaround205(paramsToBundleWith);
+                        }
                         b.execute(paramsToBundleWith, nativeOutputDir);
 
                         // Workaround for "Native package for Ubuntu doesn't work"
@@ -597,20 +596,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             if( "linux.app".equals(b.getID()) ){
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40 regarding native linux launcher(s).");
                                 if( !skipNativeLauncherWorkaround124 ){
-                                    // apply on main launcher
-                                    applyNativeLauncherWorkaround(appName);
-
-                                    // check on secondary launchers too
-                                    if( secondaryLaunchers != null && !secondaryLaunchers.isEmpty() ){
-                                        secondaryLaunchers.stream().map(launcher -> {
-                                            return launcher.getAppName();
-                                        }).filter(launcherAppName -> {
-                                            // check appName containing any dots (which is the bug)
-                                            return launcherAppName.contains(".");
-                                        }).forEach(launcherAppname -> {
-                                            applyNativeLauncherWorkaround(launcherAppname);
-                                        });
-                                    }
+                                    workarounds.applyWorkaround124(appName, secondaryLaunchers);
                                 } else {
                                     getLog().info("Skipped workaround for native linux launcher(s).");
                                 }
@@ -624,7 +610,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                                 // jnlp-bundler uses RelativeFileSet, and generates system-dependent dividers (\ on windows, / on others)
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60 regarding jar-path inside generated JNLP-files.");
                                 if( !skipJNLPRessourcePathWorkaround182 ){
-                                    fixPathsInsideJNLPFiles();
+                                    workarounds.fixPathsInsideJNLPFiles();
                                 } else {
                                     getLog().info("Skipped workaround for jar-paths jar-path inside generated JNLP-files.");
                                 }
@@ -645,12 +631,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                                         getLog().info("Signing jar-files using jarsigner.");
                                         signJarFiles();
                                     }
-                                    if( !skipSizeRecalculationForJNLP185 ){
-                                        getLog().info("Fixing sizes of JAR files within JNLP-files");
-                                        fixFileSizesWithinGeneratedJNLPFiles();
-                                    } else {
-                                        getLog().info("Skipped fixing sizes of JAR files within JNLP-files");
-                                    }
+                                    workarounds.applyWorkaround185(skipSizeRecalculationForJNLP185);
                                 } else {
                                     getLog().info("Skipped signing jar-files referenced inside JNLP-files.");
                                 }
@@ -680,24 +661,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         map.put(key, value);
     }
 
-    private void applyNativeLauncherWorkaround(String appName) {
-        // check appName containing any dots
-        boolean needsWorkaround = appName.contains(".");
-        if( !needsWorkaround ){
-            return;
-        }
-        // rename .cfg-file (makes it able to create running applications again, even within installer)
-        String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
-        Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app");
-        String configfileExtension = ".cfg";
-        Path oldConfigFile = appPath.resolve(appName + configfileExtension);
-        try{
-            Files.move(oldConfigFile, appPath.resolve(newConfigFileName + configfileExtension), StandardCopyOption.ATOMIC_MOVE);
-        } catch(IOException ex){
-            getLog().warn("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details.", ex);
-        }
-    }
-
     private void signJarFilesUsingBlobSigning() throws MojoFailureException, PackagerException, MojoExecutionException {
         checkSigningConfiguration();
 
@@ -712,7 +675,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         signJarParams.addResource(nativeOutputDir, jfxMainAppJarName);
 
         // add all gathered jar-files as resources so be signed
-        getJARFilesFromJNLPFiles().forEach(jarFile -> signJarParams.addResource(nativeOutputDir, jarFile));
+        workarounds.getJARFilesFromJNLPFiles().forEach(jarFile -> signJarParams.addResource(nativeOutputDir, jarFile));
 
         getLog().info("Signing JAR files for webstart bundle");
         getPackagerLib().signJar(signJarParams);
@@ -722,7 +685,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         checkSigningConfiguration();
 
         AtomicReference<MojoExecutionException> exception = new AtomicReference<>();
-        getJARFilesFromJNLPFiles().stream().map(relativeJarFilePath -> new File(nativeOutputDir, relativeJarFilePath)).forEach(jarFile -> {
+        workarounds.getJARFilesFromJNLPFiles().stream().map(relativeJarFilePath -> new File(nativeOutputDir, relativeJarFilePath)).forEach(jarFile -> {
             try{
                 // only sign when there wasn't already some problem
                 if( exception.get() == null ){
@@ -754,111 +717,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         if( keyPassword == null ){
             keyPassword = keyStorePassword;
         }
-    }
-
-    private List<File> getGeneratedJNLPFiles() {
-        List<File> generatedFiles = new ArrayList<>();
-
-        // try-ressource, because walking on files is lazy, resulting in file-handler left open otherwise
-        try(Stream<Path> walkstream = Files.walk(nativeOutputDir.toPath())){
-            walkstream.forEach(fileEntry -> {
-                File possibleJNLPFile = fileEntry.toFile();
-                String fileName = possibleJNLPFile.getName();
-                if( fileName.endsWith(".jnlp") ){
-                    generatedFiles.add(possibleJNLPFile);
-                }
-            });
-        } catch(IOException ignored){
-            // NO-OP
-        }
-
-        return generatedFiles;
-    }
-
-    private List<String> getJARFilesFromJNLPFiles() {
-        List<String> jarFiles = new ArrayList<>();
-        getGeneratedJNLPFiles().stream().map(jnlpFile -> jnlpFile.toPath()).forEach(jnlpPath -> {
-            try{
-                List<String> allLines = Files.readAllLines(jnlpPath);
-                allLines.stream().filter(line -> line.trim().startsWith("<jar href=")).forEach(line -> {
-                    String jarFile = line.replaceAll(JNLP_JAR_PATTERN, "$2");
-                    jarFiles.add(jarFile.substring(1, jarFile.length() - 1));
-                });
-            } catch(IOException ignored){
-                // NO-OP
-            }
-        });
-        return jarFiles;
-    }
-
-    private Map<String, Long> getFileSizes(List<String> files) {
-        final Map<String, Long> fileSizes = new HashMap<>();
-        files.stream().forEach(relativeFilePath -> {
-            File file = new File(nativeOutputDir, relativeFilePath);
-            // add the size for each file
-            fileSizes.put(relativeFilePath, file.length());
-        });
-        return fileSizes;
-    }
-
-    private void fixPathsInsideJNLPFiles() {
-        List<File> generatedJNLPFiles = getGeneratedJNLPFiles();
-        Pattern pattern = Pattern.compile(JNLP_JAR_PATTERN);
-        generatedJNLPFiles.forEach(file -> {
-            try{
-                List<String> allLines = Files.readAllLines(file.toPath());
-                List<String> newLines = new ArrayList<>();
-                allLines.stream().forEach(line -> {
-                    if( line.matches(JNLP_JAR_PATTERN) ){
-                        // get jar-file
-                        Matcher matcher = pattern.matcher(line);
-                        matcher.find();
-                        String rawJarName = matcher.group(2);
-                        // replace \ with /
-                        newLines.add(line.replace(rawJarName, rawJarName.replaceAll("\\\\", "\\/")));
-                    } else {
-                        newLines.add(line);
-                    }
-                });
-                Files.write(file.toPath(), newLines, StandardOpenOption.TRUNCATE_EXISTING);
-            } catch(IOException ignored){
-                // NO-OP
-            }
-        });
-    }
-
-    private void fixFileSizesWithinGeneratedJNLPFiles() {
-        // after signing, we have to adjust sizes, because they have changed (since they are modified with the signature)
-        List<String> jarFiles = getJARFilesFromJNLPFiles();
-        Map<String, Long> newFileSizes = getFileSizes(jarFiles);
-        List<File> generatedJNLPFiles = getGeneratedJNLPFiles();
-        Pattern pattern = Pattern.compile(JNLP_JAR_PATTERN);
-        generatedJNLPFiles.forEach(file -> {
-            try{
-                List<String> allLines = Files.readAllLines(file.toPath());
-                List<String> newLines = new ArrayList<>();
-                allLines.stream().forEach(line -> {
-                    if( line.matches(JNLP_JAR_PATTERN) ){
-                        // get jar-file
-                        Matcher matcher = pattern.matcher(line);
-                        matcher.find();
-                        String rawJarName = matcher.group(2);
-                        String jarName = rawJarName.substring(1, rawJarName.length() - 1);
-                        if( newFileSizes.containsKey(jarName) ){
-                            // replace old size with new one
-                            newLines.add(line.replace(matcher.group(4), "\"" + newFileSizes.get(jarName) + "\""));
-                        } else {
-                            newLines.add(line);
-                        }
-                    } else {
-                        newLines.add(line);
-                    }
-                });
-                Files.write(file.toPath(), newLines, StandardOpenOption.TRUNCATE_EXISTING);
-            } catch(IOException ignored){
-                // NO-OP
-            }
-        });
     }
 
     private void signJar(File jarFile) throws MojoExecutionException {
