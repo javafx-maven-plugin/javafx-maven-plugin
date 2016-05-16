@@ -567,26 +567,35 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 });
             });
 
+            final String cfgWorkaround205Marker = "javafx-maven-plugin.add-cfg-file-to-app-resources";
+            final String cfgWorkaround205DoneMarker = "javafx-maven-plugin.add-cfg-file-to-app-resources";
             boolean foundBundler = false;
             for( Bundler b : bundlers.getBundlers() ){
                 try{
+                    boolean runBundler = true;
                     if( bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(b.getID()) ){
                         // this is not the specified bundler
+                        runBundler = false;
+                        
+                        // check special conditions for linux
+                        if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) && System.getProperty("os.name").toLowerCase().startsWith("linux")){
+                            if( "deb".equals(bundler) || "rpm".equals(bundler) && "linux.app".equalsIgnoreCase(b.getID()) ){
+                                // Workaround for native installer bundle not creating working executable native launcher
+                                // (this is somekind of a comeback of issue 124)
+                                // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
+                                // do run application bundler and put the cfg-file to application resources
+                                runBundler = true;
+                                params.put(cfgWorkaround205Marker, "true");
+                            }
+                        }
+                    }
+                    if(!runBundler){
                         continue;
                     }
                     foundBundler = true;
 
                     Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
                     if( b.validate(paramsToBundleWith) ){
-                        // Workaround for native installer bundle not creating executable native launcher
-                        // (this is somekind of a comeback of issue 124)
-                        // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
-                        // 
-                        // To work around this problem issue, we let the app-bundler create an additional
-                        // cfg-file, which gets the filename-workaround
-                        if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) ){
-                            workarounds.applyWorkaround205(paramsToBundleWith);
-                        }
                         b.execute(paramsToBundleWith, nativeOutputDir);
 
                         // Workaround for "Native package for Ubuntu doesn't work"
@@ -597,6 +606,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40 regarding native linux launcher(s).");
                                 if( !skipNativeLauncherWorkaround124 ){
                                     workarounds.applyWorkaround124(appName, secondaryLaunchers);
+                                    if( Boolean.parseBoolean((String) params.get(cfgWorkaround205Marker)) && !Boolean.parseBoolean((String) params.get(cfgWorkaround205DoneMarker)) ){
+                                        workarounds.applyWorkaround205(appName, secondaryLaunchers, params);
+                                        params.put(cfgWorkaround205DoneMarker, "true");
+                                    }
                                 } else {
                                     getLog().info("Skipped workaround for native linux launcher(s).");
                                 }

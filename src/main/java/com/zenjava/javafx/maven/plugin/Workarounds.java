@@ -15,6 +15,8 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import com.oracle.tools.packager.RelativeFileSet;
+import com.oracle.tools.packager.StandardBundlerParam;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,8 +25,11 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -173,31 +178,6 @@ public class Workarounds {
         });
     }
 
-    public void applyWorkaround205(Map<String, ? super Object> paramsToBundleWith) {
-        if( "prop".equals(paramsToBundleWith.get("launcher-cfg-format")) ){
-            // property-file format
-            // LinuxAppBundler
-            // writeCfgFile(p, rootDir);
-        } else {
-            // INI-file format
-            // AbstractImageBundler
-            // writeCfgFile(p, new File(rootDir, LinuxAppBundler.getLauncherCfgName(p)), LinuxAppBundler.getRuntimeLocation(p));
-        }
-        /*
-                            private String getRuntimeLocation(Map<String, ? super Object> params) {
-                                if (LINUX_RUNTIME.fetchFrom(params) == null) {
-                                    return "";
-                                } else {
-                                    return "$APPDIR/runtime";
-                                }
-                            }
-
-                            public static String getLauncherCfgName(Map<String, ? super Object> p) {
-                                return "app/" + APP_FS_NAME.fetchFrom(p) +".cfg";
-                            }
-         */
-    }
-
     public void applyWorkaround124(String appName, List<NativeLauncher> secondaryLaunchers) {
         // apply on main launcher
         applyNativeLauncherWorkaround(appName);
@@ -234,5 +214,35 @@ public class Workarounds {
             // Our workaround: use prop-file-format
             params.put("launcher-cfg-format", "prop");
         }
+    }
+
+    /**
+     * Get generated, fixed cfg-files and push them to app-resources-list
+     *
+     * @param appName
+     * @param secondaryLaunchers
+     * @param params
+     */
+    public void applyWorkaround205(String appName, List<NativeLauncher> secondaryLaunchers, Map<String, Object> params) {
+        Set<File> additionalRessourceFiles = new HashSet<>();
+
+        String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
+        Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app");
+        String configfileExtension = ".cfg";
+        additionalRessourceFiles.add(appPath.resolve(newConfigFileName + configfileExtension).toFile());
+
+        Optional.ofNullable(secondaryLaunchers).ifPresent(launchers -> {
+            launchers.stream().map(launcher -> {
+                return launcher.getAppName();
+            }).forEach(secondaryLauncherAppName -> {
+                String newSecondaryLauncherConfigFileName = secondaryLauncherAppName.substring(0, secondaryLauncherAppName.lastIndexOf("."));
+                additionalRessourceFiles.add(appPath.resolve(newSecondaryLauncherConfigFileName + configfileExtension).toFile());
+            });
+        });
+
+        params.put(appName, params);
+
+        List<RelativeFileSet> appResourcesList = StandardBundlerParam.APP_RESOURCES_LIST.fetchFrom(params);
+        appResourcesList.add(new RelativeFileSet(appPath.toFile(), additionalRessourceFiles));
     }
 }
