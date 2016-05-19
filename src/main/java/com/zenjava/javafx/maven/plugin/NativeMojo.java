@@ -355,6 +355,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected List<String> customBundlers;
 
+    /**
+     * @parameter default-value=false
+     */
+    protected boolean skipNativeLauncherWorkaround205;
+
     protected Workarounds workarounds = null;
 
     @Override
@@ -589,9 +594,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         if( workarounds.isWorkaroundForBug205Needed() ){
                             // check if special conditions for this are met (not jnlp, but not linux.app too, because there another workaround already works)
                             if( !"jnlp".equalsIgnoreCase(bundler) && !"linux.app".equalsIgnoreCase(bundler) && "linux.app".equalsIgnoreCase(b.getID()) ){
-                                getLog().info("Detected linux application bundler needs to run before installer bundlers are executed.");
-                                runBundler = true;
-                                params.put(cfgWorkaround205Marker, "true");
+                                if( !skipNativeLauncherWorkaround205 ){
+                                    getLog().info("Detected linux application bundler needs to run before installer bundlers are executed.");
+                                    runBundler = true;
+                                    params.put(cfgWorkaround205Marker, "true");
+                                } else {
+                                    getLog().info("Skipped workaround for native linux installer bundlers.");
+                                }
                             }
                         }
                     }
