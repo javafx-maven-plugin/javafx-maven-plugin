@@ -62,7 +62,7 @@ public class Workarounds {
         return JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) || JavaDetectionTools.IS_JAVA_9;
     }
 
-    public boolean isWorkaround167Needed() {
+    public boolean isWorkaroundForBug167Needed() {
         // this has been fixed and made available since 1.8.0u92:
         // http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html
         return JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(92);
@@ -77,7 +77,7 @@ public class Workarounds {
         return params.containsKey("jnlp.allPermisions") && Boolean.parseBoolean(String.valueOf(params.get("jnlp.allPermisions")));
     }
 
-    public boolean isWorkaround205Needed() {
+    public boolean isWorkaroundForBug205Needed() {
         return (JavaDetectionTools.IS_JAVA_8 && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60)) || JavaDetectionTools.IS_JAVA_9;
     }
 

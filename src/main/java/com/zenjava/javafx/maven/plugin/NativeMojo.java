@@ -538,7 +538,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             // bugfix for "bundler not being able to produce native bundle without JRE on windows"
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
-            if( workarounds.isWorkaround167Needed() ){
+            if( workarounds.isWorkaroundForBug167Needed() ){
                 if( !skipNativeLauncherWorkaround167 ){
                     workarounds.applyWorkaround167(params);
                 } else {
@@ -586,7 +586,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
                     // do run application bundler and put the cfg-file to application resources
                     if( System.getProperty("os.name").toLowerCase().startsWith("linux") ){
-                        if( workarounds.isWorkaround205Needed() ){
+                        if( workarounds.isWorkaroundForBug205Needed() ){
                             // check if special conditions for this are met (not jnlp, but not linux.app too, because there another workaround already works)
                             if( !"jnlp".equalsIgnoreCase(bundler) && !"linux.app".equalsIgnoreCase(bundler) && "linux.app".equalsIgnoreCase(b.getID()) ){
                                 getLog().info("Detected linux application bundler needs to run before installer bundlers are executed.");
