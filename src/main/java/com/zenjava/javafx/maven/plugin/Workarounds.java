@@ -15,6 +15,7 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import com.oracle.tools.packager.IOUtils;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import java.io.File;
@@ -43,8 +44,11 @@ public class Workarounds {
 
     private static final String JNLP_JAR_PATTERN = "(.*)href=(\".*?\")(.*)size=(\".*?\")(.*)";
 
+    private static final String CONFIG_FILE_EXTENSION = ".cfg";
+
     private Log logger;
     private File nativeOutputDir;
+    private List<File> filesToDelete = new ArrayList<>();
 
     public Workarounds(File nativeOutputDir, Log logger) {
         this.logger = logger;
@@ -64,10 +68,9 @@ public class Workarounds {
         // rename .cfg-file (makes it able to create running applications again, even within installer)
         String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
         Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app");
-        String configfileExtension = ".cfg";
-        Path oldConfigFile = appPath.resolve(appName + configfileExtension);
+        Path oldConfigFile = appPath.resolve(appName + CONFIG_FILE_EXTENSION);
         try{
-            Files.move(oldConfigFile, appPath.resolve(newConfigFileName + configfileExtension), StandardCopyOption.ATOMIC_MOVE);
+            Files.move(oldConfigFile, appPath.resolve(newConfigFileName + CONFIG_FILE_EXTENSION), StandardCopyOption.ATOMIC_MOVE);
         } catch(IOException ex){
             getLog().warn("Couldn't rename configfile. Please see issue #124 of the javafx-maven-plugin for further details.", ex);
         }
@@ -217,32 +220,77 @@ public class Workarounds {
     }
 
     /**
-     * Get generated, fixed cfg-files and push them to app-resources-list
+     * Get generated, fixed cfg-files and push them to app-resources-list.
+     *
      *
      * @param appName
      * @param secondaryLaunchers
      * @param params
      */
     public void applyWorkaround205(String appName, List<NativeLauncher> secondaryLaunchers, Map<String, Object> params) {
-        Set<File> additionalRessourceFiles = new HashSet<>();
+        // to workaround, we are gathering the fixed versions of the previous executed "app-bundler"
+        // and assume they all are existing
+        Set<File> filenameFixedConfigFiles = new HashSet<>();
 
-        String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
+        // get cfg-file of main native launcher
         Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app");
-        String configfileExtension = ".cfg";
-        additionalRessourceFiles.add(appPath.resolve(newConfigFileName + configfileExtension).toFile());
+        String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
+        filenameFixedConfigFiles.add(appPath.resolve(newConfigFileName + CONFIG_FILE_EXTENSION).toFile());
 
+        // when having secondary native launchers, we need their cfg-files too
         Optional.ofNullable(secondaryLaunchers).ifPresent(launchers -> {
             launchers.stream().map(launcher -> {
                 return launcher.getAppName();
             }).forEach(secondaryLauncherAppName -> {
                 String newSecondaryLauncherConfigFileName = secondaryLauncherAppName.substring(0, secondaryLauncherAppName.lastIndexOf("."));
-                additionalRessourceFiles.add(appPath.resolve(newSecondaryLauncherConfigFileName + configfileExtension).toFile());
+                filenameFixedConfigFiles.add(appPath.resolve(newSecondaryLauncherConfigFileName + CONFIG_FILE_EXTENSION).toFile());
             });
         });
 
-        params.put(appName, params);
+        // since 1.8.0_60 there exists some APP_RESOURCES_LIST, which contains multiple RelativeFileSet-instances
+        // this is the more easy way ;)
+        List<RelativeFileSet> appResourcesList = new ArrayList<>();
+        RelativeFileSet appResources = StandardBundlerParam.APP_RESOURCES.fetchFrom(params);
+        // original application resources
+        appResourcesList.add(appResources);
+        // additional filename-fixed cfg-files
+        appResourcesList.add(new RelativeFileSet(appPath.toFile(), filenameFixedConfigFiles));
 
-        List<RelativeFileSet> appResourcesList = StandardBundlerParam.APP_RESOURCES_LIST.fetchFrom(params);
-        appResourcesList.add(new RelativeFileSet(appPath.toFile(), additionalRessourceFiles));
+        // special workaround when having some jdk before update 60
+        if( JavaDetectionTools.isJavaVersion(8) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) ){
+            try{
+                // pre-update60 did not contain any list of RelativeFileSets, which requires to rework APP_RESOURCES :/
+                // TODO we need to cleanup this folder
+                Path tempResourcesDirectory = Files.createTempDirectory("jfxmp-workaround205").toAbsolutePath();
+                for( RelativeFileSet sources : appResourcesList ){
+                    File baseDir = sources.getBaseDirectory();
+                    for( String fname : appResources.getIncludedFiles() ){
+                        IOUtils.copyFile(new File(baseDir, fname), new File(tempResourcesDirectory.toFile(), fname));
+                    }
+                }
+
+                // generate new RelativeFileSet with fixed cfg-file
+                Set<File> fixedResourceFiles = new HashSet<>();
+                Files.walk(tempResourcesDirectory)
+                        .map(p -> p.toFile())
+                        .filter(File::isFile)
+                        .filter(File::canRead)
+                        .forEach(f -> {
+                            getLog().info(String.format("Add %s file to application resources.", f));
+                            fixedResourceFiles.add(f);
+                        });
+                params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(tempResourcesDirectory.toFile(), fixedResourceFiles));
+            } catch(IOException ex){
+                getLog().warn(ex);
+            }
+            return;
+        }
+        /*
+        * Backward-compatibility note:
+        * When using JDK 1.8.0u51 on travis-ci it would results into "cannot find symbol: variable APP_RESOURCES_LIST"!
+        * 
+        * To solve this, we are using some hard-coded map-key :/ (please no hacky workaround via reflections .. urgh)
+         */
+        params.put(StandardBundlerParam.APP_RESOURCES.getID() + "List", appResourcesList);
     }
 }

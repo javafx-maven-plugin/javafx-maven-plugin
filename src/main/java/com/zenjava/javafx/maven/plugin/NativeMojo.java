@@ -263,7 +263,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter
      */
     private List<FileAssociation> fileAssociations;
-    
+
     /**
      * Since Java version 1.8.0 Update 60 a new bundler for generating JNLP-files was presented and includes
      * a bug while generating relative file-references when building on windows.
@@ -330,7 +330,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean skipSizeRecalculationForJNLP185;
-    
+
     /**
      * JavaFX introduced a new way for signing jar-files, which was called "BLOB signing".
      * <p>
@@ -339,18 +339,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * for having your jar-files getting signed when generating JNLP-files.
      *
      * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/190
-     * 
+     *
      * @parameter default-value=false
      */
     protected boolean noBlobSigning;
-    
+
     /**
      * As it is possible to extend existing bundlers, you don't have to use your private
      * version of the javafx-maven-plugin. Just provide a list with the java-classes you
      * want to use, declare them as compile-depencendies and run `mvn jfx:native`
      * or by using maven lifecycle.
      * You have to implement the Bundler-interface (@see com.oracle.tools.packager.Bundler).
-     * 
+     *
      * @parameter
      */
     protected List<String> customBundlers;
@@ -535,7 +535,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
             // this has been fixed and made available since 1.8.0u92:
             // http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html
-            if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(60) && !isAtLeastOracleJavaUpdateVersion(92) ){
+            if( JavaDetectionTools.isJavaVersion(8) && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(92) ){
                 if( !skipNativeLauncherWorkaround167 ){
                     workarounds.applyWorkaround167(params);
                 } else {
@@ -567,8 +567,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 });
             });
 
-            final String cfgWorkaround205Marker = "javafx-maven-plugin.add-cfg-file-to-app-resources";
-            final String cfgWorkaround205DoneMarker = "javafx-maven-plugin.add-cfg-file-to-app-resources";
+            final String cfgWorkaround205Marker = "cfgWorkaround205Marker";
+            final String cfgWorkaround205DoneMarker = cfgWorkaround205Marker + ".done";
             boolean foundBundler = false;
             for( Bundler b : bundlers.getBundlers() ){
                 try{
@@ -576,20 +576,22 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     if( bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(b.getID()) ){
                         // this is not the specified bundler
                         runBundler = false;
-                        
-                        // check special conditions for linux
-                        if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) && System.getProperty("os.name").toLowerCase().startsWith("linux")){
-                            if( "deb".equals(bundler) || "rpm".equals(bundler) && "linux.app".equalsIgnoreCase(b.getID()) ){
-                                // Workaround for native installer bundle not creating working executable native launcher
-                                // (this is somekind of a comeback of issue 124)
-                                // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
-                                // do run application bundler and put the cfg-file to application resources
+                    }
+
+                    // Workaround for native installer bundle not creating working executable native launcher
+                    // (this is a comeback of issue 124)
+                    // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
+                    // do run application bundler and put the cfg-file to application resources
+                    if( System.getProperty("os.name").toLowerCase().startsWith("linux") ){
+                        if( (JavaDetectionTools.isJavaVersion(8) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60)) || JavaDetectionTools.isJavaVersion(9) ){
+                            if( !"jnlp".equalsIgnoreCase(bundler) && !"linux.app".equalsIgnoreCase(bundler) && "linux.app".equalsIgnoreCase(b.getID()) ){
+                                getLog().info("Detected linux application bundler needs to run before installer bundlers are executed.");
                                 runBundler = true;
                                 params.put(cfgWorkaround205Marker, "true");
                             }
                         }
                     }
-                    if(!runBundler){
+                    if( !runBundler ){
                         continue;
                     }
                     foundBundler = true;
@@ -601,12 +603,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         // Workaround for "Native package for Ubuntu doesn't work"
                         // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
                         // real bug: linux-launcher from oracle-jdk starting from 1.8.0u40 logic to determine .cfg-filename
-                        if( isJavaVersion(8) && isAtLeastOracleJavaUpdateVersion(40) ){
+                        if( JavaDetectionTools.isJavaVersion(8) && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) ){
                             if( "linux.app".equals(b.getID()) ){
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40 regarding native linux launcher(s).");
                                 if( !skipNativeLauncherWorkaround124 ){
                                     workarounds.applyWorkaround124(appName, secondaryLaunchers);
-                                    if( Boolean.parseBoolean((String) params.get(cfgWorkaround205Marker)) && !Boolean.parseBoolean((String) params.get(cfgWorkaround205DoneMarker)) ){
+                                    // only apply workaround for issue 205 when having workaround for issue 124 active
+                                    if( Boolean.parseBoolean(String.valueOf(params.get(cfgWorkaround205Marker))) && !Boolean.parseBoolean((String) params.get(cfgWorkaround205DoneMarker)) ){
                                         workarounds.applyWorkaround205(appName, secondaryLaunchers, params);
                                         params.put(cfgWorkaround205DoneMarker, "true");
                                     }
