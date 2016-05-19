@@ -102,9 +102,8 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     private PackagerLib packagerLib;
 
     public PackagerLib getPackagerLib() throws MojoExecutionException {
-
+        // lazy-initialization of packagerLib
         if( packagerLib == null ){
-
             // add deployDir to system classpath
             if( deployDir != null ){
                 getLog().info("Adding 'deploy' directory to Mojo classpath: " + deployDir);
