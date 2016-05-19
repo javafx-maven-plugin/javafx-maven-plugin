@@ -234,18 +234,27 @@ public class Workarounds {
 
         // get cfg-file of main native launcher
         Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app");
-        String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
-        filenameFixedConfigFiles.add(appPath.resolve(newConfigFileName + CONFIG_FILE_EXTENSION).toFile());
+        if( appName.contains(".") ){
+            String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
+            filenameFixedConfigFiles.add(appPath.resolve(newConfigFileName + CONFIG_FILE_EXTENSION).toFile());
+        }
 
         // when having secondary native launchers, we need their cfg-files too
         Optional.ofNullable(secondaryLaunchers).ifPresent(launchers -> {
             launchers.stream().map(launcher -> {
                 return launcher.getAppName();
             }).forEach(secondaryLauncherAppName -> {
-                String newSecondaryLauncherConfigFileName = secondaryLauncherAppName.substring(0, secondaryLauncherAppName.lastIndexOf("."));
-                filenameFixedConfigFiles.add(appPath.resolve(newSecondaryLauncherConfigFileName + CONFIG_FILE_EXTENSION).toFile());
+                if( secondaryLauncherAppName.contains(".") ){
+                    String newSecondaryLauncherConfigFileName = secondaryLauncherAppName.substring(0, secondaryLauncherAppName.lastIndexOf("."));
+                    filenameFixedConfigFiles.add(appPath.resolve(newSecondaryLauncherConfigFileName + CONFIG_FILE_EXTENSION).toFile());
+                }
             });
         });
+
+        if( filenameFixedConfigFiles.isEmpty() ){
+            // it wasn't required to apply this workaround
+            return;
+        }
 
         // since 1.8.0_60 there exists some APP_RESOURCES_LIST, which contains multiple RelativeFileSet-instances
         // this is the more easy way ;)
