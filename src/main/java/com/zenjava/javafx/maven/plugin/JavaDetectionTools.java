@@ -16,14 +16,23 @@
 package com.zenjava.javafx.maven.plugin;
 
 /**
- *
  * @author Danny Althoff
  */
 public class JavaDetectionTools {
 
-    public static boolean isJavaVersion(int oracleJavaVersion) {
+    public static final boolean IS_JAVA_8 = isJavaVersion(8);
+    public static final boolean IS_JAVA_9 = !IS_JAVA_8 && isJavaVersion(9) || isJavaVersion(9, true);
+
+    public static boolean isJavaVersion(int oracleJavaVersion, boolean noVersionOne) {
         String javaVersion = System.getProperty("java.version");
+        if( noVersionOne ){
+            return javaVersion.startsWith(String.valueOf(oracleJavaVersion));
+        }
         return javaVersion.startsWith("1." + oracleJavaVersion);
+    }
+
+    public static boolean isJavaVersion(int oracleJavaVersion) {
+        return isJavaVersion(oracleJavaVersion, false);
     }
 
     public static boolean isAtLeastOracleJavaUpdateVersion(int updateNumber) {
