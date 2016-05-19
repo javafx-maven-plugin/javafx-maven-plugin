@@ -48,7 +48,6 @@ public class Workarounds {
 
     private Log logger;
     private File nativeOutputDir;
-    private List<File> filesToDelete = new ArrayList<>();
 
     public Workarounds(File nativeOutputDir, Log logger) {
         this.logger = logger;
@@ -57,6 +56,29 @@ public class Workarounds {
 
     public Log getLog() {
         return logger;
+    }
+
+    public boolean isWorkaroundForBug124Needed() {
+        return JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) || JavaDetectionTools.IS_JAVA_9;
+    }
+
+    public boolean isWorkaround167Needed() {
+        // this has been fixed and made available since 1.8.0u92:
+        // http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html
+        return JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(92);
+    }
+
+    public boolean isWorkaroundForBug182Needed() {
+        // jnlp-bundler uses RelativeFileSet, and generates system-dependent dividers (\ on windows, / on others)
+        return File.separator.equals("\\");
+    }
+
+    public boolean isWorkaroundForBug185Needed(Map<String, Object> params) {
+        return params.containsKey("jnlp.allPermisions") && Boolean.parseBoolean(String.valueOf(params.get("jnlp.allPermisions")));
+    }
+
+    public boolean isWorkaround205Needed() {
+        return (JavaDetectionTools.IS_JAVA_8 && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60)) || JavaDetectionTools.IS_JAVA_9;
     }
 
     protected void applyNativeLauncherWorkaround(String appName) {
@@ -266,7 +288,7 @@ public class Workarounds {
         appResourcesList.add(new RelativeFileSet(appPath.toFile(), filenameFixedConfigFiles));
 
         // special workaround when having some jdk before update 60
-        if( JavaDetectionTools.isJavaVersion(8) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) ){
+        if( JavaDetectionTools.IS_JAVA_8 && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) ){
             try{
                 // pre-update60 did not contain any list of RelativeFileSets, which requires to rework APP_RESOURCES :/
                 // TODO we need to cleanup this folder

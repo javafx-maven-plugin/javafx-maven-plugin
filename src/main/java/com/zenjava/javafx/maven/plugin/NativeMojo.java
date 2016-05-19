@@ -371,6 +371,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         try{
             Map<String, ? super Object> params = new HashMap<>();
 
+            // make bundlers doing verbose output (might not always be as verbose as expected)
             params.put(StandardBundlerParam.VERBOSE.getID(), verbose);
 
             Optional.ofNullable(identifier).ifPresent(id -> {
@@ -397,7 +398,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 params.put(StandardBundlerParam.ARGUMENTS.getID(), new ArrayList<>(arguments));
             });
 
-            // bugfix for #83 (by copying additional resources to /jfx/app folder)
+            // bugfix for #83 (by copying additional resources to /target/jfx/app folder)
+            // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/83
             Optional.ofNullable(additionalAppResources).filter(File::exists).ifPresent(appResources -> {
                 try{
                     Path targetFolder = jfxAppOutputDir.toPath();
@@ -436,6 +438,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 }
             });
 
+            // gather all files for our application bundle
             Set<File> resourceFiles = new HashSet<>();
             try{
                 Files.walk(jfxAppOutputDir.toPath())
@@ -451,6 +454,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             }
             params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(jfxAppOutputDir, resourceFiles));
 
+            // check for misconfiguration
             Collection<String> duplicateKeys = new HashSet<>();
             Optional.ofNullable(bundleArguments).ifPresent(bArguments -> {
                 duplicateKeys.addAll(params.keySet());
@@ -462,7 +466,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 throw new MojoExecutionException("The following keys in <bundleArguments> duplicate other settings, please remove one or the other: " + duplicateKeys.toString());
             }
 
-            // check for misconfiguration, requires to be different as this would overwrite primary launche
+            // check for secondary launcher misconfiguration (their appName requires to be different as this would overwrite primary launcher)
             Collection<String> launcherNames = new ArrayList<>();
             launcherNames.add(appName);
             final AtomicBoolean nullLauncherNameFound = new AtomicBoolean(false);
@@ -518,6 +522,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 throw new MojoExecutionException("Secondary launcher needs to have different name, please adjust appName inside your configuration.");
             }
 
+            // check and prepare for file-associations (might not be present on all bundlers)
             Optional.ofNullable(fileAssociations).ifPresent(associations -> {
                 final List<Map<String, ? super Object>> allAssociations = new ArrayList<>();
                 associations.stream().forEach(association -> {
@@ -533,9 +538,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             // bugfix for "bundler not being able to produce native bundle without JRE on windows"
             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
-            // this has been fixed and made available since 1.8.0u92:
-            // http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html
-            if( JavaDetectionTools.isJavaVersion(8) && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(92) ){
+            if( workarounds.isWorkaround167Needed() ){
                 if( !skipNativeLauncherWorkaround167 ){
                     workarounds.applyWorkaround167(params);
                 } else {
@@ -583,7 +586,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
                     // do run application bundler and put the cfg-file to application resources
                     if( System.getProperty("os.name").toLowerCase().startsWith("linux") ){
-                        if( (JavaDetectionTools.isJavaVersion(8) && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60)) || JavaDetectionTools.isJavaVersion(9) ){
+                        if( workarounds.isWorkaround205Needed() ){
+                            // check if special conditions for this are met (not jnlp, but not linux.app too, because there another workaround already works)
                             if( !"jnlp".equalsIgnoreCase(bundler) && !"linux.app".equalsIgnoreCase(bundler) && "linux.app".equalsIgnoreCase(b.getID()) ){
                                 getLog().info("Detected linux application bundler needs to run before installer bundlers are executed.");
                                 runBundler = true;
@@ -603,7 +607,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         // Workaround for "Native package for Ubuntu doesn't work"
                         // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
                         // real bug: linux-launcher from oracle-jdk starting from 1.8.0u40 logic to determine .cfg-filename
-                        if( JavaDetectionTools.isJavaVersion(8) && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) ){
+                        if( workarounds.isWorkaroundForBug124Needed() ){
                             if( "linux.app".equals(b.getID()) ){
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40 regarding native linux launcher(s).");
                                 if( !skipNativeLauncherWorkaround124 ){
@@ -620,10 +624,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         }
 
                         if( "jnlp".equals(b.getID()) ){
-                            if( File.separator.equals("\\") ){
+                            if( workarounds.isWorkaroundForBug182Needed() ){
                                 // Workaround for "JNLP-generation: path for dependency-lib on windows with backslash"
                                 // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/182
-                                // jnlp-bundler uses RelativeFileSet, and generates system-dependent dividers (\ on windows, / on others)
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u60 regarding jar-path inside generated JNLP-files.");
                                 if( !skipJNLPRessourcePathWorkaround182 ){
                                     workarounds.fixPathsInsideJNLPFiles();
@@ -633,9 +636,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             }
 
                             // Do sign generated jar-files by calling the packager (this might change in the future,
-                            // hopefully when oracle reworked the process inside the JNLP-bundler.
+                            // hopefully when oracle reworked the process inside the JNLP-bundler)
                             // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/185
-                            if( params.containsKey("jnlp.allPermisions") && Boolean.parseBoolean(String.valueOf(params.get("jnlp.allPermisions"))) ){
+                            if( workarounds.isWorkaroundForBug185Needed(params) ){
                                 getLog().info("Signing jar-files referenced inside generated JNLP-files.");
                                 if( !skipSigningJarFilesJNLP185 ){
                                     // JavaFX signing using BLOB method will get dropped on JDK 9: "blob signing is going away in JDK9. "
@@ -693,7 +696,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         // add all gathered jar-files as resources so be signed
         workarounds.getJARFilesFromJNLPFiles().forEach(jarFile -> signJarParams.addResource(nativeOutputDir, jarFile));
 
-        getLog().info("Signing JAR files for webstart bundle");
+        getLog().info("Signing JAR files for jnlp bundle using BLOB-method");
         getPackagerLib().signJar(signJarParams);
     }
 
@@ -730,6 +733,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             throw new MojoFailureException("A 'keyStorePassword' is required for signing JARs");
         }
 
+        // fallback
         if( keyPassword == null ){
             keyPassword = keyStorePassword;
         }
@@ -756,6 +760,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     .inheritIO()
                     .directory(project.getBasedir())
                     .command(command);
+
+            getLog().info("Signing JAR files for jnlp bundle using jarsigner-method");
             Process p = pb.start();
             p.waitFor();
             if( p.exitValue() != 0 ){
