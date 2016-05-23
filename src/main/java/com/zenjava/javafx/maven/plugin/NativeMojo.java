@@ -356,6 +356,15 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected List<String> customBundlers;
 
     /**
+     * Same problem as workaround for bug 124 for native launchers, but this time regarding
+     * created native installers, where the workaround didn't apply.
+     * <p>
+     * Change this to "true" when you don't want this workaround.
+     * <p>
+     * Requires skipNativeLauncherWorkaround124 to be false.
+     *
+     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
+     *
      * @parameter default-value=false
      */
     protected boolean skipNativeLauncherWorkaround205;
