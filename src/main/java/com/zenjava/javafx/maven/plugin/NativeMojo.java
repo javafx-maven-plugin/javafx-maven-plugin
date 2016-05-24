@@ -632,6 +632,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                                     workarounds.applyWorkaround124(appName, secondaryLaunchers);
                                     // only apply workaround for issue 205 when having workaround for issue 124 active
                                     if( Boolean.parseBoolean(String.valueOf(params.get(cfgWorkaround205Marker))) && !Boolean.parseBoolean((String) params.get(cfgWorkaround205DoneMarker)) ){
+                                        getLog().info("Preparing workaround for oracle-jdk-bug since 1.8.0u40 regarding native linux launcher(s) inside native linux installers.");
                                         workarounds.applyWorkaround205(appName, secondaryLaunchers, params);
                                         params.put(cfgWorkaround205DoneMarker, "true");
                                     }

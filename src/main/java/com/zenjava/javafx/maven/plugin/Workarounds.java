@@ -78,7 +78,7 @@ public class Workarounds {
     }
 
     public boolean isWorkaroundForBug205Needed() {
-        return (JavaDetectionTools.IS_JAVA_8 && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60)) || JavaDetectionTools.IS_JAVA_9;
+        return (JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40)) || JavaDetectionTools.IS_JAVA_9;
     }
 
     protected void applyNativeLauncherWorkaround(String appName) {
@@ -255,10 +255,14 @@ public class Workarounds {
         Set<File> filenameFixedConfigFiles = new HashSet<>();
 
         // get cfg-file of main native launcher
-        Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app");
+        Path appPath = nativeOutputDir.toPath().resolve(appName).resolve("app").toAbsolutePath();
         if( appName.contains(".") ){
             String newConfigFileName = appName.substring(0, appName.lastIndexOf("."));
-            filenameFixedConfigFiles.add(appPath.resolve(newConfigFileName + CONFIG_FILE_EXTENSION).toFile());
+            File mainAppNameCfgFile = appPath.resolve(newConfigFileName + CONFIG_FILE_EXTENSION).toFile();
+            if( mainAppNameCfgFile.exists() ){
+                getLog().info("Found main native application configuration file (" + mainAppNameCfgFile.toString() + ").");
+            }
+            filenameFixedConfigFiles.add(mainAppNameCfgFile);
         }
 
         // when having secondary native launchers, we need their cfg-files too
@@ -275,8 +279,10 @@ public class Workarounds {
 
         if( filenameFixedConfigFiles.isEmpty() ){
             // it wasn't required to apply this workaround
+            getLog().info("No workaround for native launcher issue 205 needed. Continuing.");
             return;
         }
+        getLog().info("Applying workaround for native launcher issue 205 by modifying application resources.");
 
         // since 1.8.0_60 there exists some APP_RESOURCES_LIST, which contains multiple RelativeFileSet-instances
         // this is the more easy way ;)
@@ -291,14 +297,19 @@ public class Workarounds {
         if( JavaDetectionTools.IS_JAVA_8 && !JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(60) ){
             try{
                 // pre-update60 did not contain any list of RelativeFileSets, which requires to rework APP_RESOURCES :/
-                // TODO we need to cleanup this folder
-                Path tempResourcesDirectory = Files.createTempDirectory("jfxmp-workaround205").toAbsolutePath();
+                Path tempResourcesDirectory = Files.createTempDirectory("jfxmp-workaround205-").toAbsolutePath();
+                File tempResourcesDirAsFile = tempResourcesDirectory.toFile();
+                getLog().info("Modifying application resources for native launcher issue 205 by copying into temporary folder (" + tempResourcesDirAsFile.toString() + ").");
                 for( RelativeFileSet sources : appResourcesList ){
                     File baseDir = sources.getBaseDirectory();
                     for( String fname : appResources.getIncludedFiles() ){
-                        IOUtils.copyFile(new File(baseDir, fname), new File(tempResourcesDirectory.toFile(), fname));
+                        IOUtils.copyFile(new File(baseDir, fname), new File(tempResourcesDirAsFile, fname));
                     }
                 }
+
+                // might not work for gradle, but maven does not hold up any JVM ;)
+                // might rework this later into cleanup-phase
+                tempResourcesDirAsFile.deleteOnExit();
 
                 // generate new RelativeFileSet with fixed cfg-file
                 Set<File> fixedResourceFiles = new HashSet<>();
@@ -310,7 +321,7 @@ public class Workarounds {
                             getLog().info(String.format("Add %s file to application resources.", f));
                             fixedResourceFiles.add(f);
                         });
-                params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(tempResourcesDirectory.toFile(), fixedResourceFiles));
+                params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(tempResourcesDirAsFile, fixedResourceFiles));
             } catch(IOException ex){
                 getLog().warn(ex);
             }
