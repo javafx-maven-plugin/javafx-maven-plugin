@@ -110,14 +110,18 @@ Improvements:
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.5.0 (???-2016)
+upcoming Version 8.5.0 (???-May-2016)
 
 Bugfixes:
 * updated workaround-detection for creating native bundles without JRE, because [it got fixed by latest Oracle JDK 1.8.0u92](http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html)
+* added workaround for native linux launcher inside native linux installer bundle (DEB and RPM) not working, see issue #205 for more details on this
 
 New:
-* Added ability to write and use custom bundlers! This makes it possible to customize the work which is required for your bundling-process.
+* added ability to write and use custom bundlers! This makes it possible to customize the work which is required for your bundling-process.
+* added new property to disable "native linux launcher inside native linux installer"-fix `<skipNativeLauncherWorkaround205>true</skipNativeLauncherWorkaround205>`
 
 Improvements:
 * added IT-project "23-simple-custom-bundler"
 * added IT-project "24-simple-custom-bundler-failed", which fails to use custom bundler, but does not fail (normal behaviour)
+* added IT-projects regarding workaround for issue 205 (currenty they do nothing, I still need to write some verify-beanshell files)
+* moved workarounds and workaround-detection into its own class (makes it a bit easier to concentrate on the main work inside NativeMojo)

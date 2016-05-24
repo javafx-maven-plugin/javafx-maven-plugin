@@ -102,9 +102,8 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     private PackagerLib packagerLib;
 
     public PackagerLib getPackagerLib() throws MojoExecutionException {
-
+        // lazy-initialization of packagerLib
         if( packagerLib == null ){
-
             // add deployDir to system classpath
             if( deployDir != null ){
                 getLog().info("Adding 'deploy' directory to Mojo classpath: " + deployDir);
@@ -123,22 +122,5 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
             this.packagerLib = new PackagerLib();
         }
         return this.packagerLib;
-    }
-
-    protected boolean isJavaVersion(int oracleJavaVersion) {
-        String javaVersion = System.getProperty("java.version");
-        return javaVersion.startsWith("1." + oracleJavaVersion);
-    }
-
-    protected boolean isAtLeastOracleJavaUpdateVersion(int updateNumber) {
-        String javaVersion = System.getProperty("java.version");
-        String[] javaVersionSplitted = javaVersion.split("_");
-        if( javaVersionSplitted.length <= 1 ){
-            return false;
-        }
-        String javaUpdateVersionRaw = javaVersionSplitted[1];
-        // issue #159 NumberFormatException on openjdk (the reported Java version is "1.8.0_45-internal")
-        String javaUpdateVersion = javaUpdateVersionRaw.replaceAll("[^\\d]", "");
-        return Integer.parseInt(javaUpdateVersion, 10) >= updateNumber;
     }
 }

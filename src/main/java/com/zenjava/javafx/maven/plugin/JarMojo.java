@@ -247,12 +247,10 @@ public class JarMojo extends AbstractJfxToolsMojo {
     }
 
     private boolean checkIfJavaIsHavingPackagerJar() {
-        boolean isJava8 = isJavaVersion(8);
-        boolean isJava9 = isJavaVersion(9);
-        if( isJava8 && isAtLeastOracleJavaUpdateVersion(40) ){
+        if( JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) ){
             return true;
         }
-        if( isJava9 ){ // NOSONAR
+        if( JavaDetectionTools.IS_JAVA_9 ){ // NOSONAR
             return true;
         }
         return false;
