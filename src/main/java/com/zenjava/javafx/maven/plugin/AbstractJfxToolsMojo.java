@@ -107,7 +107,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
             // add deployDir to system classpath
             if( deployDir != null ){
                 getLog().info("Adding 'deploy' directory to Mojo classpath: " + deployDir);
-                URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+                URLClassLoader sysloader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
                 Class<URLClassLoader> sysclass = URLClassLoader.class;
                 try{
                     Method method = sysclass.getDeclaredMethod("addURL", URL.class);
