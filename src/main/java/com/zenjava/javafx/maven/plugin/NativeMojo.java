@@ -101,7 +101,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * </ul>
      *
      * <p>
-     * For a full list of available bundlers on your system, call 'mvn jfx:list-bundler' inside your project.
+     * For a full list of available bundlers on your system, call 'mvn jfx:list-bundlers' inside your project.
      *
      * @parameter property="bundler" default-value="ALL"
      */
