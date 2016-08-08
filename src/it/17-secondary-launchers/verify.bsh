@@ -15,8 +15,13 @@ if( !jfxNativeFolder.exists() ){
     throw new Exception( "there should be a jfx-native-folder!");
 }
 
-File generatedConfigFileOne = new File( basedir, "target/jfx/native/javafx-maven-plugin-test-17-secondary-launchers-1.0/app/javafx-maven-plugin-test-17-secondary-launchers-1.0.cfg" );
-File generatedConfigFileTwo = new File( basedir, "target/jfx/native/javafx-maven-plugin-test-17-secondary-launchers-1.0/app/SecondaryMainLauncher.cfg" );
+File configFolder = new File( basedir, "target/jfx/native/javafx-maven-plugin-test-17-secondary-launchers-1.0/app" );
+if (System.getProperty("os.name").startsWith("Mac")) {
+	configFolder = new File( basedir, "target/jfx/native/javafx-maven-plugin-test-17-secondary-launchers-1.0.app/Contents/Java");
+}
+	
+File generatedConfigFileOne = new File( configFolder, "javafx-maven-plugin-test-17-secondary-launchers-1.0.cfg" );
+File generatedConfigFileTwo = new File( configFolder, "SecondaryMainLauncher.cfg" );
 
 if( !(generatedConfigFileOne.exists() && generatedConfigFileTwo.exists()) ){
     throw new Exception( "there should be two generated config-files, one for each launcher!");
