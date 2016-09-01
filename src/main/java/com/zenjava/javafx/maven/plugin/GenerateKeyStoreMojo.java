@@ -15,13 +15,9 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Organization;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
@@ -29,6 +25,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.project.MavenProject;
 
 /**
  * Generates a development keysstore that can be used for signing web based distribution bundles based on POM settings.
@@ -45,12 +43,6 @@ import java.util.List;
  */
 public class GenerateKeyStoreMojo extends AbstractMojo {
 
-    @FunctionalInterface
-    private interface RequiredFieldAlternativeCallback {
-
-        String getValue();
-    }
-
     /**
      * The Maven Project Object
      *
@@ -61,28 +53,29 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     protected MavenProject project;
 
     /**
-     * The Maven Session Object
-     *
-     * @parameter property="session"
-     * @required
-     * @readonly
-     */
-    protected MavenSession session;
-
-    /**
-     * The Maven PluginManager Object
-     *
-     * @component
-     * @required
-     */
-    protected BuildPluginManager pluginManager;
-
-    /**
      * Flag to turn on verbose logging. Set this to true if you are having problems and want more detailed information.
      *
      * @parameter property="verbose" default-value="false"
      */
     protected Boolean verbose;
+
+    /**
+     * All commands executed by this Maven-plugin will be done using the current available commands
+     * of your maven-execution environment. It is possible to call Maven with a different version of Java,
+     * so these calls might be wrong. To use the executables of the JDK used for running this maven-plugin,
+     * please set this to false. You might need this in the case you installed multiple versions of Java.
+     *
+     * The default is to use environment relative executables.
+     *
+     * @parameter property="useEnvironmentRelativeExecutables" default-value="true"
+     */
+    protected boolean useEnvironmentRelativeExecutables;
+
+    @FunctionalInterface
+    private interface RequiredFieldAlternativeCallback {
+
+        String getValue();
+    }
 
     /**
      * Set this to true to silently overwrite the keystore. If this is set to false (the default) then if a keystore
@@ -161,7 +154,6 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-
         if( keyStore.exists() ){
             if( overwriteKeyStore ){
                 if( !keyStore.delete() ){
@@ -227,7 +219,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
             List<String> command = new ArrayList<>();
 
-            command.add("keytool");
+            command.add(getEnvironmentRelativeExecutablePath() + "keytool");
             command.add("-genkeypair");
             command.add("-keystore");
             command.add(keyStore.getPath());
@@ -279,4 +271,14 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
         }
     }
 
+    protected String getEnvironmentRelativeExecutablePath() {
+        if( useEnvironmentRelativeExecutables ){
+            return "";
+        }
+
+        String jrePath = System.getProperty("java.home");
+        String jdkPath = jrePath + File.separator + ".." + File.separator + "bin" + File.separator;
+
+        return jdkPath;
+    }
 }

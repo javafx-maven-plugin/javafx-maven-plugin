@@ -1,6 +1,20 @@
 Release Notes
 =============
 
+Version 8.6.0 (01-Sept-2016)
+
+New:
+* added new property `useEnvironmentRelativeExecutables` to make sure having the correct executables used, required when having multiple installations of java, just set this to false for using the JDK used for executing maven  (this got migrated from the [javafx-gradle-plugin](https://github.com/FibreFoX/javafx-gradle-plugin))
+* added new property `runAppParameter` for specifying application parameters passed to the execution call `java -jar` while developing your application (this fixes #176, because that issue got valid as the `mvn jfx:run` goal is valid again after the removal of the `exec-maven-plugin`)
+* added new property `runJavaParameter` for having additional settings passed to the execution call used for running your javafx-application, makes it possible to specify javassist-parameters now (and much more)
+
+Bugfixes:
+* fixed tests not running on MacOSX due to different paths exceptations (thanks @sa-wilson)
+
+Improvements:
+* cleanup of some unused parameters
+* fixed missing "s" inside description about `jfx:list-bundlers`-mojo
+
 
 Version 8.5.0 (30-May-2016)
 

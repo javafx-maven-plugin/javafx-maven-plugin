@@ -760,7 +760,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
     private void signJar(File jarFile) throws MojoExecutionException {
         List<String> command = new ArrayList<>();
-        command.add("jarsigner");
+        command.add(getEnvironmentRelativeExecutablePath() + "jarsigner");
         command.add("-strict");
         command.add("-keystore");
         command.add(keyStore.getAbsolutePath());
