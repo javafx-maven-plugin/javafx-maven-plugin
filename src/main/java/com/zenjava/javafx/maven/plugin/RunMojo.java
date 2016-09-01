@@ -18,11 +18,9 @@ package com.zenjava.javafx.maven.plugin;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.BuildPluginManager;
+import java.util.Optional;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
 
 /**
  *
@@ -32,30 +30,51 @@ import org.apache.maven.plugin.MojoFailureException;
 public class RunMojo extends AbstractJfxToolsMojo {
 
     /**
-     * The Maven Session Object
+     * Developing and debugging javafx applications can be difficult, so a lot of
+     * tools exists, that need to be injected into the JVM via special parameter
+     * (e.g. javassist). To have this being part of the command used to start the
+     * application by this MOJO, just set all your parameters here.
      *
-     * @parameter property="session"
-     * @required
-     * @readonly
+     * @parameter
      */
-    protected MavenSession session;
+    protected String runJavaParameter = null;
 
     /**
-     * The Maven PluginManager Object
+     * While developing, you might need some arguments for your application passed
+     * to your execution. To have them being part of the command used to start the
+     * application by this MOJO, just set all your parameters here.
      *
-     * @component
-     * @required
+     * This fixes issue #176.
+     *
+     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176
+     * @parameter
      */
-    protected BuildPluginManager pluginManager;
+    protected String runAppParameter = null;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().info("Running JavaFX Application");
 
         List<String> command = new ArrayList<>();
-        command.add("java");
+        command.add(getEnvironmentRelativeExecutablePath() + "java");
+
+        // might be useful for having a custom javassist or debugger integrated in this command
+        Optional.ofNullable(runJavaParameter).ifPresent(parameter -> {
+            if( !parameter.trim().isEmpty() ){
+                command.add(parameter);
+            }
+        });
+
         command.add("-jar");
         command.add(jfxMainAppJarName);
+
+        // it is possible to have jfx:run pass additional parameters
+        // fixes https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176
+        Optional.ofNullable(runAppParameter).ifPresent(parameter -> {
+            if( !parameter.trim().isEmpty() ){
+                command.add(parameter);
+            }
+        });
 
         try{
             ProcessBuilder pb = new ProcessBuilder()

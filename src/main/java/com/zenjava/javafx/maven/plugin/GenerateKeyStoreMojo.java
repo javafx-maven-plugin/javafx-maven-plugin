@@ -15,13 +15,9 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Organization;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
@@ -43,46 +39,13 @@ import java.util.List;
  * @phase validate
  * @requiresDependencyResolution
  */
-public class GenerateKeyStoreMojo extends AbstractMojo {
+public class GenerateKeyStoreMojo extends AbstractJfxToolsMojo {
 
     @FunctionalInterface
     private interface RequiredFieldAlternativeCallback {
 
         String getValue();
     }
-
-    /**
-     * The Maven Project Object
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
-     */
-    protected MavenProject project;
-
-    /**
-     * The Maven Session Object
-     *
-     * @parameter property="session"
-     * @required
-     * @readonly
-     */
-    protected MavenSession session;
-
-    /**
-     * The Maven PluginManager Object
-     *
-     * @component
-     * @required
-     */
-    protected BuildPluginManager pluginManager;
-
-    /**
-     * Flag to turn on verbose logging. Set this to true if you are having problems and want more detailed information.
-     *
-     * @parameter property="verbose" default-value="false"
-     */
-    protected Boolean verbose;
 
     /**
      * Set this to true to silently overwrite the keystore. If this is set to false (the default) then if a keystore
@@ -161,7 +124,6 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-
         if( keyStore.exists() ){
             if( overwriteKeyStore ){
                 if( !keyStore.delete() ){
@@ -227,7 +189,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
             List<String> command = new ArrayList<>();
 
-            command.add("keytool");
+            command.add(getEnvironmentRelativeExecutablePath() + "keytool");
             command.add("-genkeypair");
             command.add("-keystore");
             command.add(keyStore.getPath());
