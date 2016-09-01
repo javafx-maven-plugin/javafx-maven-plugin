@@ -21,7 +21,7 @@
 
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.5.1-SNAPSHOT</version>
+    <version>8.6.0-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
@@ -143,6 +143,12 @@
             <email>BTAN@MF110187.lafayette.micropole.com</email>
             <properties>
                 <github>boliang-micropole</github>
+            </properties>
+        </contributor>
+        <contributor>
+            <name>Scott Wilson</name>
+            <properties>
+                <github>sa-wilson</github>
             </properties>
         </contributor>
     </contributors>
