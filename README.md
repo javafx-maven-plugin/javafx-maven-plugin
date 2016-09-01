@@ -1,7 +1,8 @@
 [![Travis Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/64700ul3m9y88agi/branch/master?svg=true)](https://ci.appveyor.com/project/FibreFoX/javafx-maven-plugin/branch/master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.5.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.5.0)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.6.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.6.0)
+
 
 
 JavaFX Maven Plugin
@@ -9,11 +10,12 @@ JavaFX Maven Plugin
 
 The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (8+) from within Maven.
  
-For easy configuration please use our new website (currently getting updated/reworked):
+For easy configuration please use our new website (which needs to get updated/reworked again):
 **[http://javafx-maven-plugin.github.io](http://javafx-maven-plugin.github.io)**
 
 For (outdated) documentation/examples, your can look at archived website:
 **[https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/](https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/)**
+
 
 
 Quickstart for JavaFX JAR
@@ -25,7 +27,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.5.0</version>
+    <version>8.6.0</version>
     <configuration>
         <mainClass>your.package.with.Launcher</mainClass>
     </configuration>
@@ -33,6 +35,7 @@ Add this to your pom.xml within to your build-plugin:
 ```
 
 To create your executable file with JavaFX-magic, call `mvn jfx:jar`. The jar-file will be placed at `target/jfx/app`.
+
 
 
 Quickstart for JavaFX native bundle
@@ -44,7 +47,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.5.0</version>
+    <version>8.6.0</version>
     <configuration>
         <vendor>YourCompany</vendor>
         <mainClass>your.package.with.Launcher</mainClass>
@@ -87,32 +90,32 @@ Set version to new SNAPSHOT-version:
 ```
 
 *Some notes: as this isn't the main branch, a lot of features aren't present in that branch yet, deployment of new "-SNAPSHOT"-version are on-demand*
-**This is currently heavily outdated and will be updated June 2016**
+**This is currently heavily outdated**
+
 
 
 Last Release Notes
 ==================
 
-**Version 8.5.0 (30-May-2016)**
-
-Bugfixes:
-* updated workaround-detection for creating native bundles without JRE, because [it got fixed by latest Oracle JDK 1.8.0u92](http://www.oracle.com/technetwork/java/javase/2col/8u92-bugfixes-2949473.html)
-* added workaround for native linux launcher inside native linux installer bundle (DEB and RPM) not working, see issue [#205](https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205) for more details on this (it's a come-back of the [issue 124](https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124))
+**Version 8.6.0 (01-Sept-2016)**
 
 New:
-* added ability to write and use custom bundlers! This makes it possible to customize the work which is required for your bundling-process.
-* added new property to disable "native linux launcher inside native linux installer"-fix `<skipNativeLauncherWorkaround205>true</skipNativeLauncherWorkaround205>`
+* added new property `useEnvironmentRelativeExecutables` to make sure having the correct executables used, required when having multiple installations of java, just set this to false for using the JDK used for executing maven  (this got migrated from the [javafx-gradle-plugin](https://github.com/FibreFoX/javafx-gradle-plugin))
+* added new property `runAppParameter` for specifying application parameters passed to the execution call `java -jar` while developing your application (this fixes #176, because that issue got valid as the `mvn jfx:run` goal is valid again after the removal of the `exec-maven-plugin`)
+* added new property `runJavaParameter` for having additional settings passed to the execution call used for running your javafx-application, makes it possible to specify javassist-parameters now (and much more)
+
+Bugfixes:
+* fixed tests not running on MacOSX due to different paths exceptations (thanks @sa-wilson)
 
 Improvements:
-* added IT-project "23-simple-custom-bundler"
-* added IT-project "24-simple-custom-bundler-failed", which fails to use custom bundler, but does not fail (normal behaviour)
-* added IT-projects regarding workaround for issue 205 (currenty they do nothing, I still need to write some verify-beanshell files)
-* moved workarounds and workaround-detection into its own class (makes it a bit easier to concentrate on the main work inside NativeMojo)
+* cleanup of some unused parameters
+* fixed missing "s" inside description about `jfx:list-bundlers`-mojo
+
 
 
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.5.1 (???-2016)
+upcoming Version 8.6.1 (???-2016)
 
 * nothing changed yet
