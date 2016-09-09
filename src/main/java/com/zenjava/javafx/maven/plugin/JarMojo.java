@@ -26,10 +26,12 @@ import org.apache.maven.plugin.MojoFailureException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.maven.artifact.Artifact;
 
 /**
@@ -124,6 +126,23 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @since 8.2.0
      */
     protected boolean classpathExcludesTransient;
+
+    /**
+     * When you need to add additional files to generated app-folder (e.g. README, license, third-party-tools, ...),
+     * you can specify the source-folder here. All files will be copied recursively.
+     *
+     * @parameter
+     */
+    protected File additionalAppResources;
+
+    /**
+     * It is possible to copy all files specified by additionalAppResources into the created app-folder containing
+     * your jfx-jar. This makes it possible to have external files (like native binaries) being available while
+     * developing using the run-mojo.
+     *
+     * @parameter default-value="false"
+     */
+    private boolean copyAdditionalAppResourcesToJar = false;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -237,6 +256,22 @@ public class JarMojo extends AbstractJfxToolsMojo {
             getPackagerLib().packageAsJar(createJarParams);
         } catch(PackagerException e){
             throw new MojoExecutionException("Unable to build JFX JAR for application", e);
+        }
+
+        if( copyAdditionalAppResourcesToJar ){
+            Optional.ofNullable(additionalAppResources)
+                    .filter(File::exists)
+                    .ifPresent(appResources -> {
+                        getLog().info("Copying additional app ressources...");
+
+                        try{
+                            Path targetFolder = jfxAppOutputDir.toPath();
+                            Path sourceFolder = appResources.toPath();
+                            copyRecursive(sourceFolder, targetFolder);
+                        } catch(IOException e){
+                            getLog().warn("Couldn't copy additional application resource-file(s).", e);
+                        }
+                    });
         }
 
         // cleanup

@@ -22,11 +22,18 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * Base Mojo that any other Mojo wanting to access the JavaFX Packager tools should extend from. This provides
@@ -145,5 +152,37 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
         String jdkPath = jrePath + File.separator + ".." + File.separator + "bin" + File.separator;
 
         return jdkPath;
+    }
+
+    protected void copyRecursive(Path sourceFolder, Path targetFolder) throws IOException {
+        Files.walkFileTree(sourceFolder, new FileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path subfolder, BasicFileAttributes attrs) throws IOException {
+                // do create subfolder (if needed)
+                Files.createDirectories(targetFolder.resolve(sourceFolder.relativize(subfolder)));
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path sourceFile, BasicFileAttributes attrs) throws IOException {
+                // do copy, and replace, as the resource might already be existing
+                Files.copy(sourceFile, targetFolder.resolve(sourceFolder.relativize(sourceFile)), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path source, IOException ioe) throws IOException {
+                // don't fail, just inform user
+                getLog().warn(String.format("Couldn't copy resource %s with reason %s", source.toString(), ioe.getLocalizedMessage()));
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path source, IOException ioe) throws IOException {
+                // nothing to do here
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 }
