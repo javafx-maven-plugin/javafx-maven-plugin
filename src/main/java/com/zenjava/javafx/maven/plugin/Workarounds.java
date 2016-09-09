@@ -313,14 +313,18 @@ public class Workarounds {
 
                 // generate new RelativeFileSet with fixed cfg-file
                 Set<File> fixedResourceFiles = new HashSet<>();
-                Files.walk(tempResourcesDirectory)
-                        .map(p -> p.toFile())
-                        .filter(File::isFile)
-                        .filter(File::canRead)
-                        .forEach(f -> {
-                            getLog().info(String.format("Add %s file to application resources.", f));
-                            fixedResourceFiles.add(f);
-                        });
+                try(Stream<Path> walkstream = Files.walk(tempResourcesDirectory)){
+                    walkstream.
+                            map(p -> p.toFile())
+                            .filter(File::isFile)
+                            .filter(File::canRead)
+                            .forEach(f -> {
+                                getLog().info(String.format("Add %s file to application resources.", f));
+                                fixedResourceFiles.add(f);
+                            });
+                } catch(IOException ignored){
+                    // NO-OP
+                }
                 params.put(StandardBundlerParam.APP_RESOURCES.getID(), new RelativeFileSet(tempResourcesDirAsFile, fixedResourceFiles));
             } catch(IOException ex){
                 getLog().warn(ex);
