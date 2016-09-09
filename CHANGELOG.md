@@ -1,6 +1,19 @@
 Release Notes
 =============
 
+Version 8.7.0 (09-Sept-2016)
+
+New:
+* added `additionalBundlerResources` for being able to have additional files available to the used bundler
+* added feature for copying additionalAppResources to `target/jfx/app` when calling `jfx:jar` and `jfx:run`, making it possible to have all that files available (like native files being required to not reside in the jar-files) by setting `<copyAdditionalAppResourcesToJar>true</copyAdditionalAppResourcesToJar>`
+
+Bugfixes:
+* fixed possible file-handler leak (unreported)
+
+Improvements:
+* refactored a bit to have cleaner code
+
+
 Version 8.6.0 (01-Sept-2016)
 
 New:

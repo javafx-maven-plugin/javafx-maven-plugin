@@ -1,7 +1,7 @@
 [![Travis Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/64700ul3m9y88agi/branch/master?svg=true)](https://ci.appveyor.com/project/FibreFoX/javafx-maven-plugin/branch/master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.6.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.6.0)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.7.0/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.7.0)
 
 
 
@@ -27,7 +27,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.6.0</version>
+    <version>8.7.0</version>
     <configuration>
         <mainClass>your.package.with.Launcher</mainClass>
     </configuration>
@@ -47,7 +47,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.6.0</version>
+    <version>8.7.0</version>
     <configuration>
         <vendor>YourCompany</vendor>
         <mainClass>your.package.with.Launcher</mainClass>
@@ -97,25 +97,23 @@ Set version to new SNAPSHOT-version:
 Last Release Notes
 ==================
 
-**Version 8.6.0 (01-Sept-2016)**
+**Version 8.7.0 (09-Sept-2016)**
 
 New:
-* added new property `useEnvironmentRelativeExecutables` to make sure having the correct executables used, required when having multiple installations of java, just set this to false for using the JDK used for executing maven  (this got migrated from the [javafx-gradle-plugin](https://github.com/FibreFoX/javafx-gradle-plugin))
-* added new property `runAppParameter` for specifying application parameters passed to the execution call `java -jar` while developing your application (this fixes #176, because that issue got valid as the `mvn jfx:run` goal is valid again after the removal of the `exec-maven-plugin`)
-* added new property `runJavaParameter` for having additional settings passed to the execution call used for running your javafx-application, makes it possible to specify javassist-parameters now (and much more)
+* added `additionalBundlerResources` for being able to have additional files available to the used bundler
+* added feature for copying additionalAppResources to `target/jfx/app` when calling `jfx:jar` and `jfx:run`, making it possible to have all that files available (like native files being required to not reside in the jar-files) by setting `<copyAdditionalAppResourcesToJar>true</copyAdditionalAppResourcesToJar>`
 
 Bugfixes:
-* fixed tests not running on MacOSX due to different paths exceptations (thanks @sa-wilson)
+* fixed possible file-handler leak (unreported)
 
 Improvements:
-* cleanup of some unused parameters
-* fixed missing "s" inside description about `jfx:list-bundlers`-mojo
+* refactored a bit to have cleaner code
 
 
 
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.6.1 (???-2016)
+upcoming Version 8.7.1 (???-2016)
 
 * nothing changed yet
