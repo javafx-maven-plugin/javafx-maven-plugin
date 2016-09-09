@@ -21,7 +21,7 @@
 
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.7.0-SNAPSHOT</version>
+    <version>8.7.1-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
