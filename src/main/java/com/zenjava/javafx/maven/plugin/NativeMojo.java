@@ -15,6 +15,7 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import com.oracle.tools.packager.AbstractBundler;
 import com.oracle.tools.packager.Bundler;
 import com.oracle.tools.packager.Bundlers;
 import com.oracle.tools.packager.ConfigException;
@@ -28,12 +29,8 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -211,6 +208,15 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter
      */
     protected File additionalAppResources;
+
+    /**
+     * When you need to add additional files to the base-folder of all bundlers (additional non-overriding files like
+     * images, licenses or separated modules for encryption etc.) you can specify the source-folder here. All files
+     * will be copied recursively. Please make sure to inform yourself about the details of the used bundler.
+     *
+     * @parameter
+     */
+    protected File additionalBundlerResources;
 
     /**
      * Since Java version 1.8.0 Update 40 the native launcher for linux was changed and includes a bug
@@ -418,35 +424,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 try{
                     Path targetFolder = jfxAppOutputDir.toPath();
                     Path sourceFolder = appResources.toPath();
-                    Files.walkFileTree(appResources.toPath(), new FileVisitor<Path>() {
-
-                        @Override
-                        public FileVisitResult preVisitDirectory(Path subfolder, BasicFileAttributes attrs) throws IOException {
-                            // do create subfolder (if needed)
-                            Files.createDirectories(targetFolder.resolve(sourceFolder.relativize(subfolder)));
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult visitFile(Path sourceFile, BasicFileAttributes attrs) throws IOException {
-                            // do copy
-                            Files.copy(sourceFile, targetFolder.resolve(sourceFolder.relativize(sourceFile)), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult visitFileFailed(Path source, IOException ioe) throws IOException {
-                            // don't fail, just inform user
-                            getLog().warn(String.format("Couldn't copy additional app resource %s with reason %s", source.toString(), ioe.getLocalizedMessage()));
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult postVisitDirectory(Path source, IOException ioe) throws IOException {
-                            // nothing to do here
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                    copyRecursive(sourceFolder, targetFolder);
                 } catch(IOException e){
                     getLog().warn(e);
                 }
@@ -620,6 +598,23 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
                     Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
                     if( b.validate(paramsToBundleWith) ){
+
+                        // copy all files every time a bundler runs, because they might cleanup their folders,
+                        // but user might have extend existing bundler using same foldername (which would end up deleted/cleaned up)
+                        // this got migrated from the javafx-gradle-plugin, see https://github.com/FibreFoX/javafx-gradle-plugin/issues/38
+                        if( additionalBundlerResources != null ){
+                            getLog().info("Found additional bundler resources, trying to copy all files into build root.");
+                            File bundlerImageRoot = AbstractBundler.IMAGES_ROOT.fetchFrom(paramsToBundleWith);
+                            try{
+                                Path targetFolder = bundlerImageRoot.toPath();
+                                Path sourceFolder = additionalBundlerResources.toPath();
+                                getLog().info("Copying additional bundler resources into: " + targetFolder.toFile().getAbsolutePath());
+                                copyRecursive(sourceFolder, targetFolder);
+                            } catch(IOException e){
+                                getLog().warn("Couldn't copy additional bundler resource-file(s).", e);
+                            }
+                        }
+
                         b.execute(paramsToBundleWith, nativeOutputDir);
 
                         // Workaround for "Native package for Ubuntu doesn't work"
