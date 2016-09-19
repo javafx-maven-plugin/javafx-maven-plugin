@@ -116,4 +116,5 @@ Improvements:
 
 upcoming Version 8.7.1 (???-2016)
 
-* nothing changed yet
+Improvements:
+* added warning when no classes were generated for `-jfx.jar`-generation, fixes issue #233 (no real FIX, as this is no real BUG ... IMHO)
