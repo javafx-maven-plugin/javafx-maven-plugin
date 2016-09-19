@@ -181,9 +181,19 @@ public class JarMojo extends AbstractJfxToolsMojo {
         }
 
         if( updateExistingJar ){
-            createJarParams.addResource(null, new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar"));
+            File potentialExistingFile = new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar");
+            if( !potentialExistingFile.exists() ){
+                throw new MojoExecutionException("Could not update existing jar-file, because it does not exist. Please make sure this file gets created or exists, or set updateExistingJar to false.");
+            }
+            createJarParams.addResource(null, potentialExistingFile);
         } else {
-            createJarParams.addResource(new File(build.getOutputDirectory()), "");
+            File potentialExistingGeneratedClasses = new File(build.getOutputDirectory());
+            // make sure folder exists, it is possible to have just some bootstraping "-jfx.jar"
+            if( !potentialExistingGeneratedClasses.exists() ){
+                getLog().warn("There were no classes build, this might be a problem of your project, if its not, just ignore this message. Continuing creating JavaFX JAR...");
+                potentialExistingGeneratedClasses.mkdirs();
+            }
+            createJarParams.addResource(potentialExistingGeneratedClasses, "");
         }
 
         try{
