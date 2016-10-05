@@ -118,3 +118,8 @@ upcoming Version 8.7.1 (???-2016)
 
 Improvements:
 * added warning when no classes were generated for `-jfx.jar`-generation, fixes issue #233 (no real FIX, as this is no real BUG ... IMHO)
+* added warning about slow performance (even on SSD) when having ext4/btrfs filesystems using "deb"-bundler (fixes issue #41)
+* added warning about missing "jnlp.outfile"-property inside bundleArguments when using JNLP-bundler (from issue #42)
+
+Changes:
+* reimplemented `<additionalBundlerResources>`, now searching for folders with the name of the used bundler, makes it possible to adjust nearly all bundlers now

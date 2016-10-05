@@ -22,6 +22,13 @@ import com.oracle.tools.packager.ConfigException;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import com.oracle.tools.packager.UnsupportedPlatformException;
+import com.oracle.tools.packager.linux.LinuxDebBundler;
+import com.oracle.tools.packager.linux.LinuxRpmBundler;
+import com.oracle.tools.packager.mac.MacAppStoreBundler;
+import com.oracle.tools.packager.mac.MacDmgBundler;
+import com.oracle.tools.packager.mac.MacPkgBundler;
+import com.oracle.tools.packager.windows.WinExeBundler;
+import com.oracle.tools.packager.windows.WinMsiBundler;
 import com.sun.javafx.tools.packager.PackagerException;
 import com.sun.javafx.tools.packager.SignJarParams;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -568,7 +575,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             for( Bundler b : bundlers.getBundlers() ){
                 try{
                     boolean runBundler = true;
-                    if( bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(b.getID()) ){
+                    String bundlerID = b.getID();
+                    if( bundler != null && !"ALL".equalsIgnoreCase(bundler) && !bundler.equalsIgnoreCase(bundlerID) ){
                         // this is not the specified bundler
                         runBundler = false;
                     }
@@ -580,7 +588,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     if( System.getProperty("os.name").toLowerCase().startsWith("linux") ){
                         if( workarounds.isWorkaroundForBug205Needed() ){
                             // check if special conditions for this are met (not jnlp, but not linux.app too, because there another workaround already works)
-                            if( !"jnlp".equalsIgnoreCase(bundler) && !"linux.app".equalsIgnoreCase(bundler) && "linux.app".equalsIgnoreCase(b.getID()) ){
+                            if( !"jnlp".equalsIgnoreCase(bundler) && !"linux.app".equalsIgnoreCase(bundler) && "linux.app".equalsIgnoreCase(bundlerID) ){
                                 if( !skipNativeLauncherWorkaround205 ){
                                     getLog().info("Detected linux application bundler needs to run before installer bundlers are executed.");
                                     runBundler = true;
@@ -603,16 +611,114 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         // but user might have extend existing bundler using same foldername (which would end up deleted/cleaned up)
                         // this got migrated from the javafx-gradle-plugin, see https://github.com/FibreFoX/javafx-gradle-plugin/issues/38
                         if( additionalBundlerResources != null ){
+                            // keep previous behaviour
                             getLog().info("Found additional bundler resources, trying to copy all files into build root.");
+
+                            Path resolvedBundlerFolder = additionalBundlerResources.toPath().resolve(bundlerID);
+
                             File bundlerImageRoot = AbstractBundler.IMAGES_ROOT.fetchFrom(paramsToBundleWith);
-                            try{
-                                Path targetFolder = bundlerImageRoot.toPath();
-                                Path sourceFolder = additionalBundlerResources.toPath();
-                                getLog().info("Copying additional bundler resources into: " + targetFolder.toFile().getAbsolutePath());
-                                copyRecursive(sourceFolder, targetFolder);
-                            } catch(IOException e){
-                                getLog().warn("Couldn't copy additional bundler resource-file(s).", e);
+                            Path targetFolder = bundlerImageRoot.toPath();
+                            Path sourceFolder = additionalBundlerResources.toPath();
+                            boolean skipCopyAdditionalBundlerResources = false;
+
+                            // new behaviour, use bundler-name as folder-name
+                            if( Files.exists(resolvedBundlerFolder) ){
+                                getLog().info("Found additional bundler resources for bundler " + bundlerID);
+                                sourceFolder = resolvedBundlerFolder;
+                                // change behaviour to have more control for all bundlers being inside JDK
+                                switch(bundlerID) {
+                                    case "windows.app":
+                                        // no copy required, as we already have "additionalAppResources"
+                                        skipCopyAdditionalBundlerResources = true;
+                                        break;
+                                    case "exe":
+                                        File exeBundlerFolder = WinExeBundler.EXE_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                                        targetFolder = exeBundlerFolder.toPath();
+                                        break;
+                                    case "msi":
+                                        File msiBundlerFolder = WinMsiBundler.MSI_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                                        targetFolder = msiBundlerFolder.toPath();
+                                        break;
+                                    case "windows.service":
+                                        // no copy required, as we already have "additionalAppResources"
+                                        skipCopyAdditionalBundlerResources = true;
+                                        break;
+                                    case "mac.app":
+                                        // no copy required, as we already have "additionalAppResources"
+                                        skipCopyAdditionalBundlerResources = true;
+                                        break;
+                                    case "mac.appStore":
+                                        File macApstoreBundlerFolder = ((MacAppStoreBundler) b).APP_IMAGE_BUILD_ROOT.fetchFrom(paramsToBundleWith);
+                                        targetFolder = macApstoreBundlerFolder.toPath();
+                                        break;
+                                    case "mac.daemon":
+                                        // this bundler just deletes everything ... it has no bundlerRoot
+                                        getLog().warn("The bundler with ID 'mac.daemon' is not supported, as that bundler does not provide any way to copy additional bundler-files.");
+                                        skipCopyAdditionalBundlerResources = true;
+                                        break;
+                                    case "dmg":
+                                        File macDmgBundlerFolder = ((MacDmgBundler) b).APP_IMAGE_BUILD_ROOT.fetchFrom(paramsToBundleWith);
+                                        targetFolder = macDmgBundlerFolder.toPath();
+                                        break;
+                                    case "pkg":
+                                        File macPkgBundlerFolder = ((MacPkgBundler) b).DAEMON_IMAGE_BUILD_ROOT.fetchFrom(paramsToBundleWith);
+                                        targetFolder = macPkgBundlerFolder.toPath();
+                                        break;
+                                    case "linux.app":
+                                        // no copy required, as we already have "additionalAppResources"
+                                        skipCopyAdditionalBundlerResources = true;
+                                        break;
+                                    case "deb":
+                                        File linuxDebBundlerFolder = LinuxDebBundler.DEB_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                                        targetFolder = linuxDebBundlerFolder.toPath();
+                                        break;
+                                    case "rpm":
+                                        File linuxRpmBundlerFolder = LinuxRpmBundler.RPM_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                                        targetFolder = linuxRpmBundlerFolder.toPath();
+                                        break;
+                                    default:
+                                        getLog().warn("Unknown bundler-ID found, copying from root of additionalBundlerResources into IMAGES_ROOT.");
+                                        sourceFolder = additionalBundlerResources.toPath();
+                                        break;
+                                }
                             }
+                            if( !skipCopyAdditionalBundlerResources ){
+                                try{
+                                    getLog().info("Copying additional bundler resources into: " + targetFolder.toFile().getAbsolutePath());
+                                    copyRecursive(sourceFolder, targetFolder);
+                                } catch(IOException e){
+                                    getLog().warn("Couldn't copy additional bundler resource-file(s).", e);
+                                }
+                            } else {
+                                getLog().info("Skipped copying additional bundler resources, mostly because this bundler does not need them. You might want to use additionalAppResources.");
+                            }
+                        }
+
+                        // check if we need to inform the user about low performance even on SSD
+                        // https://github.com/FibreFoX/javafx-gradle-plugin/issues/41
+                        if( System.getProperty("os.name").toLowerCase().startsWith("linux") && "deb".equals(bundlerID) ){
+                            File generationTarget = nativeOutputDir;
+                            AtomicBoolean needsWarningAboutSlowPerformance = new AtomicBoolean(false);
+                            generationTarget.toPath().getFileSystem().getFileStores().forEach(store -> {
+                                if( "ext4".equals(store.type()) ){
+                                    needsWarningAboutSlowPerformance.set(true);
+                                }
+                                if( "btrfs".equals(store.type()) ){
+                                    needsWarningAboutSlowPerformance.set(true);
+                                }
+                            });
+                            if( needsWarningAboutSlowPerformance.get() ){
+                                getLog().info("This bundler might take some while longer than expected.");
+                                getLog().info("For details about this, please go to: https://wiki.debian.org/Teams/Dpkg/FAQ#Q:_Why_is_dpkg_so_slow_when_using_new_filesystems_such_as_btrfs_or_ext4.3F");
+                            }
+                        }
+
+                        // "jnlp bundler doesn't produce jnlp file and doesn't log any error/warning"
+                        // https://github.com/FibreFoX/javafx-gradle-plugin/issues/42
+                        // the new jnlp-bundler does not work like other bundlers, you have to provide some bundleArguments-entry :(
+                        if( "jnlp".equals(bundlerID) && !paramsToBundleWith.containsKey("jnlp.outfile") ){
+                            getLog().warn("You missed to specify some bundleArguments-entry, please set 'jnlp.outfile', e.g. using appName.");
+                            continue;
                         }
 
                         b.execute(paramsToBundleWith, nativeOutputDir);
@@ -621,7 +727,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                         // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
                         // real bug: linux-launcher from oracle-jdk starting from 1.8.0u40 logic to determine .cfg-filename
                         if( workarounds.isWorkaroundForBug124Needed() ){
-                            if( "linux.app".equals(b.getID()) ){
+                            if( "linux.app".equals(bundlerID) ){
                                 getLog().info("Applying workaround for oracle-jdk-bug since 1.8.0u40 regarding native linux launcher(s).");
                                 if( !skipNativeLauncherWorkaround124 ){
                                     workarounds.applyWorkaround124(appName, secondaryLaunchers);
@@ -637,7 +743,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             }
                         }
 
-                        if( "jnlp".equals(b.getID()) ){
+                        if( "jnlp".equals(bundlerID) ){
                             if( workarounds.isWorkaroundForBug182Needed() ){
                                 // Workaround for "JNLP-generation: path for dependency-lib on windows with backslash"
                                 // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/182
