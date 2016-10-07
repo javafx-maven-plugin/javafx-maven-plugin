@@ -24,7 +24,6 @@ import com.oracle.tools.packager.StandardBundlerParam;
 import com.oracle.tools.packager.UnsupportedPlatformException;
 import com.oracle.tools.packager.linux.LinuxDebBundler;
 import com.oracle.tools.packager.linux.LinuxRpmBundler;
-import com.oracle.tools.packager.mac.MacBaseInstallerBundler;
 import com.oracle.tools.packager.windows.WinExeBundler;
 import com.oracle.tools.packager.windows.WinMsiBundler;
 import com.sun.javafx.tools.packager.PackagerException;
