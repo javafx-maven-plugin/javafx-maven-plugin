@@ -659,10 +659,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 } catch(UnsupportedPlatformException e){
                     // quietly ignored
                 } catch(ConfigException e){
-                    getLog().info("Skipping " + b.getName() + " because of configuration error " + e.getMessage() + "\nAdvice to Fix: " + e.getAdvice());
+                    if( failOnError ){
+                        throw new MojoExecutionException("Skipping '" + b.getName() + "' because of configuration error '" + e.getMessage() + "'\nAdvice to fix: " + e.getAdvice());
+                    } else {
+                        getLog().info("Skipping '" + b.getName() + "' because of configuration error '" + e.getMessage() + "'\nAdvice to fix: " + e.getAdvice());
+                    }
+
                 }
             }
             if( !foundBundler ){
+                if( failOnError ){
+                    throw new MojoExecutionException("No bundler found for given id " + bundler + ". Please check your configuration.");
+                }
                 getLog().warn("No bundler found for given id " + bundler + ". Please check your configuration.");
             }
         } catch(RuntimeException e){
