@@ -615,7 +615,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 foundBundler = true;
                 try{
                     // special mac-specific bunder
-                    if( !System.getProperty("os.name").toLowerCase().contains("os x") ){
+                    if( System.getProperty("os.name").toLowerCase().contains("os x") ){
+                        getLog().info("Found special OS, checking for workaround-requirements.");
                         // only when required and not opted out
                         if( additionalBundlerResources != null ){
                             if( !skipMacBundlerWorkaround ){
