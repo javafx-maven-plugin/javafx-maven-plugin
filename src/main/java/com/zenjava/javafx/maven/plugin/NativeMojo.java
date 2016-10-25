@@ -622,11 +622,12 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                                 if( "mac.app".equals(currentRunningBundlerID) ){
                                     // replace current running bundler with our own implementation
                                     b = new MacAppBundlerWithAdditionalResources();
+                                    getLog().info("Setting replacement of the 'mac.app'-bundler.");
                                     params.put("mac.app.bundler", b);
                                     params.put(MacAppBundlerWithAdditionalResources.ADDITIONAL_BUNDLER_RESOURCES.getID(), additionalBundlerResources);
                                 }
                             } else {
-                                getLog().info("Skipping replacement of the 'mac.app'-bundler. Please make sure you know what you are doing");
+                                getLog().info("Skipping replacement of the 'mac.app'-bundler. Please make sure you know what you are doing!");
                             }
                         }
                     }
