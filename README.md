@@ -114,7 +114,10 @@ Improvements:
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.7.1 (???-2016)
+upcoming Version 8.8.0 (???-2016)
+
+New:
+* added detection of missing main class, wrong configuration now gets detected a bit earlier
 
 Improvements:
 * added warning when no classes were generated for `-jfx.jar`-generation, fixes issue #233 (no real FIX, as this is no real BUG ... IMHO)
