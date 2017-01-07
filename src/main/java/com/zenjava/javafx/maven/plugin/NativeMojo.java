@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 /**
@@ -1000,5 +1001,26 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         } catch(IOException | InterruptedException ex){
             throw new MojoExecutionException("There was an exception while signing jar-file: " + jarFile.getAbsolutePath(), ex);
         }
+    }
+
+    private boolean isClassInsideJarFile(String classname, String jarFile) {
+        return isClassInsideJarFile(classname, new File(jarFile));
+    }
+
+    private boolean isClassInsideJarFile(String classname, Path jarFile) {
+        return isClassInsideJarFile(classname, jarFile.toFile());
+    }
+
+    private boolean isClassInsideJarFile(String classname, File jarFile) {
+        String requestedJarEntryName = classname.replace(".", "/") + ".class";
+        try{
+            JarFile jarFileToSearchIn = new JarFile(jarFile, false, JarFile.OPEN_READ);
+            return jarFileToSearchIn.stream().parallel().filter(jarEntry -> {
+                return jarEntry.getName().equals(requestedJarEntryName);
+            }).findAny().isPresent();
+        } catch(IOException ex){
+            // NO-OP
+        }
+        return false;
     }
 }
