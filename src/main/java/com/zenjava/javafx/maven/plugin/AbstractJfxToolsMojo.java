@@ -121,7 +121,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     /**
      * Set this to true for skipping the execution.
      *
-     * @parameter default-value="true"
+     * @parameter default-value="false"
      */
     protected boolean skip;
 
