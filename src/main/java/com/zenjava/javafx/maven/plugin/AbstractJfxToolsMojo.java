@@ -118,6 +118,13 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      */
     protected boolean useEnvironmentRelativeExecutables;
 
+    /**
+     * Set this to true for skipping the execution.
+     *
+     * @parameter default-value="true"
+     */
+    protected boolean skip;
+
     private PackagerLib packagerLib;
 
     public PackagerLib getPackagerLib() throws MojoExecutionException {

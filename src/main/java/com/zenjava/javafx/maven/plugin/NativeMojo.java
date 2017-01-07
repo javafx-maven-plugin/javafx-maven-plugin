@@ -412,6 +412,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             return;
         }
 
+        if( skip ){
+            getLog().info("Skipping execution of NativeMojo MOJO.");
+            return;
+        }
+
         getLog().info("Building Native Installers");
 
         workarounds = new Workarounds(nativeOutputDir, getLog());
