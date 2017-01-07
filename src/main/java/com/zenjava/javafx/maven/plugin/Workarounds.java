@@ -15,12 +15,14 @@
  */
 package com.zenjava.javafx.maven.plugin;
 
+import com.oracle.tools.packager.Bundler;
 import com.oracle.tools.packager.IOUtils;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -339,4 +341,36 @@ public class Workarounds {
          */
         params.put(StandardBundlerParam.APP_RESOURCES.getID() + "List", appResourcesList);
     }
+
+    public boolean isWorkaroundForNativeMacBundlerNeeded(File additionalBundlerResources) {
+        boolean isMac = System.getProperty("os.name").toLowerCase().contains("os x");
+        boolean hasBundlerResources = additionalBundlerResources != null && additionalBundlerResources.isDirectory() && additionalBundlerResources.exists();
+
+        return isMac && hasBundlerResources;
+    }
+
+    public Bundler applyWorkaroundForNativeMacBundler(final Bundler b, String currentRunningBundlerID, Map<String, Object> params, File additionalBundlerResources) {
+        String workaroundForNativeMacBundlerDoneMarker = "WorkaroundForNativeMacBundler.done";
+        if( "mac.app".equals(currentRunningBundlerID) && !params.containsKey(workaroundForNativeMacBundlerDoneMarker) ){
+            // 1) replace current running bundler with our own implementation
+            Bundler specialMacBundler = new MacAppBundlerWithAdditionalResources();
+
+            // 2) replace other bundlers using mac.app-bundler inside
+            getLog().info("Setting replacement of the 'mac.app'-bundler.");
+            params.put("mac.app.bundler", specialMacBundler);
+            params.put(workaroundForNativeMacBundlerDoneMarker, true);
+            Path specificFolder = additionalBundlerResources.toPath().resolve("mac.app");
+            // check if there is a special folder, otherwise put all stuff here
+            // TODO log used folder
+            if(Files.exists(specificFolder) && Files.isDirectory(specificFolder)){
+                params.put(MacAppBundlerWithAdditionalResources.ADDITIONAL_BUNDLER_RESOURCES.getID(), specificFolder.toAbsolutePath().toFile());
+            }else{
+                params.put(MacAppBundlerWithAdditionalResources.ADDITIONAL_BUNDLER_RESOURCES.getID(), additionalBundlerResources);
+            }
+
+            return specialMacBundler;
+        }
+        return b;
+    }
+
 }

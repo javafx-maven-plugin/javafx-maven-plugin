@@ -608,28 +608,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             for( Bundler b : bundlers.getBundlers() ){
                 String currentRunningBundlerID = b.getID();
+                // sometimes we need to run this bundler, so do special check
                 if( !shouldBundlerRun(bundler, currentRunningBundlerID, params) ){
                     continue;
                 }
 
                 foundBundler = true;
                 try{
-                    // special mac-specific bunder
-                    if( System.getProperty("os.name").toLowerCase().contains("os x") ){
-                        getLog().info("Found special OS, checking for workaround-requirements.");
-                        // only when required and not opted out
-                        if( additionalBundlerResources != null ){
-                            if( !skipMacBundlerWorkaround ){
-                                if( "mac.app".equals(currentRunningBundlerID) ){
-                                    // replace current running bundler with our own implementation
-                                    b = new MacAppBundlerWithAdditionalResources();
-                                    getLog().info("Setting replacement of the 'mac.app'-bundler.");
-                                    params.put("mac.app.bundler", b);
-                                    params.put(MacAppBundlerWithAdditionalResources.ADDITIONAL_BUNDLER_RESOURCES.getID(), additionalBundlerResources);
-                                }
-                            } else {
-                                getLog().info("Skipping replacement of the 'mac.app'-bundler. Please make sure you know what you are doing!");
-                            }
+                    if( workarounds.isWorkaroundForNativeMacBundlerNeeded(additionalBundlerResources) ){
+                        if( !skipMacBundlerWorkaround ){
+                            b = workarounds.applyWorkaroundForNativeMacBundler(b, currentRunningBundlerID, params, additionalBundlerResources);
+                        } else {
+                            getLog().info("Skipping replacement of the 'mac.app'-bundler. Please make sure you know what you are doing!");
                         }
                     }
 
@@ -744,103 +734,116 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         // but user might have extend existing bundler using same foldername (which would end up deleted/cleaned up)
         // fixes "Make it possible to have additional resources for bundlers"
         // see https://github.com/FibreFoX/javafx-gradle-plugin/issues/38
-        if( additionalBundlerResources != null ){
+        if( additionalBundlerResources != null && additionalBundlerResources.exists() ){
             boolean skipCopyAdditionalBundlerResources = false;
 
             // keep previous behaviour
             Path additionalBundlerResourcesPath = additionalBundlerResources.toPath();
             Path resolvedBundlerFolder = additionalBundlerResourcesPath.resolve(currentRunningBundlerID);
 
-            getLog().info("Found additional bundler resources, trying to copy all files into build root, using:" + additionalBundlerResources.getAbsolutePath());
+            if( verbose ){
+                getLog().info("Additional bundler resources are specified, trying to copy all files into build root, using:" + additionalBundlerResources.getAbsolutePath());
+            }
 
             File bundlerImageRoot = AbstractBundler.IMAGES_ROOT.fetchFrom(paramsToBundleWith);
             Path targetFolder = bundlerImageRoot.toPath();
             Path sourceFolder = additionalBundlerResourcesPath;
 
-            // new behaviour, use bundler-name as folder-name
-            if( Files.exists(resolvedBundlerFolder) ){
-                getLog().info("Found additional bundler resources for bundler " + currentRunningBundlerID);
-                sourceFolder = resolvedBundlerFolder;
-                // change behaviour to have more control for all bundlers being inside JDK
-                switch(currentRunningBundlerID) {
-                    case "windows.app":
-                        // no copy required, as we already have "additionalAppResources"
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "exe":
-                        File exeBundlerFolder = WinExeBundler.EXE_IMAGE_DIR.fetchFrom(paramsToBundleWith);
-                        targetFolder = exeBundlerFolder.toPath();
-                        break;
-                    case "msi":
-                        File msiBundlerFolder = WinMsiBundler.MSI_IMAGE_DIR.fetchFrom(paramsToBundleWith);
-                        targetFolder = msiBundlerFolder.toPath();
-                        break;
-                    case "windows.service":
-                        // no copy required, as we already have "additionalAppResources"
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "mac.app":
-                        // custom mac bundler might be used
-                        if( skipMacBundlerWorkaround ){
-                            getLog().warn("The bundler with ID 'mac.app' is not supported, as that bundler does not provide any way to copy additional bundler-files.");
-                        }
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "mac.appStore":
-                        // custom mac bundler might be used
-                        if( skipMacBundlerWorkaround ){
-                            getLog().warn("The bundler with ID 'mac.appStore' is not supported for using 'additionalBundlerResources', as that bundler does not provide any way to copy additional bundler-files.");
-                        }
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "mac.daemon":
-                        // this bundler just deletes everything ... it has no bundlerRoot
-                        getLog().warn("The bundler with ID 'mac.daemon' is not supported, as that bundler does not provide any way to copy additional bundler-files.");
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "dmg":
-                        // custom mac bundler might be used
-                        if( skipMacBundlerWorkaround ){
-                            getLog().warn("The bundler with ID 'dmg' is not supported for using 'additionalBundlerResources', as that bundler does not provide any way to copy additional bundler-files.");
-                        }
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "pkg":
-                        // custom mac bundler might be used
-                        if( skipMacBundlerWorkaround ){
-                            getLog().warn("The bundler with ID 'pkg' is not supported for using 'additionalBundlerResources', as that bundler does not provide any way to copy additional bundler-files.");
-                        }
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "linux.app":
-                        // no copy required, as we already have "additionalAppResources"
-                        skipCopyAdditionalBundlerResources = true;
-                        break;
-                    case "deb":
-                        File linuxDebBundlerFolder = LinuxDebBundler.DEB_IMAGE_DIR.fetchFrom(paramsToBundleWith);
-                        targetFolder = linuxDebBundlerFolder.toPath();
-                        break;
-                    case "rpm":
-                        File linuxRpmBundlerFolder = LinuxRpmBundler.RPM_IMAGE_DIR.fetchFrom(paramsToBundleWith);
-                        targetFolder = linuxRpmBundlerFolder.toPath();
-                        break;
-                    default:
-                        getLog().warn("Unknown bundler-ID found, copying from root of additionalBundlerResources into IMAGES_ROOT.");
-                        sourceFolder = additionalBundlerResources.toPath();
-                        break;
-                }
-            } else {
-                getLog().info("No additional bundler resources for bundler " + currentRunningBundlerID + " was found, copying all files instead.");
+            // only do copy-stuff when having non-image bundlers
+            switch(currentRunningBundlerID) {
+                case "windows.app":
+                    // no copy required, as we already have "additionalAppResources"
+                    skipCopyAdditionalBundlerResources = true;
+                    break;
+                case "windows.service":
+                    // no copy required, as we already have "additionalAppResources"
+                    skipCopyAdditionalBundlerResources = true;
+                    break;
+                case "mac.app":
+                    // custom mac bundler might be used
+                    if( skipMacBundlerWorkaround ){
+                        getLog().warn("The bundler with ID 'mac.app' is not supported, as that bundler does not provide any way to copy additional bundler-files.");
+                    }
+                    skipCopyAdditionalBundlerResources = true;
+                    break;
+                case "mac.daemon":
+                    // this bundler just deletes everything ... it has no bundlerRoot
+                    getLog().warn("The bundler with ID 'mac.daemon' is not supported, as that bundler does not provide any way to copy additional bundler-files.");
+                    skipCopyAdditionalBundlerResources = true;
+                    break;
+                case "linux.app":
+                    // no copy required, as we already have "additionalAppResources"
+                    skipCopyAdditionalBundlerResources = true;
+                    break;
             }
+
             if( !skipCopyAdditionalBundlerResources ){
-                try{
-                    getLog().info("Copying additional bundler resources into: " + targetFolder.toFile().getAbsolutePath());
-                    copyRecursive(sourceFolder, targetFolder);
-                } catch(IOException e){
-                    getLog().warn("Couldn't copy additional bundler resource-file(s).", e);
+                // new behaviour, use bundler-name as folder-name
+                if( Files.exists(resolvedBundlerFolder) ){
+                    if( verbose ){
+                        getLog().info("Found additional bundler resources for bundler " + currentRunningBundlerID);
+                    }
+                    sourceFolder = resolvedBundlerFolder;
+                    // change behaviour to have more control for all bundlers being inside JDK
+                    switch(currentRunningBundlerID) {
+                        case "exe":
+                            File exeBundlerFolder = WinExeBundler.EXE_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            targetFolder = exeBundlerFolder.toPath();
+                            break;
+                        case "msi":
+                            File msiBundlerFolder = WinMsiBundler.MSI_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            targetFolder = msiBundlerFolder.toPath();
+                            break;
+                        case "mac.appStore":
+                            // custom mac bundler might be used
+                            if( skipMacBundlerWorkaround ){
+                                getLog().warn("The bundler with ID 'mac.appStore' is not supported for using 'additionalBundlerResources', as that bundler does not provide any way to copy additional bundler-files.");
+                            }
+                            skipCopyAdditionalBundlerResources = true;
+                            break;
+                        case "dmg":
+                            // custom mac bundler might be used
+                            if( skipMacBundlerWorkaround ){
+                                getLog().warn("The bundler with ID 'dmg' is not supported for using 'additionalBundlerResources', as that bundler does not provide any way to copy additional bundler-files.");
+                            }
+                            skipCopyAdditionalBundlerResources = true;
+                            break;
+                        case "pkg":
+                            // custom mac bundler might be used
+                            if( skipMacBundlerWorkaround ){
+                                getLog().warn("The bundler with ID 'pkg' is not supported for using 'additionalBundlerResources', as that bundler does not provide any way to copy additional bundler-files.");
+                            }
+                            skipCopyAdditionalBundlerResources = true;
+                            break;
+                        case "deb":
+                            File linuxDebBundlerFolder = LinuxDebBundler.DEB_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            targetFolder = linuxDebBundlerFolder.toPath();
+                            break;
+                        case "rpm":
+                            File linuxRpmBundlerFolder = LinuxRpmBundler.RPM_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            targetFolder = linuxRpmBundlerFolder.toPath();
+                            break;
+                        default:
+                            // we may have custom bundler ;)
+                            getLog().warn("Unknown bundler-ID found, copying from root of additionalBundlerResources into IMAGES_ROOT.");
+                            sourceFolder = additionalBundlerResources.toPath();
+                            break;
+                    }
+                } else {
+                    if( verbose ){
+                        getLog().info("No additional bundler resources for bundler " + currentRunningBundlerID + " were found, copying all files instead.");
+                    }
                 }
-            } else {
-                getLog().info("Skipped copying additional bundler resources, mostly because this bundler does not need them. You might want to use additionalAppResources. To make sure, check for any warnings printed above this message.");
+                if( !skipCopyAdditionalBundlerResources ){
+                    try{
+                        if( verbose ){
+                            getLog().info("Copying additional bundler resources into: " + targetFolder.toFile().getAbsolutePath());
+                        }
+                        copyRecursive(sourceFolder, targetFolder);
+                    } catch(IOException e){
+                        getLog().warn("Couldn't copy additional bundler resource-file(s).", e);
+                    }
+                }
             }
         }
 
