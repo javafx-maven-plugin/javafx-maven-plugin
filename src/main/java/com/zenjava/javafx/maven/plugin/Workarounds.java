@@ -334,10 +334,10 @@ public class Workarounds {
             return;
         }
         /*
-        * Backward-compatibility note:
-        * When using JDK 1.8.0u51 on travis-ci it would results into "cannot find symbol: variable APP_RESOURCES_LIST"!
-        * 
-        * To solve this, we are using some hard-coded map-key :/ (please no hacky workaround via reflections .. urgh)
+         * Backward-compatibility note:
+         * When using JDK 1.8.0u51 on travis-ci it would results into "cannot find symbol: variable APP_RESOURCES_LIST"!
+         *
+         * To solve this, we are using some hard-coded map-key :/ (please no hacky workaround via reflections .. urgh)
          */
         params.put(StandardBundlerParam.APP_RESOURCES.getID() + "List", appResourcesList);
     }
@@ -361,10 +361,10 @@ public class Workarounds {
             params.put(workaroundForNativeMacBundlerDoneMarker, true);
             Path specificFolder = additionalBundlerResources.toPath().resolve("mac.app");
             // check if there is a special folder, otherwise put all stuff here
-            // TODO log used folder
-            if(Files.exists(specificFolder) && Files.isDirectory(specificFolder)){
+            if( Files.exists(specificFolder) && Files.isDirectory(specificFolder) ){
+                getLog().info("Using special 'mac.app' bundler-folder.");
                 params.put(MacAppBundlerWithAdditionalResources.ADDITIONAL_BUNDLER_RESOURCES.getID(), specificFolder.toAbsolutePath().toFile());
-            }else{
+            } else {
                 params.put(MacAppBundlerWithAdditionalResources.ADDITIONAL_BUNDLER_RESOURCES.getID(), additionalBundlerResources);
             }
 
