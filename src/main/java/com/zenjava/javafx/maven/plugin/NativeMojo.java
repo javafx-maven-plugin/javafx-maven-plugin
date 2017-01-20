@@ -424,6 +424,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         try{
             Map<String, ? super Object> params = new HashMap<>();
 
+            if (nativeReleaseVersion == null) {
+                nativeReleaseVersion = project.getVersion().replaceAll("[^\\d.]", "");
+            }
+            params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
+            
             // make bundlers doing verbose output (might not always be as verbose as expected)
             params.put(StandardBundlerParam.VERBOSE.getID(), verbose);
 
@@ -432,7 +437,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             });
 
             params.put(StandardBundlerParam.APP_NAME.getID(), appName);
-            params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
             params.put(StandardBundlerParam.VENDOR.getID(), vendor);
             params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
             params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
