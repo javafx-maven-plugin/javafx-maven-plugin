@@ -152,10 +152,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     /**
      * The release version as passed to the native installer. It would be nice to just use the project's version number
      * but this must be a fairly traditional version string (like '1.34.5') with only numeric characters and dot
-     * separators, otherwise the JFX packaging tools bomb out. We default to 1.0 in case you can't be bothered to set
-     * a version and don't really care.
+     * separators, otherwise the JFX packaging tools bomb out. Because of that we default to ${project.version} with all
+     * illegal characters stripped.
      *
-     * @parameter default-value="1.0"
+     * @parameter
      */
     private String nativeReleaseVersion;
 
