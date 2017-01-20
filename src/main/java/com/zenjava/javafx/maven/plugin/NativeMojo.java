@@ -154,8 +154,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * but this must be a fairly traditional version string (like '1.34.5') with only numeric characters and dot
      * separators, otherwise the JFX packaging tools bomb out. We default to 1.0 in case you can't be bothered to set
      * a version and don't really care.
+     * Normally all non-number signs and dots are removed from the value, which can be disabled
+     * by setting 'skipNativeVersionNumberSanitizing' to true.
      *
-     * @parameter default-value="1.0"
+     * @parameter
      */
     private String nativeReleaseVersion;
 
@@ -400,6 +402,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean skipJNLP = false;
 
+    /**
+     * @parameter default-value=false
+     */
+    protected boolean skipNativeVersionNumberSanitizing = false;
+
     protected Workarounds workarounds = null;
 
     private static final String CFG_WORKAROUND_MARKER = "cfgWorkaroundMarker";
@@ -433,6 +440,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
 
             params.put(StandardBundlerParam.APP_NAME.getID(), appName);
             params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
+            // replace that value
+            if( !skipNativeVersionNumberSanitizing && nativeReleaseVersion != null ){
+                params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion.replaceAll("[^\\d.]", ""));
+            }
             params.put(StandardBundlerParam.VENDOR.getID(), vendor);
             params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
             params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
