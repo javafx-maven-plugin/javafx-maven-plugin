@@ -40,6 +40,8 @@ import org.apache.maven.artifact.Artifact;
  * @requiresDependencyResolution
  */
 public class JarMojo extends AbstractJfxToolsMojo {
+    private static final String LIB_DIR_NAME = "lib";
+    private static final String JDK_LIB_DIR_NAME = "lib";
 
     /**
      * Flag to switch on and off the compiling of CSS files to the binary format. In theory this has some minor
@@ -180,7 +182,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setManifestAttrs(manifestAttributes);
 
         StringBuilder classpath = new StringBuilder();
-        File libDir = new File(jfxAppOutputDir, "lib");
+        File libDir = new File(jfxAppOutputDir, LIB_DIR_NAME);
         if( !libDir.exists() && !libDir.mkdirs() ){
             throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
         }
@@ -206,7 +208,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 getLog().debug("Check if packager.jar needs to be added");
                 if( addPackagerJar ){
                     getLog().debug("Searching for packager.jar ...");
-                    String targetPackagerJarPath = "lib" + File.separator + "packager.jar";
+                    String targetPackagerJarPath = JDK_LIB_DIR_NAME + File.separator + "packager.jar";
                     for( Dependency dependency : project.getDependencies() ){
                         // check only system-scoped
                         if( "system".equalsIgnoreCase(dependency.getScope()) ){
@@ -218,7 +220,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                                 if( !dest.exists() ){
                                     Files.copy(packagerJarFile.toPath(), dest.toPath());
                                 }
-                                classpath.append("lib/").append(packagerJarFile.getName()).append(" ");
+                                appendClasspath(classpath, packagerJarFile);
                             }
                         }
                     }
@@ -230,36 +232,10 @@ public class JarMojo extends AbstractJfxToolsMojo {
                     getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
                 }
             }
-            List<String> brokenArtifacts = new ArrayList<>();
-            project.getArtifacts().stream().filter(artifact -> {
-                // filter all unreadable, non-file artifacts
-                File artifactFile = artifact.getFile();
-                return artifactFile.isFile() && artifactFile.canRead();
-            }).filter(artifact -> {
-                if( classpathExcludes.isEmpty() ){
-                    return true;
-                }
-                boolean isListedInList = isListedInExclusionList(artifact);
-                return !isListedInList;
-            }).forEach(artifact -> {
-                File artifactFile = artifact.getFile();
-                getLog().debug(String.format("Including classpath element: %s", artifactFile.getAbsolutePath()));
-                File dest = new File(libDir, artifactFile.getName());
-                if( !dest.exists() ){
-                    try{
-                        Files.copy(artifactFile.toPath(), dest.toPath());
-                    } catch(IOException ex){
-                        getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
-                        getLog().debug(ex);
-                        brokenArtifacts.add(artifactFile.getAbsolutePath());
-                    }
-                }
-                classpath.append("lib/").append(artifactFile.getName()).append(" ");
-            });
-            if( !brokenArtifacts.isEmpty() ){
-                throw new MojoExecutionException("Error copying dependencies for application");
-            }
-        } catch(IOException e){
+
+            copyDependenciesToLibDir(libDir, classpath);
+
+        } catch (IOException e) {
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
         createJarParams.setClasspath(classpath.toString());
@@ -296,6 +272,42 @@ public class JarMojo extends AbstractJfxToolsMojo {
             // remove lib-folder, when nothing ended up there
             libDir.delete();
         }
+    }
+
+    private void copyDependenciesToLibDir(File libDir, StringBuilder classpath) throws MojoExecutionException {
+        List<String> brokenArtifacts = new ArrayList<>();
+        project.getArtifacts().stream().filter(artifact -> {
+            // filter all unreadable, non-file artifacts
+            File artifactFile = artifact.getFile();
+            return artifactFile.isFile() && artifactFile.canRead();
+        }).filter(artifact -> {
+            if (classpathExcludes.isEmpty()) {
+                return true;
+            }
+            boolean isListedInList = isListedInExclusionList(artifact);
+            return !isListedInList;
+        }).forEach(artifact -> {
+            File artifactFile = artifact.getFile();
+            getLog().debug(String.format("Including classpath element: %s", artifactFile.getAbsolutePath()));
+            File dest = new File(libDir, artifactFile.getName());
+            if (!dest.exists()) {
+                try {
+                    Files.copy(artifactFile.toPath(), dest.toPath());
+                } catch (IOException ex) {
+                    getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
+                    getLog().debug(ex);
+                    brokenArtifacts.add(artifactFile.getAbsolutePath());
+                }
+            }
+            appendClasspath(classpath, artifactFile);
+        });
+        if (!brokenArtifacts.isEmpty()) {
+            throw new MojoExecutionException("Error copying dependencies for application");
+        }
+    }
+
+    private void appendClasspath(StringBuilder classpath, File artifactFile) {
+        classpath.append(LIB_DIR_NAME).append("/").append(artifactFile.getName()).append(" ");
     }
 
     private boolean checkIfJavaIsHavingPackagerJar() {
