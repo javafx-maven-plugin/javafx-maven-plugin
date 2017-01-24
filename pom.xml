@@ -151,6 +151,12 @@
                 <github>sa-wilson</github>
             </properties>
         </contributor>
+        <contributor>
+            <name>Florian Brunner</name>
+            <properties>
+                <github>puce77</github>
+            </properties>
+        </contributor>
     </contributors>
 
     <scm>
