@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.zenjava</groupId>
-    <artifactId>javafx-maven-plugin-test-27-property-names</artifactId>
+    <artifactId>javafx-maven-plugin-test-29-property-names</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     
@@ -24,7 +24,8 @@
     <properties>
         <mainClass>com.zenjava.test.Main</mainClass>
         <jfxMainAppJarName>foo.jar</jfxMainAppJarName>
-        <jfxAppOutputDir>bar</jfxAppOutputDir>
+        <jfxAppOutputDir>${project.build.directory}/bar</jfxAppOutputDir>
+        <jfx.updateExistingJar>true</jfx.updateExistingJar>
     </properties>
 
     <build>
