@@ -71,6 +71,13 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      */
     protected boolean useEnvironmentRelativeExecutables;
 
+    /**
+     * Set this to true for skipping the execution.
+     *
+     * @parameter default-value="false"
+     */
+    protected boolean skip;
+
     @FunctionalInterface
     private interface RequiredFieldAlternativeCallback {
 
@@ -154,6 +161,11 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if( skip ){
+            getLog().info("Skipping execution of GenerateKeyStoreMojo MOJO.");
+            return;
+        }
+
         if( keyStore.exists() ){
             if( overwriteKeyStore ){
                 if( !keyStore.delete() ){
@@ -264,10 +276,12 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     private void checkAndAddRequiredField(List<String> distinguishedNameParts, String propertyName, String value, String fieldName, RequiredFieldAlternativeCallback alternative) throws MojoExecutionException {
         if( !StringUtils.isEmpty(value) ){
             distinguishedNameParts.add(fieldName + "=" + value);
-        } else if( alternative == null || StringUtils.isEmpty(alternative.getValue()) ){
-            throw new MojoExecutionException("The property '" + propertyName + "' must be provided to generate a new certificate.");
         } else {
-            distinguishedNameParts.add(fieldName + "=" + alternative.getValue());
+            if( alternative == null || StringUtils.isEmpty(alternative.getValue()) ){
+                throw new MojoExecutionException("The property '" + propertyName + "' must be provided to generate a new certificate.");
+            } else {
+                distinguishedNameParts.add(fieldName + "=" + alternative.getValue());
+            }
         }
     }
 

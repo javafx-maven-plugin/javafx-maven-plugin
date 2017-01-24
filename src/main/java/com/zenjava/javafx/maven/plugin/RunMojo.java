@@ -53,6 +53,11 @@ public class RunMojo extends AbstractJfxToolsMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if( skip ){
+            getLog().info("Skipping execution of RunMojo MOJO.");
+            return;
+        }
+
         getLog().info("Running JavaFX Application");
 
         List<String> command = new ArrayList<>();

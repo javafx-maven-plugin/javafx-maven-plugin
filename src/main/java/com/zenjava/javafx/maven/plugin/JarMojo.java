@@ -151,6 +151,11 @@ public class JarMojo extends AbstractJfxToolsMojo {
             return;
         }
 
+        if( skip ){
+            getLog().info("Skipping execution of JarMojo MOJO.");
+            return;
+        }
+
         getLog().info("Building JavaFX JAR for application");
 
         Build build = project.getBuild();
@@ -220,8 +225,10 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 } else {
                     getLog().debug("No packager.jar will be added");
                 }
-            } else if( addPackagerJar ){
-                getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
+            } else {
+                if( addPackagerJar ){
+                    getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
+                }
             }
             List<String> brokenArtifacts = new ArrayList<>();
             project.getArtifacts().stream().filter(artifact -> {
