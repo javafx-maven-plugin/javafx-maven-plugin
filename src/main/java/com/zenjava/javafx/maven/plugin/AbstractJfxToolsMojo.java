@@ -73,7 +73,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * <p>
      * This defaults to 'target/jfx/app' and in most cases there is no real need to change this.
      *
-     * @parameter default-value="${project.build.directory}/jfx/app"
+     * @parameter property="jfxAppOutputDir" default-value="${project.build.directory}/jfx/app"
      */
     protected File jfxAppOutputDir;
 
@@ -82,7 +82,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * as set in your project with a '-jfx' suffix. Change this if you want something nicer. Note, that changing this
      * value does not affect the regular old, non-JFX modified JAR (built in the 'target' directory).
      *
-     * @parameter default-value="${project.build.finalName}-jfx.jar"
+     * @parameter property="jfxMainAppJarName" default-value="${project.build.finalName}-jfx.jar"
      */
     protected String jfxMainAppJarName;
 
