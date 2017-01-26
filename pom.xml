@@ -151,6 +151,13 @@
                 <github>sa-wilson</github>
             </properties>
         </contributor>
+        <contributor>
+            <name>Florian Brunner</name>
+            <email>florian.brunner@drombler.com</email>
+            <properties>
+                <github>puce77</github>
+            </properties>
+        </contributor>
     </contributors>
 
     <scm>

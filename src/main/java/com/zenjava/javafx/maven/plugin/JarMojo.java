@@ -42,6 +42,8 @@ import org.apache.maven.artifact.Artifact;
 public class JarMojo extends AbstractJfxToolsMojo {
     private static final String LIB_DIR_NAME = "lib";
     private static final String JDK_LIB_DIR_NAME = "lib";
+    private static final String MANIFEST_CLASSPATH_FILE_SEPARATOR = "/";
+    private static final String MANIFEST_CLASSPATH_PATH_SEPARATOR = " ";
 
     /**
      * Flag to switch on and off the compiling of CSS files to the binary format. In theory this has some minor
@@ -85,6 +87,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean jfxCallFromCLI;
+
+    /**
+     * The Manifest Class-Path attribute. To add additional classpath entries to the calculated classpath.
+     *
+     * @parameter property="jfx.manifestClasspath" default-value=""
+     */
+    protected String manifestClasspath = "";
 
     /**
      * To add custom manifest-entries, just add each entry/value-pair here.
@@ -146,6 +155,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     private boolean copyAdditionalAppResourcesToJar = false;
 
+    /**
+     * It is possible to copy all dependencies into the lib-folder of the created app-folder containing your jfx-jar. These dependencies will be added to the Manifest Class-Path.
+     *
+     * @parameter property="jfx.copyDependenciesToLibDir" default-value="true"
+     */
+    private boolean copyDependenciesToLibDir = true;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
@@ -181,7 +197,10 @@ public class JarMojo extends AbstractJfxToolsMojo {
         }
         createJarParams.setManifestAttrs(manifestAttributes);
 
-        StringBuilder classpath = new StringBuilder();
+        StringBuilder classpath = new StringBuilder(manifestClasspath);
+        if (!manifestClasspath.isEmpty() && !manifestClasspath.endsWith(MANIFEST_CLASSPATH_PATH_SEPARATOR)) {
+            classpath.append(MANIFEST_CLASSPATH_PATH_SEPARATOR);
+        }
         File libDir = new File(jfxAppOutputDir, LIB_DIR_NAME);
         if( !libDir.exists() && !libDir.mkdirs() ){
             throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
@@ -233,7 +252,9 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 }
             }
 
-            copyDependenciesToLibDir(libDir, classpath);
+            if (copyDependenciesToLibDir) {
+                copyDependenciesToLibDir(libDir, classpath);
+            }
 
         } catch (IOException e) {
             throw new MojoExecutionException("Error copying dependency for application", e);
@@ -307,7 +328,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
     }
 
     private void appendClasspath(StringBuilder classpath, File artifactFile) {
-        classpath.append(LIB_DIR_NAME).append("/").append(artifactFile.getName()).append(" ");
+        classpath.append(LIB_DIR_NAME).append(MANIFEST_CLASSPATH_FILE_SEPARATOR).append(artifactFile.getName()).append(MANIFEST_CLASSPATH_PATH_SEPARATOR);
     }
 
     private boolean checkIfJavaIsHavingPackagerJar() {
