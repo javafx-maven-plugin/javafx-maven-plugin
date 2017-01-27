@@ -75,7 +75,11 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * @parameter property="jfxAppOutputDir" default-value="${project.build.directory}/jfx/app"
      */
     protected File jfxAppOutputDir;
+
     /**
+     * The 'bin' directory. This is a relative path to the jfxAppOutputDir property. This is the directory the executable JavaFX jar is built into and is the parent of the lib directory.
+     * <p>
+     * This defaults to '' so the executable JavaFX jar and the lib directory end up at jfxAppOutputDir.
      *
      * @parameter property="jfxBinDir" default-value=""
      * @since 8.8.0
@@ -83,11 +87,16 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     private String jfxBinDir;
 
     /**
+     * The 'lib' directory. This is a relative path to the jfxBinDir property. This is the directory the executable JavaFX jar is built into and is the parent of the lib directory.
+     * <p>
+     * This defaults to 'lib'. If jfxAppOutputDir and jfxBinDir keep their defaults the resolved default lib path would become 'target/jfx/app/lib'. If e.g. jfxBinDir is set to 'bin' then the resolved
+     * lib path would become 'target/jfx/app/bin/lib'.
      *
      * @parameter property="jfxLibDir" default-value="lib"
      * @since 8.8.0
      */
     private String jfxLibDir;
+
     /**
      * The name of the JavaFX packaged JAR to be built into the 'app' directory. By default this will be the finalName as set in your project with a '-jfx' suffix. Change this if you want something
      * nicer. Note, that changing this value does not affect the regular old, non-JFX modified JAR (built in the 'target' directory).
