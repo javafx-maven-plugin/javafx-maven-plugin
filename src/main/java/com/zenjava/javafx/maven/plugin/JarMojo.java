@@ -43,7 +43,6 @@ import org.apache.maven.artifact.Artifact;
  * @requiresDependencyResolution
  */
 public class JarMojo extends AbstractJfxToolsMojo {
-    private static final String LIB_DIR_NAME = "lib";
     private static final String JDK_LIB_DIR_NAME = "lib";
     private static final String MANIFEST_CLASSPATH_FILE_SEPARATOR = "/";
     private static final String MANIFEST_CLASSPATH_PATH_SEPARATOR = " ";
@@ -153,12 +152,12 @@ public class JarMojo extends AbstractJfxToolsMojo {
     private boolean copyAdditionalAppResourcesToJar = false;
 
     /**
-     * It is possible to copy all dependencies into the lib-folder of the created app-folder containing your jfx-jar. These dependencies will be added to the Manifest Class-Path.
+     * Skip copy all dependencies into the lib-folder.
      *
-     * @parameter property="jfx.copyDependenciesToLibDir" default-value="true"
+     * @parameter property="jfx.skipCopyDependenciesToLibDir" default-value="false"
      * @since 8.8.0
      */
-    private boolean copyDependenciesToLibDir = true;
+    private boolean skipCopyDependenciesToLibDir = false;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -243,7 +242,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 }
             }
 
-            if (copyDependenciesToLibDir) {
+            if (!skipCopyDependenciesToLibDir) {
                 copyDependenciesToLibDir(libDirPath);
             }
 

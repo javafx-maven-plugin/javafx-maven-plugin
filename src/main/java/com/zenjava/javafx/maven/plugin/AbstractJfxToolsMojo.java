@@ -91,6 +91,8 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * <p>
      * This defaults to 'lib'. If jfxAppOutputDir and jfxBinDir keep their defaults the resolved default lib path would become 'target/jfx/app/lib'. If e.g. jfxBinDir is set to 'bin' then the resolved
      * lib path would become 'target/jfx/app/bin/lib'.
+     * <p>
+     * All JAR-files in the lib directory will be added to the Manifest Class-Path.
      *
      * @parameter property="jfxLibDir" default-value="lib"
      * @since 8.8.0
