@@ -25,6 +25,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * @deprecated is gonna to be replaced in the oraclejdk by normal bundler with id &quot;jnlp&quot;
@@ -199,12 +201,12 @@ public class WebMojo extends AbstractJfxToolsMojo {
             deployParams.setNeedMenu(needMenu);
             deployParams.setNeedShortcut(needShortcut);
 
-            deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
+            deployParams.addResource(getAbsoluteAppBinDir().toFile(), jfxMainAppJarName);
 
             // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
-            File libFolder = new File(jfxAppOutputDir, "lib");
-            if( libFolder.exists() ){
-                deployParams.addResource(jfxAppOutputDir, "lib");
+            Path libDirPath = getAbsoluteAppLibDir();
+            if (Files.exists(libDirPath)) {
+                deployParams.addResource(libDirPath.getParent().toFile(), libDirPath.getFileName().toString());
             }
 
             deployParams.setAllPermissions(allPermissions);
@@ -263,11 +265,11 @@ public class WebMojo extends AbstractJfxToolsMojo {
                 signJarParams.setKeyPass(keyPassword);
                 signJarParams.setStoreType(keyStoreType);
 
-                signJarParams.addResource(webOutputDir, jfxMainAppJarName);
+                signJarParams.addResource(getAbsoluteWebBinDir().toFile(), jfxMainAppJarName);
                 // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
-                File webLibFolder = new File(webOutputDir, "lib");
-                if( webLibFolder.exists() ){
-                    signJarParams.addResource(webOutputDir, "lib");
+                Path webLibDir = getAbsoluteWebLibDir();
+                if (Files.exists(webLibDir)) {
+                    signJarParams.addResource(webLibDir.getParent().toFile(), webLibDir.getFileName().toString());
                 }
 
                 getPackagerLib().signJar(signJarParams);
@@ -276,5 +278,13 @@ public class WebMojo extends AbstractJfxToolsMojo {
         } catch(PackagerException e){
             throw new MojoExecutionException("An error occurred while generating web deployment bundle", e);
         }
+    }
+
+    private Path getAbsoluteWebBinDir() {
+        return webOutputDir.toPath().resolve(getRelativeBinDir());
+    }
+
+    private Path getAbsoluteWebLibDir() {
+        return getAbsoluteWebBinDir().resolve(getRelativeLibDir());
     }
 }

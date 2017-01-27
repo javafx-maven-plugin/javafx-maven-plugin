@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.maven.artifact.Artifact;
 
 /**
@@ -88,12 +91,6 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     protected boolean jfxCallFromCLI;
 
-    /**
-     * The Manifest Class-Path attribute. To add additional classpath entries to the calculated classpath.
-     *
-     * @parameter property="jfx.manifestClasspath" default-value=""
-     */
-    protected String manifestClasspath = "";
 
     /**
      * To add custom manifest-entries, just add each entry/value-pair here.
@@ -159,6 +156,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * It is possible to copy all dependencies into the lib-folder of the created app-folder containing your jfx-jar. These dependencies will be added to the Manifest Class-Path.
      *
      * @parameter property="jfx.copyDependenciesToLibDir" default-value="true"
+     * @since 8.8.0
      */
     private boolean copyDependenciesToLibDir = true;
 
@@ -179,7 +177,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         Build build = project.getBuild();
 
         CreateJarParams createJarParams = new CreateJarParams();
-        createJarParams.setOutdir(jfxAppOutputDir);
+        createJarParams.setOutdir(getAbsoluteAppBinDir().toFile());
 
         // check if we got some filename ending with ".jar" (found this while checking issue 128)
         if( !jfxMainAppJarName.toLowerCase().endsWith(".jar") ){
@@ -197,14 +195,8 @@ public class JarMojo extends AbstractJfxToolsMojo {
         }
         createJarParams.setManifestAttrs(manifestAttributes);
 
-        StringBuilder classpath = new StringBuilder(manifestClasspath);
-        if (!manifestClasspath.isEmpty() && !manifestClasspath.endsWith(MANIFEST_CLASSPATH_PATH_SEPARATOR)) {
-            classpath.append(MANIFEST_CLASSPATH_PATH_SEPARATOR);
-        }
-        File libDir = new File(jfxAppOutputDir, LIB_DIR_NAME);
-        if( !libDir.exists() && !libDir.mkdirs() ){
-            throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
-        }
+        Path libDirPath = getAbsoluteAppLibDir();
+        ensureLibDirExists(libDirPath);
 
         if( updateExistingJar ){
             File potentialExistingFile = new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar");
@@ -235,11 +227,10 @@ public class JarMojo extends AbstractJfxToolsMojo {
                             String packagerJarFilePathString = packagerJarFile.toPath().normalize().toString();
                             if( packagerJarFile.exists() && packagerJarFilePathString.endsWith(targetPackagerJarPath) ){
                                 getLog().debug(String.format("Including packager.jar from system-scope: %s", packagerJarFilePathString));
-                                File dest = new File(libDir, packagerJarFile.getName());
-                                if( !dest.exists() ){
-                                    Files.copy(packagerJarFile.toPath(), dest.toPath());
+                                Path destPackagerJarPath = libDirPath.resolve(packagerJarFile.getName());
+                                if (!Files.exists(destPackagerJarPath)) {
+                                    Files.copy(packagerJarFile.toPath(), destPackagerJarPath);
                                 }
-                                appendClasspath(classpath, packagerJarFile);
                             }
                         }
                     }
@@ -253,13 +244,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
             }
 
             if (copyDependenciesToLibDir) {
-                copyDependenciesToLibDir(libDir, classpath);
+                copyDependenciesToLibDir(libDirPath);
             }
 
         } catch (IOException e) {
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
-        createJarParams.setClasspath(classpath.toString());
+        createJarParams.setClasspath(calculateManifestClasspath());
 
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
         if( allPermissions ){
@@ -288,14 +279,30 @@ public class JarMojo extends AbstractJfxToolsMojo {
                     });
         }
 
-        // cleanup
-        if( libDir.list().length == 0 ){
-            // remove lib-folder, when nothing ended up there
-            libDir.delete();
+        cleanup(libDirPath);
+    }
+
+    private void cleanup(Path libDirPath) throws MojoExecutionException {
+        try {
+            if (isDirEmpty(libDirPath)) {
+                Files.delete(libDirPath);
+            }
+        } catch (IOException ex) {
+            throw new MojoExecutionException("Unable to cleanup the lib dir: " + libDirPath, ex);
         }
     }
 
-    private void copyDependenciesToLibDir(File libDir, StringBuilder classpath) throws MojoExecutionException {
+    private void ensureLibDirExists(Path path) throws MojoExecutionException {
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException ex) {
+                throw new MojoExecutionException("Unable to create dir: " + path, ex);
+            }
+        }
+    }
+
+    private void copyDependenciesToLibDir(Path libDirPath) throws MojoExecutionException {
         List<String> brokenArtifacts = new ArrayList<>();
         project.getArtifacts().stream().filter(artifact -> {
             // filter all unreadable, non-file artifacts
@@ -307,28 +314,23 @@ public class JarMojo extends AbstractJfxToolsMojo {
             }
             boolean isListedInList = isListedInExclusionList(artifact);
             return !isListedInList;
-        }).forEach(artifact -> {
-            File artifactFile = artifact.getFile();
+        }).map(Artifact::getFile
+        ).forEach(artifactFile -> {
             getLog().debug(String.format("Including classpath element: %s", artifactFile.getAbsolutePath()));
-            File dest = new File(libDir, artifactFile.getName());
-            if (!dest.exists()) {
+            Path destArtifactPath = libDirPath.resolve(artifactFile.getName());
+            if (!Files.exists(destArtifactPath)) {
                 try {
-                    Files.copy(artifactFile.toPath(), dest.toPath());
+                    Files.copy(artifactFile.toPath(), destArtifactPath);
                 } catch (IOException ex) {
                     getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
                     getLog().debug(ex);
                     brokenArtifacts.add(artifactFile.getAbsolutePath());
                 }
             }
-            appendClasspath(classpath, artifactFile);
         });
         if (!brokenArtifacts.isEmpty()) {
             throw new MojoExecutionException("Error copying dependencies for application");
         }
-    }
-
-    private void appendClasspath(StringBuilder classpath, File artifactFile) {
-        classpath.append(LIB_DIR_NAME).append(MANIFEST_CLASSPATH_FILE_SEPARATOR).append(artifactFile.getName()).append(MANIFEST_CLASSPATH_PATH_SEPARATOR);
     }
 
     private boolean checkIfJavaIsHavingPackagerJar() {
@@ -355,4 +357,29 @@ public class JarMojo extends AbstractJfxToolsMojo {
             return artifact.getDependencyTrail().stream().anyMatch((dependencyTrail) -> (dependencyTrail.startsWith(dependencyTrailIdentifier)));
         }).count() > 0;
     }
+
+    private String calculateManifestClasspath() throws MojoExecutionException {
+        try (Stream<Path> entryStream = Files.list(getAbsoluteAppLibDir())) {
+            return calculateManifestClasspath(entryStream);
+        } catch (IOException ex) {
+            throw new MojoExecutionException("Error calculating Manifest Class-Path for application!", ex);
+        }
+    }
+
+    private String calculateManifestClasspath(final Stream<Path> entryStream) {
+        String relLibDirPathString = getRelativeLibDir().toString();
+        return entryStream
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .filter(fileName -> fileName.endsWith(".jar"))
+                .map(fileName -> relLibDirPathString + MANIFEST_CLASSPATH_FILE_SEPARATOR + fileName)
+                .collect(Collectors.joining(MANIFEST_CLASSPATH_PATH_SEPARATOR));
+    }
+
+    private boolean isDirEmpty(Path dirPath) throws IOException {
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dirPath)) {
+            return !dirStream.iterator().hasNext();
+        }
+    }
+
 }

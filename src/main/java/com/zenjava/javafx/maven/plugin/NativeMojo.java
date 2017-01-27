@@ -938,7 +938,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         signJarParams.setKeyPass(keyPassword);
         signJarParams.setStoreType(keyStoreType);
 
-        signJarParams.addResource(nativeOutputDir, jfxMainAppJarName);
+        signJarParams.addResource(getAbsoluteNativeBinDir().toFile(), jfxMainAppJarName);
 
         // add all gathered jar-files as resources so be signed
         workarounds.getJARFilesFromJNLPFiles().forEach(jarFile -> signJarParams.addResource(nativeOutputDir, jarFile));
@@ -1038,5 +1038,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             // NO-OP
         }
         return false;
+    }
+
+    private Path getAbsoluteNativeBinDir() {
+        return nativeOutputDir.toPath().resolve(getRelativeBinDir());
     }
 }
