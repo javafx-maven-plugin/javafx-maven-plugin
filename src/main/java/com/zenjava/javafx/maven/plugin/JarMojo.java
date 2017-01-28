@@ -369,7 +369,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
     }
 
     private String calculateManifestClasspath(final Stream<Path> entryStream) {
-        String relLibDirPathString = getRelativeLibDir().toString();
+        String relLibDirPathString = getRelativeLibDir().toString().replace(File.separator, MANIFEST_CLASSPATH_FILE_SEPARATOR);
         return entryStream
                 .map(Path::getFileName)
                 .map(Path::toString)
