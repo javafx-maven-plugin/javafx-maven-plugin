@@ -53,6 +53,11 @@ public class RunMojo extends AbstractJfxToolsMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if( skip ){
+            getLog().info("Skipping execution of RunMojo MOJO.");
+            return;
+        }
+
         getLog().info("Running JavaFX Application");
 
         List<String> command = new ArrayList<>();
@@ -66,7 +71,7 @@ public class RunMojo extends AbstractJfxToolsMojo {
         });
 
         command.add("-jar");
-        command.add(jfxMainAppJarName);
+        command.add(getRelativeBinDir().resolve(jfxMainAppJarName).toString());
 
         // it is possible to have jfx:run pass additional parameters
         // fixes https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176
