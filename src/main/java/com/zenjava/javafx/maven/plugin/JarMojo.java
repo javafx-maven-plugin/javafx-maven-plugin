@@ -249,7 +249,10 @@ public class JarMojo extends AbstractJfxToolsMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
-        createJarParams.setClasspath(calculateManifestClasspath());
+
+        // Calculate the Manifest Class-Path from lib dir to also include JARs added by other Maven Plugins.
+        String classpath = calculateManifestClasspathFromLibDir();
+        createJarParams.setClasspath(classpath);
 
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
         if( allPermissions ){
@@ -357,7 +360,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         }).count() > 0;
     }
 
-    private String calculateManifestClasspath() throws MojoExecutionException {
+    private String calculateManifestClasspathFromLibDir() throws MojoExecutionException {
         try (Stream<Path> entryStream = Files.list(getAbsoluteAppLibDir())) {
             return calculateManifestClasspath(entryStream);
         } catch (IOException ex) {
