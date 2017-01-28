@@ -25,6 +25,8 @@
         <mainClass>com.zenjava.test.Main</mainClass>
         <jfxMainAppJarName>foo.jar</jfxMainAppJarName>
         <jfxAppOutputDir>${project.build.directory}/bar</jfxAppOutputDir>
+        <jfxBinDir>bin</jfxBinDir>
+        <jfxLibDir>libraries</jfxLibDir>
         <jfx.updateExistingJar>true</jfx.updateExistingJar>
     </properties>
 
@@ -55,4 +57,11 @@
             </plugin>
         </plugins>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
+        </dependency>
+    </dependencies>
 </project>
