@@ -21,7 +21,7 @@
 
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.7.1-SNAPSHOT</version>
+    <version>8.8.0-SNAPSHOT</version>
 
     <packaging>maven-plugin</packaging>
 
@@ -149,6 +149,12 @@
             <name>Scott Wilson</name>
             <properties>
                 <github>sa-wilson</github>
+            </properties>
+        </contributor>
+        <contributor>
+            <name>Florian Brunner</name>
+            <properties>
+                <github>puce77</github>
             </properties>
         </contributor>
     </contributors>

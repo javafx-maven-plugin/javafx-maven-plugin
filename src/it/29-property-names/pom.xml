@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.zenjava</groupId>
-    <artifactId>javafx-maven-plugin-test-27-property-names</artifactId>
+    <artifactId>javafx-maven-plugin-test-29-property-names</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     
@@ -24,7 +24,10 @@
     <properties>
         <mainClass>com.zenjava.test.Main</mainClass>
         <jfxMainAppJarName>foo.jar</jfxMainAppJarName>
-        <jfxAppOutputDir>bar</jfxAppOutputDir>
+        <jfxAppOutputDir>${project.build.directory}/bar</jfxAppOutputDir>
+        <jfxBinDir>bin</jfxBinDir>
+        <jfxLibDir>libraries</jfxLibDir>
+        <jfx.updateExistingJar>true</jfx.updateExistingJar>
     </properties>
 
     <build>
@@ -54,4 +57,11 @@
             </plugin>
         </plugins>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
+        </dependency>
+    </dependencies>
 </project>

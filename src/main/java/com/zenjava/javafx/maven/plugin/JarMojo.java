@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.maven.artifact.Artifact;
 
 /**
@@ -40,6 +43,9 @@ import org.apache.maven.artifact.Artifact;
  * @requiresDependencyResolution
  */
 public class JarMojo extends AbstractJfxToolsMojo {
+    private static final String JDK_LIB_DIR_NAME = "lib";
+    private static final String MANIFEST_CLASSPATH_FILE_SEPARATOR = "/";
+    private static final String MANIFEST_CLASSPATH_PATH_SEPARATOR = " ";
 
     /**
      * Flag to switch on and off the compiling of CSS files to the binary format. In theory this has some minor
@@ -83,6 +89,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter default-value=false
      */
     protected boolean jfxCallFromCLI;
+
 
     /**
      * To add custom manifest-entries, just add each entry/value-pair here.
@@ -144,10 +151,23 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     private boolean copyAdditionalAppResourcesToJar = false;
 
+    /**
+     * Skip copy all dependencies into the lib-folder.
+     *
+     * @parameter property="jfx.skipCopyDependenciesToLibDir" default-value="false"
+     * @since 8.8.0
+     */
+    private boolean skipCopyDependenciesToLibDir = false;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
             getLog().info("call from CLI - skipping creation of JavaFX JAR for application");
+            return;
+        }
+
+        if( skip ){
+            getLog().info("Skipping execution of JarMojo MOJO.");
             return;
         }
 
@@ -156,7 +176,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         Build build = project.getBuild();
 
         CreateJarParams createJarParams = new CreateJarParams();
-        createJarParams.setOutdir(jfxAppOutputDir);
+        createJarParams.setOutdir(getAbsoluteAppBinDir().toFile());
 
         // check if we got some filename ending with ".jar" (found this while checking issue 128)
         if( !jfxMainAppJarName.toLowerCase().endsWith(".jar") ){
@@ -174,11 +194,8 @@ public class JarMojo extends AbstractJfxToolsMojo {
         }
         createJarParams.setManifestAttrs(manifestAttributes);
 
-        StringBuilder classpath = new StringBuilder();
-        File libDir = new File(jfxAppOutputDir, "lib");
-        if( !libDir.exists() && !libDir.mkdirs() ){
-            throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
-        }
+        Path libDirPath = getAbsoluteAppLibDir();
+        ensureLibDirExists(libDirPath);
 
         if( updateExistingJar ){
             File potentialExistingFile = new File(build.getDirectory() + File.separator + build.getFinalName() + ".jar");
@@ -201,7 +218,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 getLog().debug("Check if packager.jar needs to be added");
                 if( addPackagerJar ){
                     getLog().debug("Searching for packager.jar ...");
-                    String targetPackagerJarPath = "lib" + File.separator + "packager.jar";
+                    String targetPackagerJarPath = JDK_LIB_DIR_NAME + File.separator + "packager.jar";
                     for( Dependency dependency : project.getDependencies() ){
                         // check only system-scoped
                         if( "system".equalsIgnoreCase(dependency.getScope()) ){
@@ -209,53 +226,33 @@ public class JarMojo extends AbstractJfxToolsMojo {
                             String packagerJarFilePathString = packagerJarFile.toPath().normalize().toString();
                             if( packagerJarFile.exists() && packagerJarFilePathString.endsWith(targetPackagerJarPath) ){
                                 getLog().debug(String.format("Including packager.jar from system-scope: %s", packagerJarFilePathString));
-                                File dest = new File(libDir, packagerJarFile.getName());
-                                if( !dest.exists() ){
-                                    Files.copy(packagerJarFile.toPath(), dest.toPath());
+                                Path destPackagerJarPath = libDirPath.resolve(packagerJarFile.getName());
+                                if (!Files.exists(destPackagerJarPath)) {
+                                    Files.copy(packagerJarFile.toPath(), destPackagerJarPath);
                                 }
-                                classpath.append("lib/").append(packagerJarFile.getName()).append(" ");
                             }
                         }
                     }
                 } else {
                     getLog().debug("No packager.jar will be added");
                 }
-            } else if( addPackagerJar ){
-                getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
-            }
-            List<String> brokenArtifacts = new ArrayList<>();
-            project.getArtifacts().stream().filter(artifact -> {
-                // filter all unreadable, non-file artifacts
-                File artifactFile = artifact.getFile();
-                return artifactFile.isFile() && artifactFile.canRead();
-            }).filter(artifact -> {
-                if( classpathExcludes.isEmpty() ){
-                    return true;
+            } else {
+                if( addPackagerJar ){
+                    getLog().warn("Skipped checking for packager.jar. Please install at least Java 1.8u40 for using this feature.");
                 }
-                boolean isListedInList = isListedInExclusionList(artifact);
-                return !isListedInList;
-            }).forEach(artifact -> {
-                File artifactFile = artifact.getFile();
-                getLog().debug(String.format("Including classpath element: %s", artifactFile.getAbsolutePath()));
-                File dest = new File(libDir, artifactFile.getName());
-                if( !dest.exists() ){
-                    try{
-                        Files.copy(artifactFile.toPath(), dest.toPath());
-                    } catch(IOException ex){
-                        getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
-                        getLog().debug(ex);
-                        brokenArtifacts.add(artifactFile.getAbsolutePath());
-                    }
-                }
-                classpath.append("lib/").append(artifactFile.getName()).append(" ");
-            });
-            if( !brokenArtifacts.isEmpty() ){
-                throw new MojoExecutionException("Error copying dependencies for application");
             }
-        } catch(IOException e){
+
+            if (!skipCopyDependenciesToLibDir) {
+                copyDependenciesToLibDir(libDirPath);
+            }
+
+        } catch (IOException e) {
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
-        createJarParams.setClasspath(classpath.toString());
+
+        // Calculate the Manifest Class-Path from lib dir to also include JARs added by other Maven Plugins.
+        String classpath = calculateManifestClasspathFromLibDir();
+        createJarParams.setClasspath(classpath);
 
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
         if( allPermissions ){
@@ -284,10 +281,57 @@ public class JarMojo extends AbstractJfxToolsMojo {
                     });
         }
 
-        // cleanup
-        if( libDir.list().length == 0 ){
-            // remove lib-folder, when nothing ended up there
-            libDir.delete();
+        cleanup(libDirPath);
+    }
+
+    private void cleanup(Path libDirPath) throws MojoExecutionException {
+        try {
+            if (isDirEmpty(libDirPath)) {
+                Files.delete(libDirPath);
+            }
+        } catch (IOException ex) {
+            throw new MojoExecutionException("Unable to cleanup the lib dir: " + libDirPath, ex);
+        }
+    }
+
+    private void ensureLibDirExists(Path path) throws MojoExecutionException {
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException ex) {
+                throw new MojoExecutionException("Unable to create dir: " + path, ex);
+            }
+        }
+    }
+
+    private void copyDependenciesToLibDir(Path libDirPath) throws MojoExecutionException {
+        List<String> brokenArtifacts = new ArrayList<>();
+        project.getArtifacts().stream().filter(artifact -> {
+            // filter all unreadable, non-file artifacts
+            File artifactFile = artifact.getFile();
+            return artifactFile.isFile() && artifactFile.canRead();
+        }).filter(artifact -> {
+            if (classpathExcludes.isEmpty()) {
+                return true;
+            }
+            boolean isListedInList = isListedInExclusionList(artifact);
+            return !isListedInList;
+        }).map(Artifact::getFile
+        ).forEach(artifactFile -> {
+            getLog().debug(String.format("Including classpath element: %s", artifactFile.getAbsolutePath()));
+            Path destArtifactPath = libDirPath.resolve(artifactFile.getName());
+            if (!Files.exists(destArtifactPath)) {
+                try {
+                    Files.copy(artifactFile.toPath(), destArtifactPath);
+                } catch (IOException ex) {
+                    getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
+                    getLog().debug(ex);
+                    brokenArtifacts.add(artifactFile.getAbsolutePath());
+                }
+            }
+        });
+        if (!brokenArtifacts.isEmpty()) {
+            throw new MojoExecutionException("Error copying dependencies for application");
         }
     }
 
@@ -315,4 +359,29 @@ public class JarMojo extends AbstractJfxToolsMojo {
             return artifact.getDependencyTrail().stream().anyMatch((dependencyTrail) -> (dependencyTrail.startsWith(dependencyTrailIdentifier)));
         }).count() > 0;
     }
+
+    private String calculateManifestClasspathFromLibDir() throws MojoExecutionException {
+        try (Stream<Path> entryStream = Files.list(getAbsoluteAppLibDir())) {
+            return calculateManifestClasspath(entryStream);
+        } catch (IOException ex) {
+            throw new MojoExecutionException("Error calculating Manifest Class-Path for application!", ex);
+        }
+    }
+
+    private String calculateManifestClasspath(final Stream<Path> entryStream) {
+        String relLibDirPathString = getRelativeLibDir().toString().replace(File.separator, MANIFEST_CLASSPATH_FILE_SEPARATOR);
+        return entryStream
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .filter(fileName -> fileName.endsWith(".jar"))
+                .map(fileName -> relLibDirPathString + MANIFEST_CLASSPATH_FILE_SEPARATOR + fileName)
+                .collect(Collectors.joining(MANIFEST_CLASSPATH_PATH_SEPARATOR));
+    }
+
+    private boolean isDirEmpty(Path dirPath) throws IOException {
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dirPath)) {
+            return !dirStream.iterator().hasNext();
+        }
+    }
+
 }
