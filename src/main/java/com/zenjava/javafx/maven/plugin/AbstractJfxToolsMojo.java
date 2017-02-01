@@ -29,10 +29,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
@@ -180,7 +180,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     }
 
     protected void copyRecursive(Path sourceFolder, Path targetFolder) throws IOException {
-        Files.walkFileTree(sourceFolder, new FileVisitor<Path>() {
+        Files.walkFileTree(sourceFolder, new SimpleFileVisitor<Path>() {
 
             @Override
             public FileVisitResult preVisitDirectory(Path subfolder, BasicFileAttributes attrs) throws IOException {
@@ -196,18 +196,6 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
                 return FileVisitResult.CONTINUE;
             }
 
-            @Override
-            public FileVisitResult visitFileFailed(Path source, IOException ioe) throws IOException {
-                // don't fail, just inform user
-                getLog().warn(String.format("Couldn't copy resource %s with reason %s", source.toString(), ioe.getLocalizedMessage()));
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path source, IOException ioe) throws IOException {
-                // nothing to do here
-                return FileVisitResult.CONTINUE;
-            }
         });
     }
 
