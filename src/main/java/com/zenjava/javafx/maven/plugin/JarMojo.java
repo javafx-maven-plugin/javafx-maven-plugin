@@ -138,7 +138,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * When you need to add additional files to generated app-folder (e.g. README, license, third-party-tools, ...),
      * you can specify the source-folder here. All files will be copied recursively.
      *
-     * @parameter
+     * @parameter property="jfx.additionalAppResources"
      */
     protected File additionalAppResources;
 
@@ -147,7 +147,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * your jfx-jar. This makes it possible to have external files (like native binaries) being available while
      * developing using the run-mojo.
      *
-     * @parameter default-value="false"
+     * @parameter property="jfx.copyAdditionalAppResourcesToJar" default-value="false"
      */
     private boolean copyAdditionalAppResourcesToJar = false;
 
