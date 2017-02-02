@@ -86,6 +86,11 @@ public class RunMojo extends AbstractJfxToolsMojo {
                     .inheritIO()
                     .directory(jfxAppOutputDir)
                     .command(command);
+
+            if( verbose ){
+                getLog().info("Running command: " + String.join(" ", command));
+            }
+
             Process p = pb.start();
             p.waitFor();
             if( p.exitValue() != 0 ){
