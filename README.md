@@ -114,11 +114,15 @@ Improvements:
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.8.0 (???-2016)
+upcoming Version 8.8.0 (???-feb-2017)
 
 New:
 * added detection of missing main class, wrong configuration now gets detected a bit earlier
+* `nativeReleaseVersion` will now get sanitized, anything than numbers and dots are removed, this ensures compatibility with the used bundler toolsets
 * signing jars using `jarsigner` was introduced some time ago, but it was lacking some custom parameters, this is now fixed by having the new `additionalJarsignerParameters`-list while using native-mojo (fixes issue #260)
+* added ability to fail the build on errors while bundling, just set `<failOnError>true</failOnError>`
+* when having not specified any bundler, it now is possible to remove that JNLP-warning regarding "No OutFile Specificed", which makes that bundler being skipped, just set `<skipJNLP>true</skipJNLP>` inside the `<configuration>`-block
+* added property to skip `nativeReleaseVersion` rewriting, just set `<skipNativeVersionNumberSanitizing>true</skipNativeVersionNumberSanitizing>` inside the `<configuration>`-block
 
 Improvements:
 * added warning when no classes were generated for `-jfx.jar`-generation, fixes issue #233 (no real FIX, as this is no real BUG ... IMHO)
