@@ -22,13 +22,7 @@
 
     <properties>
         <mainClass>com.zenjava.test.Main</mainClass>
-        <jfxMainAppJarName>foo.jar</jfxMainAppJarName>
-        <jfxAppOutputDir>${project.build.directory}/bar</jfxAppOutputDir>
-        <jfxBinDir>bin</jfxBinDir>
-        <jfxLibDir>libraries</jfxLibDir>
-        <jfx.updateExistingJar>true</jfx.updateExistingJar>
-        <jfx.additionalAppResources>${basedir}/src/main/app</jfx.additionalAppResources>
-        <jfx.copyAdditionalAppResourcesToJar>true</jfx.copyAdditionalAppResourcesToJar>
+        <jfx.skipCopyDependenciesToLibDir>true</jfx.skipCopyDependenciesToLibDir>
     </properties>
 
     <build>
@@ -43,9 +37,36 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>org.apache.commons</groupId>
+                            <artifactId>commons-lang3</artifactId>
+                            <version>3.5</version>
+                        </artifactItem>
+                    </artifactItems>
+                    <outputDirectory>${project.build.directory}/jfx/app/lib</outputDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>@project.version@</version>
+                <configuration>
+                    <jfxMainAppJarName>foo.jar</jfxMainAppJarName>
+                </configuration>
                 <executions>
                     <execution>
                         <id>create-jfxjar</id>
@@ -58,11 +79,4 @@
             </plugin>
         </plugins>
     </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.5</version>
-        </dependency>
-    </dependencies>
 </project>

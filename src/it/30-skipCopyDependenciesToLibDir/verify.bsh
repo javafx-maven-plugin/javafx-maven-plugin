@@ -1,0 +1,19 @@
+import java.io.*;
+import java.util.jar.*;
+
+File appFolder = new File( basedir, "target/jfx/app" );
+if( !appFolder.exists() ){
+    throw new Exception( "there should be a jfx/app-folder!");
+}
+
+File fooJar = new File( appFolder, "foo.jar" );
+if( !fooJar.exists() ){
+    throw new Exception( "there should be a foo.jar file!");
+}
+
+Manifest manifest = new JarFile(fooJar).getManifest();
+String classpath = manifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+String expectedClasspath = "lib/commons-lang3-3.5.jar";
+if( !classpath.equals(expectedClasspath) ){
+    throw new Exception( "The classpath should be set to '" + expectedClasspath + "' but was: '" + classpath + "'");
+}
