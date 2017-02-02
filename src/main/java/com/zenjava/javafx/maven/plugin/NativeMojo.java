@@ -403,9 +403,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected boolean skipJNLP = false;
 
     /**
-     * @parameter default-value=false
+     * @parameter property="skipNativeVersionNumberSanitizing" default-value=false
      */
     protected boolean skipNativeVersionNumberSanitizing = false;
+
+    /**
+     * Since it it possible to sign created jar-files using jarsigner, it might be required to
+     * add some special parameters for calling it (like -tsa and -tsacert). Just add them to this
+     * list to have them being applied.
+     *
+     * @parameter
+     */
+    private List<String> additionalJarsignerParameters = new ArrayList<>();
 
     protected Workarounds workarounds = null;
 
@@ -998,6 +1007,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         command.add(keyPassword);
         command.add(jarFile.getAbsolutePath());
         command.add(keyStoreAlias);
+        Optional.ofNullable(additionalJarsignerParameters).ifPresent(jarsignerParameters -> {
+            command.addAll(jarsignerParameters);
+        });
+
         if( verbose ){
             command.add("-verbose");
         }
@@ -1007,6 +1020,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     .inheritIO()
                     .directory(project.getBasedir())
                     .command(command);
+
+            if( verbose ){
+                getLog().info("Running command: " + String.join(" ", command));
+            }
 
             getLog().info("Signing JAR files for jnlp bundle using jarsigner-method");
             Process p = pb.start();

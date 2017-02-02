@@ -118,6 +118,7 @@ upcoming Version 8.8.0 (???-2016)
 
 New:
 * added detection of missing main class, wrong configuration now gets detected a bit earlier
+* signing jars using `jarsigner` was introduced some time ago, but it was lacking some custom parameters, this is now fixed by having the new `additionalJarsignerParameters`-list while using native-mojo (fixes issue #260)
 
 Improvements:
 * added warning when no classes were generated for `-jfx.jar`-generation, fixes issue #233 (no real FIX, as this is no real BUG ... IMHO)
