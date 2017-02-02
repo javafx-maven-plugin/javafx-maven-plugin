@@ -12,10 +12,35 @@ if( !binFolder.exists() ){
 
 File librariesFolder = new File( binFolder, "libraries" );
 if( !librariesFolder.exists() ){
-    throw new Exception( "there should be a librariesFolder-folder!");
+    throw new Exception( "there should be a bar/bin/librariesFolder-folder!");
 }
 
 File fooJar = new File( binFolder, "foo.jar" );
 if( !fooJar.exists() ){
-    throw new Exception( "there should be a foo.jar file!");
+    throw new Exception( "there should be a bar/bin/foo.jar file!");
+}
+
+File fooScript = new File( binFolder, "foo" );
+if( !fooScript.exists() ){
+    throw new Exception( "there should be a bar/bin/foo script file!");
+}
+
+File confFolder = new File( barFolder, "conf" );
+if( !confFolder.exists() ){
+    throw new Exception( "there should be a bar/conf-folder!");
+}
+
+File configPropertiesFile = new File( confFolder, "config.properties" );
+if( !configPropertiesFile.exists() ){
+    throw new Exception( "there should be a bar/conf/config.properties-folder!");
+}
+
+File loggingPropertiesFile = new File( confFolder, "logging.properties" );
+if( !loggingPropertiesFile.exists() ){
+    throw new Exception( "there should be a bar/conf/logging.properties-folder!");
+}
+
+File systemPropertiesFile = new File( confFolder, "system.properties" );
+if( !systemPropertiesFile.exists() ){
+    throw new Exception( "there should be a bar/conf/system.properties-folder!");
 }

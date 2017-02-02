@@ -27,6 +27,8 @@
         <jfxBinDir>bin</jfxBinDir>
         <jfxLibDir>libraries</jfxLibDir>
         <jfx.updateExistingJar>true</jfx.updateExistingJar>
+        <jfx.additionalAppResources>${basedir}/src/main/app</jfx.additionalAppResources>
+        <jfx.copyAdditionalAppResourcesToJar>true</jfx.copyAdditionalAppResourcesToJar>
     </properties>
 
     <build>
