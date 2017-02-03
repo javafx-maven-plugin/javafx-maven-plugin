@@ -114,14 +114,14 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      *
      * The default is to use environment relative executables.
      *
-     * @parameter property="useEnvironmentRelativeExecutables" default-value="true"
+     * @parameter property="jfx.useEnvironmentRelativeExecutables" default-value="true"
      */
     protected boolean useEnvironmentRelativeExecutables;
 
     /**
      * Set this to true for skipping the execution.
      *
-     * @parameter default-value="false"
+     * @parameter property="jfx.skip" default-value="false"
      */
     protected boolean skip;
 

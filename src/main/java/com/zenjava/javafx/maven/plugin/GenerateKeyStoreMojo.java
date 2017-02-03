@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.project.MavenProject;
 
@@ -32,10 +33,12 @@ import org.apache.maven.project.MavenProject;
  * Generates a development keysstore that can be used for signing web based distribution bundles based on POM settings.
  * You only need to run this command once and then you can include the resulting keystore in your source control. There
  * is no harm in re-running the command however, it will simply overwrite the keystore with a new one.
- *
+ * <p>
  * The resulting keystore is useful for simplifying development but should not be used in a production environment. You
  * should get a legitimate certificate from a certifier and include that keystore in your codebase. Using this testing
  * keystore will result in your users seeing the ugly warning about untrusted code.
+ * <p>
+ * Please do not use for production.
  *
  * @goal build-keystore
  * @phase validate
@@ -55,7 +58,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
     /**
      * Flag to turn on verbose logging. Set this to true if you are having problems and want more detailed information.
      *
-     * @parameter property="verbose" default-value="false"
+     * @parameter property="jfx.verbose" default-value="false"
      */
     protected Boolean verbose;
 
@@ -67,14 +70,14 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      *
      * The default is to use environment relative executables.
      *
-     * @parameter property="useEnvironmentRelativeExecutables" default-value="true"
+     * @parameter property="jfx.useEnvironmentRelativeExecutables" default-value="true"
      */
     protected boolean useEnvironmentRelativeExecutables;
 
     /**
      * Set this to true for skipping the execution.
      *
-     * @parameter default-value="false"
+     * @parameter property="jfx.skip" default-value="false"
      */
     protected boolean skip;
 
@@ -89,7 +92,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * already exists, this Mojo will fail with an error. This is just to stop you inadvertantly overwritting a keystore
      * you really didn't want to lose.
      *
-     * @parameter default-value="false" property="overwriteKeyStore"
+     * @parameter property="jfx.overwriteKeyStore" default-value="false"
      */
     protected boolean overwriteKeyStore;
 
@@ -97,21 +100,21 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * The location of the keystore. If not set, this will default to src/main/deploy/kesytore.jks which is usually fine
      * to use for most cases.
      *
-     * @parameter default-value="src/main/deploy/keystore.jks"
+     * @parameter property="jfx.keyStore" default-value="src/main/deploy/keystore.jks"
      */
     protected File keyStore;
 
     /**
      * The alias to use when accessing the keystore. This will default to "myalias".
      *
-     * @parameter default-value="myalias"
+     * @parameter property="jfx.keyStoreAlias" default-value="myalias"
      */
     protected String keyStoreAlias;
 
     /**
      * The password to use when accessing the keystore. This will default to "password".
      *
-     * @parameter default-value="password"
+     * @parameter property="jfx.keyStorePassword" default-value="password"
      */
     protected String keyStorePassword;
 
@@ -119,35 +122,35 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * The password to use when accessing the key within the keystore. If not set, this will default to
      * keyStorePassword.
      *
-     * @parameter
+     * @parameter property="jfx.keyPassword"
      */
     protected String keyPassword;
 
     /**
      * The 'domain' to use for the certificate. Typically this is your company's domain name.
      *
-     * @parameter property="certDomain"
+     * @parameter property="jfx.certDomain"
      */
     protected String certDomain;
 
     /**
      * The 'organisational unit' to use for the certificate. Your department or team name typically.
      *
-     * @parameter property="certOrgUnit"
+     * @parameter property="jfx.certOrgUnit"
      */
     protected String certOrgUnit;
 
     /**
      * The 'organisation' name to use for the certificate.
      *
-     * @parameter property="certOrg"
+     * @parameter property="jfx.certOrg"
      */
     protected String certOrg;
 
     /**
      * The 'state' (province, etc) that your organisation is based in.
      *
-     * @parameter property="certState"
+     * @parameter property="jfx.certState"
      */
     protected String certState;
 
@@ -155,9 +158,14 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
      * The 'country' code that your organisation is based in. This should be a proper country code, e.g. Australia is
      * 'AU'
      *
-     * @parameter property="certCountry"
+     * @parameter property="jfx.certCountry"
      */
     protected String certCountry;
+
+    /**
+     * @parameter property="jfx.additionalKeytoolParameters"
+     */
+    protected List<String> additionalKeytoolParameters = new ArrayList<>();
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -215,14 +223,7 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
         );
     }
 
-    protected void generateKeyStore(File keyStore,
-            String keyStoreAlias,
-            String keyStorePassword,
-            String keyPassword,
-            String distinguishedName)
-            throws MojoExecutionException,
-            MojoFailureException {
-
+    protected void generateKeyStore(File keyStore, String keyStoreAlias, String keyStorePassword, String keyPassword, String distinguishedName) throws MojoExecutionException, MojoFailureException {
         getLog().info("Generating keystore in: " + keyStore);
 
         try{
@@ -251,6 +252,9 @@ public class GenerateKeyStoreMojo extends AbstractMojo {
             command.add("RSA");
             command.add("-keysize");
             command.add("2048");
+            Optional.ofNullable(additionalKeytoolParameters).ifPresent(additionalParameters -> {
+                command.addAll(additionalParameters);
+            });
             if( verbose ){
                 command.add("-v");
             }
