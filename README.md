@@ -117,9 +117,10 @@ Improvements:
 upcoming Version 8.8.0 (???-feb-2017)
 
 New:
-* added detection of missing main class, wrong configuration now gets detected a bit earlier
+* added detection of missing main class, wrong configuration now gets detected a bit earlier, to disable scanning, just set `<skipMainClassScanning>true</skipMainClassScanning>` (might cause the build-time to increase when enabled)
 * `nativeReleaseVersion` will now get sanitized, anything than numbers and dots are removed, this ensures compatibility with the used bundler toolsets
-* signing jars using `jarsigner` was introduced some time ago, but it was lacking some custom parameters, this is now fixed by having the new `additionalJarsignerParameters`-list while using native-mojo (fixes issue #260)
+* signing jars using `jarsigner` was introduced some time ago, but it was lacking some custom parameters, this is now fixed by having the new `additionalJarsignerParameters`-list while using native MOJO (fixes issue #260)
+* generating a keystore has some hardcoded parameters (like keysize or used algorithm), but was missing support for additional parameters, this is now fixed by having the new `additionalKeytoolParameters`-list while using generate-key-store MOJO
 * added ability to fail the build on errors while bundling, just set `<failOnError>true</failOnError>`
 * when having not specified any bundler, it now is possible to remove that JNLP-warning regarding "No OutFile Specificed", which makes that bundler being skipped, just set `<skipJNLP>true</skipJNLP>` inside the `<configuration>`-block
 * added property to skip `nativeReleaseVersion` rewriting, just set `<skipNativeVersionNumberSanitizing>true</skipNativeVersionNumberSanitizing>` inside the `<configuration>`-block
@@ -131,3 +132,4 @@ Improvements:
 
 Changes:
 * reimplemented `<additionalBundlerResources>`, now searching for folders with the name of the used bundler, makes it possible to adjust nearly all bundlers now
+* all parameters are now accessible via `jfx.`-prefixed properties, please adjust your properties accordingly (I hope this does not break much for you)
