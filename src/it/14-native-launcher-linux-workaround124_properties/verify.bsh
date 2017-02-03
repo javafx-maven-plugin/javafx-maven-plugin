@@ -1,0 +1,22 @@
+import java.io.*;
+
+File jfxFolder = new File( basedir, "target/jfx" );
+if( !jfxFolder.exists() ){
+    throw new Exception( "there should be a jfx-folder!");
+}
+
+File jfxAppFolder = new File( jfxFolder, "app" );
+if( !jfxAppFolder.exists() ){
+    throw new Exception( "there should be a jfx-app-folder!");
+}
+
+File jfxNativeAppFolder = new File( jfxFolder, "native" );
+if( !jfxNativeAppFolder.exists() ){
+    throw new Exception( "there should be a jfx-native-folder!");
+}
+
+// ugly, but works
+File configurationFile = new File( basedir, "target/jfx/native/javafx-maven-plugin-test-14-native-launcher-linux-workaround124-properties-1.0/app/javafx-maven-plugin-test-14-native-launcher-linux-workaround124-properties-1.cfg" );
+if( !configurationFile.exists() ){
+    throw new Exception( "workaround din't work here!");
+}

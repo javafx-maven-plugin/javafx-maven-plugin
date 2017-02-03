@@ -36,8 +36,10 @@
                 <version>@project.version@</version>
                 <configuration>
                     <mainClass>com.zenjava.test.Main</mainClass>
-                    <!-- don't add JRE to native distribution bundle (reduces build-time, but has some risks (see documentation for this) -->
-                    <runtime />
+                    <bundleArguments>
+                        <!-- don't add JRE to native distribution bundle (reduces build-time, but has some risks (see documentation for this) -->
+                        <runtime />
+                    </bundleArguments>
                 </configuration>
                 <executions>
                     <execution>

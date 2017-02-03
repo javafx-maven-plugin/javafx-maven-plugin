@@ -1,0 +1,100 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin-test-11-access-application-and-jvm-parameters-properties</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <developers>
+        <developer>
+            <name>Danny Althoff</name>
+            <email>fibrefox@dynamicfiles.de</email>
+            <url>https://www.dynamicfiles.de</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>ZenJava</name>
+    </organization>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		
+        <!-- version-management -->
+        
+        <version.maven-compiler-plugin>3.2</version.maven-compiler-plugin>
+
+        <version.java.source>1.8</version.java.source>
+        <version.java.target>1.8</version.java.target>
+
+        <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
+    </properties>
+    
+    <dependencies>
+        <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
+        <dependency>
+            <groupId>javafx-packager</groupId>
+            <artifactId>packager-jar</artifactId>
+            <version>1.8.0_45</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/../lib/packager.jar</systemPath>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.maven-compiler-plugin}</version>
+                <configuration>
+                    <source>${version.java.source}</source>
+                    <target>${version.java.target}</target>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.zenjava</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <configuration>
+                    <!-- don't add JRE to native distribution bundle (reduces build-time, but has some risks (see documentation for this) -->
+                    <bundleArguments>
+                        <runtime />
+                    </bundleArguments>
+                    <jvmArgs>
+                        <jvmArg>-DArgument1=hello_jvmArg</jvmArg>
+                    </jvmArgs>
+
+                    <jvmProperties>
+                        <Argument2>world_jvmProperty</Argument2>
+                    </jvmProperties>                    
+
+                    <userJvmArgs>
+                        <Argument3>someValue3_userJvmArgs</Argument3>
+                    </userJvmArgs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>create-jfxjar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-native</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-native</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
