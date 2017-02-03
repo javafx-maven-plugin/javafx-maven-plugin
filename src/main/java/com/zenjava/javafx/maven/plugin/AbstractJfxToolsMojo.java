@@ -53,14 +53,14 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     /**
      * Flag to turn on verbose logging. Set this to true if you are having problems and want more detailed information.
      *
-     * @parameter property="verbose" default-value="false"
+     * @parameter property="jfx.verbose" default-value="false"
      */
     protected Boolean verbose;
 
     /**
      * The main JavaFX application class that acts as the entry point to the JavaFX application.
      *
-     * @parameter property="mainClass"
+     * @parameter property="jfx.mainClass"
      * @required
      */
     protected String mainClass;
@@ -73,7 +73,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * <p>
      * This defaults to 'target/jfx/app' and in most cases there is no real need to change this.
      *
-     * @parameter property="jfxAppOutputDir" default-value="${project.build.directory}/jfx/app"
+     * @parameter property="jfx.jfxAppOutputDir" default-value="${project.build.directory}/jfx/app"
      */
     protected File jfxAppOutputDir;
 
@@ -82,7 +82,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * as set in your project with a '-jfx' suffix. Change this if you want something nicer. Note, that changing this
      * value does not affect the regular old, non-JFX modified JAR (built in the 'target' directory).
      *
-     * @parameter property="jfxMainAppJarName" default-value="${project.build.finalName}-jfx.jar"
+     * @parameter property="jfx.jfxMainAppJarName" default-value="${project.build.finalName}-jfx.jar"
      */
     protected String jfxMainAppJarName;
 
@@ -102,7 +102,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * <li>for <b>mac</b> put an icon at src/main/deploy/package/macosx/your-app-name.icns</li>
      * </ul>
      *
-     * @parameter default-value="${project.basedir}/src/main/deploy"
+     * @parameter property="jfx.deployDir" default-value="${project.basedir}/src/main/deploy"
      */
     protected String deployDir;
 
