@@ -22,9 +22,9 @@
     </organization>
 
     <properties>
-        <mainClass>com.zenjava.test.Main</mainClass>
-        <jfxMainAppJarName>foo.jar</jfxMainAppJarName>
-        <jfxAppOutputDir>${project.build.directory}/bar</jfxAppOutputDir>
+        <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
+        <jfx.jfxMainAppJarName>foo.jar</jfx.jfxMainAppJarName>
+        <jfx.jfxAppOutputDir>${project.build.directory}/bar</jfx.jfxAppOutputDir>
         <jfx.updateExistingJar>true</jfx.updateExistingJar>
     </properties>
 
