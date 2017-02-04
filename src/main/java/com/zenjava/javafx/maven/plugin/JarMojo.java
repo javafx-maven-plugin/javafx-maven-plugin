@@ -182,7 +182,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setManifestAttrs(manifestAttributes);
 
         StringBuilder classpath = new StringBuilder();
-        File libDir = new File(jfxAppOutputDir, "lib");
+        File libDir = new File(jfxAppOutputDir, libFolderName);
         if( !libDir.exists() && !libDir.mkdirs() ){
             throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
         }
@@ -208,7 +208,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 getLog().debug("Check if packager.jar needs to be added");
                 if( addPackagerJar ){
                     getLog().debug("Searching for packager.jar ...");
-                    String targetPackagerJarPath = "lib" + File.separator + "packager.jar";
+                    String targetPackagerJarPath = libFolderName + File.separator + "packager.jar";
                     for( Dependency dependency : project.getDependencies() ){
                         // check only system-scoped
                         if( "system".equalsIgnoreCase(dependency.getScope()) ){
@@ -220,7 +220,8 @@ public class JarMojo extends AbstractJfxToolsMojo {
                                 if( !dest.exists() ){
                                     Files.copy(packagerJarFile.toPath(), dest.toPath());
                                 }
-                                classpath.append("lib/").append(packagerJarFile.getName()).append(" ");
+                                // this is for INSIDE the manifes-file, so always use "/"
+                                classpath.append(libFolderName).append("/").append(packagerJarFile.getName()).append(" ");
                             }
                         }
                     }
@@ -256,7 +257,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                         brokenArtifacts.add(artifactFile.getAbsolutePath());
                     }
                 }
-                classpath.append("lib/").append(artifactFile.getName()).append(" ");
+                classpath.append(libFolderName).append("/").append(artifactFile.getName()).append(" ");
             });
             if( !brokenArtifacts.isEmpty() ){
                 throw new MojoExecutionException("Error copying dependencies for application");

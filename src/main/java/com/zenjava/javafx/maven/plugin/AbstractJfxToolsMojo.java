@@ -125,6 +125,15 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      */
     protected boolean skip;
 
+    /**
+     * All dependencies are copied to a separated folder, which can be changed.
+     *
+     * @since 8.8.0
+     *
+     * @parameter property="jfx.libFolderName" default-value="lib"
+     */
+    protected String libFolderName;
+
     private PackagerLib packagerLib;
 
     public PackagerLib getPackagerLib() throws MojoExecutionException {
