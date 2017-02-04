@@ -81,7 +81,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * <p>
      * This defaults to '' so the executable JavaFX jar and the lib directory end up at jfxAppOutputDir.
      *
-     * @parameter property="jfxBinDir" default-value=""
+     * @parameter property="jfx.jfxBinDir" default-value=""
      * @since 8.8.0
      */
     private String jfxBinDir;
@@ -94,7 +94,7 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
      * <p>
      * All JAR-files in the lib directory will be added to the Manifest Class-Path.
      *
-     * @parameter property="jfxLibDir" default-value="lib"
+     * @parameter property="jfx.jfxLibDir" default-value="lib"
      * @since 8.8.0
      */
     private String jfxLibDir;
