@@ -35,7 +35,7 @@ public class RunMojo extends AbstractJfxToolsMojo {
      * (e.g. javassist). To have this being part of the command used to start the
      * application by this MOJO, just set all your parameters here.
      *
-     * @parameter
+     * @parameter property="jfx.runJavaParameter"
      */
     protected String runJavaParameter = null;
 
@@ -47,7 +47,7 @@ public class RunMojo extends AbstractJfxToolsMojo {
      * This fixes issue #176.
      *
      * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176
-     * @parameter
+     * @parameter property="jfx.runAppParameter"
      */
     protected String runAppParameter = null;
 
@@ -86,6 +86,11 @@ public class RunMojo extends AbstractJfxToolsMojo {
                     .inheritIO()
                     .directory(jfxAppOutputDir)
                     .command(command);
+
+            if( verbose ){
+                getLog().info("Running command: " + String.join(" ", command));
+            }
+
             Process p = pb.start();
             p.waitFor();
             if( p.exitValue() != 0 ){

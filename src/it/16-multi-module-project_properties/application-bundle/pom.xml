@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zenjava</groupId>
+        <artifactId>javafx-maven-plugin-test-16-multi-project-properties-parent-pom</artifactId>
+        <version>1.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin-test-16-multi-project-properties-application-bundle</artifactId>
+
+    <packaging>jar</packaging>
+
+    <name>Application Bundle</name>
+
+    <description>
+        This project bundles all developed components and binds them together. This project is packaged via javafx-maven-plugin for distribution.
+    </description>
+
+    <properties>
+        <jfx.mainClass>com.zenjava.Launcher</jfx.mainClass>
+        <jfx.verbose>true</jfx.verbose>
+    </properties>
+  
+    <build>
+        <finalName>someProject</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.maven-compiler-plugin}</version>
+                <configuration>
+                    <source>${version.java.source}</source>
+                    <target>${version.java.target}</target>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.zenjava</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <configuration>
+                    <bundleArguments>
+                        <runtime />
+                    </bundleArguments>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!-- required before build-native -->
+                        <id>create-jfxjar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-native</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-native</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- all dependencies which should be bundled -->
+        <dependency>
+            <groupId>com.zenjava</groupId>
+            <artifactId>launcher</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zenjava</groupId>
+            <artifactId>plugin-one</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zenjava</groupId>
+            <artifactId>plugin-two</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

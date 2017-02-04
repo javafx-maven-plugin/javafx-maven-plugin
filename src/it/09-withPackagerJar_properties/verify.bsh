@@ -1,0 +1,21 @@
+import java.io.*;
+
+File jfxFolder = new File( basedir, "target/jfx" );
+if( !jfxFolder.exists() ){
+    throw new Exception( "there should be a jfx-folder!");
+}
+
+File jfxAppFolder = new File( jfxFolder, "app" );
+if( !jfxAppFolder.exists() ){
+    throw new Exception( "there should be a jfx-app-folder!");
+}
+
+File jfxAppLibFolder = new File( jfxAppFolder, "lib" );
+if( !jfxAppLibFolder.exists() ){
+    throw new Exception( "there should be a lib-folder within jfx-app-folder!");
+}
+
+File packagerJar = new File( jfxAppLibFolder, "packager.jar" );
+if( !jfxAppLibFolder.exists() ){
+    throw new Exception( "we should have a cop of packager.jar witin lib-folder, because it's required for userJvmArgs");
+}
