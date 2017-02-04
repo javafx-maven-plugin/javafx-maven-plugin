@@ -12,10 +12,15 @@ if( !binFolder.exists() ){
 
 File librariesFolder = new File( binFolder, "libraries" );
 if( !librariesFolder.exists() ){
-    throw new Exception( "there should be a librariesFolder-folder!");
+    throw new Exception( "there should be a bar/bin/libraries-folder!");
+}
+
+File commonsLangDependencyJarFile = new File( librariesFolder, "commons-lang3-3.5.jar" );
+if( !commonsLangDependencyJarFile.exists() ){
+    throw new Exception( "there should be a bar/bin/libraries/commons-lang3-3.5.jar file!");
 }
 
 File fooJar = new File( binFolder, "foo.jar" );
 if( !fooJar.exists() ){
-    throw new Exception( "there should be a foo.jar file!");
+    throw new Exception( "there should be a bar/bin/foo.jar file!");
 }

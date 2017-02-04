@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.zenjava</groupId>
-    <artifactId>javafx-maven-plugin-test-29-property-names</artifactId>
+    <artifactId>javafx-maven-plugin-test-31-additionalAppResources</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     
@@ -20,11 +20,6 @@
         <name>ZenJava</name>
     </organization>
 
-    <properties>
-        <mainClass>com.zenjava.test.Main</mainClass>
-        <jfx.skipCopyDependenciesToLibDir>true</jfx.skipCopyDependenciesToLibDir>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -37,35 +32,15 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <artifactItems>
-                        <artifactItem>
-                            <groupId>org.apache.commons</groupId>
-                            <artifactId>commons-lang3</artifactId>
-                            <version>3.5</version>
-                        </artifactItem>
-                    </artifactItems>
-                    <outputDirectory>${project.build.directory}/jfx/app/lib</outputDirectory>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>@project.version@</version>
                 <configuration>
+                    <mainClass>com.zenjava.test.Main</mainClass>
+                    <jfxBinDir>bin</jfxBinDir>
                     <jfxMainAppJarName>foo.jar</jfxMainAppJarName>
+                    <additionalAppResources>${basedir}/src/main/app</additionalAppResources>
+                    <copyAdditionalAppResourcesToJar>true</copyAdditionalAppResourcesToJar>
                 </configuration>
                 <executions>
                     <execution>
@@ -79,4 +54,11 @@
             </plugin>
         </plugins>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
+        </dependency>
+    </dependencies>
 </project>
