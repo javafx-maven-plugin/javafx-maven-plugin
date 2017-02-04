@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin-test-24-simple-custom-bundler-failed-jfx-app-properties</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <developers>
+        <developer>
+            <name>Danny Althoff</name>
+            <email>fibrefox@dynamicfiles.de</email>
+            <url>https://www.dynamicfiles.de</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>ZenJava</name>
+    </organization>
+
+    <properties>
+        <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.zenjava</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <configuration>
+                    <bundleArguments>
+                        <runtime />
+                    </bundleArguments>
+                </configuration>
+                <executions>
+                    <!-- required before build-native -->
+                    <execution>
+                        <id>create-jfxjar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-native</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-native</goal>
+                        </goals>
+                        <configuration>
+                            <customBundlers>
+                                <!-- this is not set as dependency and should fail silently-->
+                                <customBundler>com.zenjava.test.customBundlers.DummyBundler</customBundler>
+                            </customBundlers>
+                            <!-- try to use non existing bundler -->
+                            <bundler>DummyBundler</bundler>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

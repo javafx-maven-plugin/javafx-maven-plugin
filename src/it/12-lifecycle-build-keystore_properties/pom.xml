@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin-test-12-lifecycle-build-keystore-properties</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <developers>
+        <developer>
+            <name>Danny Althoff</name>
+            <email>fibrefox@dynamicfiles.de</email>
+            <url>https://www.dynamicfiles.de</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>ZenJava</name>
+    </organization>
+
+    <properties>
+        <jfx.certDomain>dynamicfiles.de</jfx.certDomain>
+        <jfx.certOrgUnit>DevelopmentSquad</jfx.certOrgUnit>
+        <jfx.certOrg>Development</jfx.certOrg>
+        <jfx.certState>North Rhine-Westphalia</jfx.certState>
+        <jfx.certCountry>DE</jfx.certCountry>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.zenjava</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>create-keystore</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-keystore</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

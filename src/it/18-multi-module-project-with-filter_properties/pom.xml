@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin-test-18-multi-module-project-with-filter-properties-parent-pom</artifactId>
+    <version>1.0</version>
+
+    <packaging>pom</packaging>
+
+    <developers>
+        <developer>
+            <name>Danny Althoff</name>
+            <email>fibrefox@dynamicfiles.de</email>
+            <url>https://www.dynamicfiles.de</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>ZenJava</name>
+    </organization>
+
+    <name>Project Aggregator (Parent-POM)</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <version.java.source>1.8</version.java.source>
+        <version.java.target>1.8</version.java.target>
+
+        <!-- version-management -->
+        <version.maven-compiler-plugin>3.3</version.maven-compiler-plugin>
+        <version.maven-surefire-plugin>2.18</version.maven-surefire-plugin>
+        <version.maven-failsafe-plugin>2.18</version.maven-failsafe-plugin>
+        <!-- /version-management -->
+    </properties>
+
+    <modules>
+        <!-- all base components -->
+        <module>core/launcher</module>
+
+        <!-- all plugins -->
+        <module>plugins/plugin-one</module>
+        <module>plugins/plugin-two</module>
+        <module>plugins/plugin-three</module>
+
+        <!-- executable application -->
+        <module>application-bundle</module>
+    </modules>
+</project>

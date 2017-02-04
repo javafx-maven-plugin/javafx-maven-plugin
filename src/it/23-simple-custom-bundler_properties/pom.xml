@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin-test-23-simple-custom-bundler-properties-parent-pom</artifactId>
+    <version>1.0</version>
+
+    <packaging>pom</packaging>
+
+    <developers>
+        <developer>
+            <name>Danny Althoff</name>
+            <email>fibrefox@dynamicfiles.de</email>
+            <url>https://www.dynamicfiles.de</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>ZenJava</name>
+    </organization>
+
+    <name>Project Aggregator (Parent-POM)</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <version.java.source>1.8</version.java.source>
+        <version.java.target>1.8</version.java.target>
+    </properties>
+
+    <modules>
+        <!-- custom bundler project -->
+        <module>bundler</module>
+
+        <!-- jfx project using that custom bundler -->
+        <module>jfx-app</module>
+    </modules>
+</project>

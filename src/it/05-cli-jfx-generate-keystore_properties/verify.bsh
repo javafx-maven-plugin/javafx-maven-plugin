@@ -1,0 +1,6 @@
+import java.io.*;
+
+File generatedKeyStore = new File( basedir, "src/main/deploy/keystore.jks" );
+if( !generatedKeyStore.exists() ){
+    throw new Exception( "keystore should have been created");
+}

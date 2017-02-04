@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zenjava</groupId>
+    <artifactId>javafx-maven-plugin-test-20-native-launcher-configuration-windows-workaround167-skipped-properties</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <developers>
+        <developer>
+            <name>Danny Althoff</name>
+            <email>fibrefox@dynamicfiles.de</email>
+            <url>https://www.dynamicfiles.de</url>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>ZenJava</name>
+    </organization>
+
+    <properties>
+        <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
+        <jfx.appName>SimpleApp</jfx.appName>
+        <jfx.skipNativeLauncherWorkaround167>true</jfx.skipNativeLauncherWorkaround167>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.zenjava</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <configuration>
+                    <mainClass>com.zenjava.test.Main</mainClass>
+                    <appName>SimpleApp</appName>
+                    <!-- don't bundle JRE (will be problematic on windows since 1.8.0u60) -->
+                    <bundleArguments>
+                        <runtime />
+                    </bundleArguments>
+                    <skipNativeLauncherWorkaround167>true</skipNativeLauncherWorkaround167>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>create-jfxjar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-native</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-native</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

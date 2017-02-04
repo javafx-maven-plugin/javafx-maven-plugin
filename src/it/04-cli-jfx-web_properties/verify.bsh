@@ -1,0 +1,16 @@
+import java.io.*;
+
+File jfxFolder = new File( basedir, "target/jfx" );
+if( !jfxFolder.exists() ){
+    throw new Exception( "there should be a jfx-folder!");
+}
+
+File jfxAppFolder = new File( jfxFolder, "app" );
+if( !jfxAppFolder.exists() ){
+    throw new Exception( "there should be a jfx-app-folder!");
+}
+
+File jfxWebFolder = new File( jfxFolder, "web" );
+if( !jfxWebFolder.exists() ){
+    throw new Exception( "there should be a jfx-web-folder!");
+}

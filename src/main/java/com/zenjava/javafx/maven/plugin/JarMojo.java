@@ -47,7 +47,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * with the resulting compiled files. Use at your own risk. By default this is false and CSS files are left in their
      * plain text format as they are found.
      *
-     * @parameter default-value=false
+     * @parameter property="jfx.css2bin" default-value=false
      */
     protected boolean css2bin;
 
@@ -56,15 +56,17 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * useful for showing splash screens or similar 'progress' style windows. For more information on Pre-Loaders, see
      * the official JavaFX packaging documentation.
      *
-     * @parameter
+     * @parameter property="jfx.preLoader"
      */
     protected String preLoader;
 
     /**
      * Flag to switch on updating the existing jar created with maven. The jar to be updated is taken from
      * '${project.basedir}/target/${project.build.finalName}.jar'.
+     * <p>
+     * This makes all entries inside MANIFEST.MF being transfered to the jfx-jar.
      *
-     * @parameter default-value=false
+     * @parameter property="jfx.updateExistingJar" default-value=false
      */
     protected boolean updateExistingJar;
 
@@ -73,7 +75,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * <p>
      * If you are using FXML you will need to set this value to true.
      *
-     * @parameter default-value=false
+     * @parameter property="jfx.allPermissions" default-value=false
      */
     protected boolean allPermissions;
 
@@ -87,7 +89,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
     /**
      * To add custom manifest-entries, just add each entry/value-pair here.
      *
-     * @parameter
+     * @parameter property="jfx.manifestAttributes"
      */
     protected Map<String, String> manifestAttributes;
 
@@ -97,7 +99,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * <p>
      * To get more information about, please check the documentation here: https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/jvm_options_api.html.
      *
-     * @parameter default-value=true
+     * @parameter property="jfx.addPackagerJar" default-value=true
      * @since 8.1.4
      */
     protected boolean addPackagerJar;
@@ -106,7 +108,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * In the case you don't want some dependency landing in the generated lib-folder (e.g. complex maven-dependencies),
      * you now can manually exclude that dependency by added it's coordinates here.
      *
-     * @parameter
+     * @parameter property="jfx.classpathExcludes"
      * @since 8.2.0
      */
     protected List<Dependency> classpathExcludes = new ArrayList<>();
@@ -122,7 +124,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * <p>
      * Set this to false when you want to have the direct declared dependency excluded from lib-file-processing.
      *
-     * @parameter default-value=true
+     * @parameter property="jfx.classpathExcludesTransient" default-value=true
      * @since 8.2.0
      */
     protected boolean classpathExcludesTransient;
@@ -131,7 +133,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * When you need to add additional files to generated app-folder (e.g. README, license, third-party-tools, ...),
      * you can specify the source-folder here. All files will be copied recursively.
      *
-     * @parameter
+     * @parameter property="jfx.additionalAppResources"
      */
     protected File additionalAppResources;
 
@@ -140,7 +142,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * your jfx-jar. This makes it possible to have external files (like native binaries) being available while
      * developing using the run-mojo.
      *
-     * @parameter default-value="false"
+     * @parameter property="jfx.copyAdditionalAppResourcesToJar" default-value="false"
      */
     private boolean copyAdditionalAppResourcesToJar = false;
 
