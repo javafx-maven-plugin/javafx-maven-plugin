@@ -71,7 +71,7 @@ public class RunMojo extends AbstractJfxToolsMojo {
         });
 
         command.add("-jar");
-        command.add(jfxMainAppJarName);
+        command.add(getRelativeBinDir().resolve(jfxMainAppJarName).toString());
 
         // it is possible to have jfx:run pass additional parameters
         // fixes https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176

@@ -1,0 +1,26 @@
+import java.io.*;
+
+File barFolder = new File( basedir, "target/bar" );
+if( !barFolder.exists() ){
+    throw new Exception( "there should be a bar-folder!");
+}
+
+File binFolder = new File( barFolder, "bin" );
+if( !binFolder.exists() ){
+    throw new Exception( "there should be a bar/bin-folder!");
+}
+
+File librariesFolder = new File( binFolder, "libraries" );
+if( !librariesFolder.exists() ){
+    throw new Exception( "there should be a bar/bin/libraries-folder!");
+}
+
+File commonsLangDependencyJarFile = new File( librariesFolder, "commons-lang3-3.5.jar" );
+if( !commonsLangDependencyJarFile.exists() ){
+    throw new Exception( "there should be a bar/bin/libraries/commons-lang3-3.5.jar file!");
+}
+
+File fooJar = new File( binFolder, "foo.jar" );
+if( !fooJar.exists() ){
+    throw new Exception( "there should be a bar/bin/foo.jar file!");
+}

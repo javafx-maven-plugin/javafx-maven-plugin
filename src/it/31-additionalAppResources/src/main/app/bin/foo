@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -Djavafx.verbose=true -Dbinary.css=false -Djava.util.logging.config.file=../conf/logging.properties -jar foo.jar $@

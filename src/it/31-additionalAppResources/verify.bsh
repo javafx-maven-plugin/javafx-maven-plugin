@@ -1,0 +1,46 @@
+import java.io.*;
+
+File appFolder = new File( basedir, "target/jfx/app" );
+if( !appFolder.exists() ){
+    throw new Exception( "there should be a app-folder!");
+}
+
+File binFolder = new File( appFolder, "bin" );
+if( !binFolder.exists() ){
+    throw new Exception( "there should be a app/bin-folder!");
+}
+
+File libFolder = new File( binFolder, "lib" );
+if( !libFolder.exists() ){
+    throw new Exception( "there should be a app/bin/lib-folder!");
+}
+
+File fooJar = new File( binFolder, "foo.jar" );
+if( !fooJar.exists() ){
+    throw new Exception( "there should be a app/bin/foo.jar file!");
+}
+
+File fooScript = new File( binFolder, "foo" );
+if( !fooScript.exists() ){
+    throw new Exception( "there should be a app/bin/foo script file!");
+}
+
+File confFolder = new File( appFolder, "conf" );
+if( !confFolder.exists() ){
+    throw new Exception( "there should be a app/conf-folder!");
+}
+
+File configPropertiesFile = new File( confFolder, "config.properties" );
+if( !configPropertiesFile.exists() ){
+    throw new Exception( "there should be a app/conf/config.properties-folder!");
+}
+
+File loggingPropertiesFile = new File( confFolder, "logging.properties" );
+if( !loggingPropertiesFile.exists() ){
+    throw new Exception( "there should be a app/conf/logging.properties-folder!");
+}
+
+File systemPropertiesFile = new File( confFolder, "system.properties" );
+if( !systemPropertiesFile.exists() ){
+    throw new Exception( "there should be a app/conf/system.properties-folder!");
+}
