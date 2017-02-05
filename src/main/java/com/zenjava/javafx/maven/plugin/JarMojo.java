@@ -25,8 +25,11 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -159,9 +162,9 @@ public class JarMojo extends AbstractJfxToolsMojo {
     /**
      * @since 8.8.0
      *
-     * @parameter property="jfx.useLibFolderForManifestClasspath" default-value="false"
+     * @parameter property="jfx.useLibFolderContentForManifestClasspath" default-value="false"
      */
-    protected boolean useLibFolderForManifestClasspath = false;
+    protected boolean useLibFolderContentForManifestClasspath = false;
 
     /**
      * @since 8.8.0
@@ -294,12 +297,33 @@ public class JarMojo extends AbstractJfxToolsMojo {
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
 
-        createJarParams.setClasspath(classpath.toString());
+        if( useLibFolderContentForManifestClasspath ){
+            StringBuilder scannedClasspath = new StringBuilder();
+            try{
+                Files.walkFileTree(libDir.toPath(), new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        scannedClasspath.append(file.toString().replace("\\", "/")).append(" ");
+                        return super.visitFile(file, attrs);
+                    }
+                });
+            } catch(IOException ioex){
+                getLog().warn("Got problem while scanning lib-folder", ioex);
+            }
+            createJarParams.setClasspath(scannedClasspath.toString());
+        } else {
+            createJarParams.setClasspath(classpath.toString());
+        }
+
         Optional.ofNullable(fixedManifestClasspath).ifPresent(manifestClasspath -> {
             if( manifestClasspath.trim().isEmpty() ){
                 return;
             }
             createJarParams.setClasspath(manifestClasspath);
+
+            if( useLibFolderContentForManifestClasspath ){
+                getLog().warn("You specified to use the content of the lib-folder AND specified a fixed classpath. The fixed classpath will get taken.");
+            }
         });
 
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
