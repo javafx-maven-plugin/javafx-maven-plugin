@@ -1,6 +1,31 @@
 Release Notes
 =============
 
+Version 8.8.0 (05-feb-2017)
+
+New:
+* added detection of missing main class, wrong configuration now gets detected a bit earlier, to disable scanning, just set `<skipMainClassScanning>true</skipMainClassScanning>` (might cause the build-time to increase when enabled)
+* `nativeReleaseVersion` will now get sanitized, anything than numbers and dots are removed, this ensures compatibility with the used bundler toolsets
+* signing jars using `jarsigner` was introduced some time ago, but it was lacking some custom parameters, this is now fixed by having the new `additionalJarsignerParameters`-list while using native MOJO (fixes issue #260)
+* generating a keystore has some hardcoded parameters (like keysize or used algorithm), but was missing support for additional parameters, this is now fixed by having the new `additionalKeytoolParameters`-list while using generate-key-store MOJO
+* added ability to fail the build on errors while bundling, just set `<failOnError>true</failOnError>`
+* when having not specified any bundler, it now is possible to remove that JNLP-warning regarding "No OutFile Specificed", which makes that bundler being skipped, just set `<skipJNLP>true</skipJNLP>` inside the `<configuration>`-block
+* added property to skip `nativeReleaseVersion` rewriting, just set `<skipNativeVersionNumberSanitizing>true</skipNativeVersionNumberSanitizing>` inside the `<configuration>`-block
+* added `skipCopyingDependencies` to make it possible to NOT copying dependencies, but they are added to the classpath inside the manifest like normal
+* added `<fixedManifestClasspath>` for setting the classpath-entry inside the generated manifest-file in the main jfx-jar, this is already possible for secondary launchers by setting `<classpath>` within the configuration-block of the secondary launcher
+* added `<useLibFolderContentForManifestClasspath>` for creating the manifest-entriy for the classpath, depending on the content of the lib-folder, makes it possible to have files not being inside dependencies being present there (which got copied beforehand)
+
+Improvements:
+* added warning when no classes were generated for `-jfx.jar`-generation, fixes issue #233 (no real FIX, as this is no real BUG ... IMHO)
+* added warning about slow performance (even on SSD) when having ext4/btrfs filesystems using "deb"-bundler (fixes issue #41)
+* added warning about missing "jnlp.outfile"-property inside bundleArguments when using JNLP-bundler (from issue #42)
+* added ability to change name of the lib-folder by setting `libFolderName`
+
+Changes:
+* reimplemented `<additionalBundlerResources>`, now searching for folders with the name of the used bundler, makes it possible to adjust nearly all bundlers now
+* all parameters are now accessible via `jfx.`-prefixed properties, please adjust your properties accordingly (I hope this does not break much for you)
+
+
 Version 8.7.0 (09-Sept-2016)
 
 New:
