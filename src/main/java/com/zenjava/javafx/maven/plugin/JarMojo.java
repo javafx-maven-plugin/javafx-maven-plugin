@@ -147,9 +147,28 @@ public class JarMojo extends AbstractJfxToolsMojo {
     protected boolean copyAdditionalAppResourcesToJar = false;
 
     /**
+     * To skip copying all dependencies, set this to true. Please note that all dependencies will be added to the
+     * manifest-classpath as normal, only the copy-process gets skipped.
+     *
+     * @since 8.8.0
+     *
      * @parameter property="jfx.skipCopyingDependencies"
      */
     protected boolean skipCopyingDependencies = false;
+
+    /**
+     * @since 8.8.0
+     *
+     * @parameter property="jfx.useLibFolderForManifestClasspath" default-value="false"
+     */
+    protected boolean useLibFolderForManifestClasspath = false;
+
+    /**
+     * @since 8.8.0
+     *
+     * @parameter property="jfx.fixedManifestClasspath" default-value=""
+     */
+    protected String fixedManifestClasspath = null;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -274,7 +293,14 @@ public class JarMojo extends AbstractJfxToolsMojo {
         } catch(IOException e){
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
+
         createJarParams.setClasspath(classpath.toString());
+        Optional.ofNullable(fixedManifestClasspath).ifPresent(manifestClasspath -> {
+            if( manifestClasspath.trim().isEmpty() ){
+                return;
+            }
+            createJarParams.setClasspath(manifestClasspath);
+        });
 
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
         if( allPermissions ){
