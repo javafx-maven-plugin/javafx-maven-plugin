@@ -97,24 +97,7 @@ Set version to new SNAPSHOT-version:
 Last Release Notes
 ==================
 
-**Version 8.7.0 (09-Sept-2016)**
-
-New:
-* added `additionalBundlerResources` for being able to have additional files available to the used bundler
-* added feature for copying additionalAppResources to `target/jfx/app` when calling `jfx:jar` and `jfx:run`, making it possible to have all that files available (like native files being required to not reside in the jar-files) by setting `<copyAdditionalAppResourcesToJar>true</copyAdditionalAppResourcesToJar>`
-
-Bugfixes:
-* fixed possible file-handler leak (unreported)
-
-Improvements:
-* refactored a bit to have cleaner code
-
-
-
-(Not yet) Release(d) Notes
-==========================
-
-upcoming Version 8.8.0 (???-feb-2017)
+**Version 8.8.0 (05-feb-2017)**
 
 New:
 * added detection of missing main class, wrong configuration now gets detected a bit earlier, to disable scanning, just set `<skipMainClassScanning>true</skipMainClassScanning>` (might cause the build-time to increase when enabled)
@@ -137,3 +120,12 @@ Improvements:
 Changes:
 * reimplemented `<additionalBundlerResources>`, now searching for folders with the name of the used bundler, makes it possible to adjust nearly all bundlers now
 * all parameters are now accessible via `jfx.`-prefixed properties, please adjust your properties accordingly (I hope this does not break much for you)
+
+
+
+(Not yet) Release(d) Notes
+==========================
+
+upcoming Version 8.8.1 (???-2017)
+
+*nothing changed yet*
