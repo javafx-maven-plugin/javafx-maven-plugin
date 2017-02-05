@@ -124,11 +124,13 @@ New:
 * added ability to fail the build on errors while bundling, just set `<failOnError>true</failOnError>`
 * when having not specified any bundler, it now is possible to remove that JNLP-warning regarding "No OutFile Specificed", which makes that bundler being skipped, just set `<skipJNLP>true</skipJNLP>` inside the `<configuration>`-block
 * added property to skip `nativeReleaseVersion` rewriting, just set `<skipNativeVersionNumberSanitizing>true</skipNativeVersionNumberSanitizing>` inside the `<configuration>`-block
+* added `skipCopyingDependencies` to make it possible to NOT copying dependencies, but they are added to the classpath inside the manifest like normal
 
 Improvements:
 * added warning when no classes were generated for `-jfx.jar`-generation, fixes issue #233 (no real FIX, as this is no real BUG ... IMHO)
 * added warning about slow performance (even on SSD) when having ext4/btrfs filesystems using "deb"-bundler (fixes issue #41)
 * added warning about missing "jnlp.outfile"-property inside bundleArguments when using JNLP-bundler (from issue #42)
+* added ability to change name of the lib-folder by setting `libFolderName`
 
 Changes:
 * reimplemented `<additionalBundlerResources>`, now searching for folders with the name of the used bundler, makes it possible to adjust nearly all bundlers now

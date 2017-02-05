@@ -144,7 +144,12 @@ public class JarMojo extends AbstractJfxToolsMojo {
      *
      * @parameter property="jfx.copyAdditionalAppResourcesToJar" default-value="false"
      */
-    private boolean copyAdditionalAppResourcesToJar = false;
+    protected boolean copyAdditionalAppResourcesToJar = false;
+
+    /**
+     * @parameter property="jfx.skipCopyingDependencies"
+     */
+    protected boolean skipCopyingDependencies = false;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -206,7 +211,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         try{
             if( checkIfJavaIsHavingPackagerJar() ){
                 getLog().debug("Check if packager.jar needs to be added");
-                if( addPackagerJar ){
+                if( addPackagerJar && !skipCopyingDependencies ){
                     getLog().debug("Searching for packager.jar ...");
                     String targetPackagerJarPath = libFolderName + File.separator + "packager.jar";
                     for( Dependency dependency : project.getDependencies() ){
@@ -250,7 +255,11 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 File dest = new File(libDir, artifactFile.getName());
                 if( !dest.exists() ){
                     try{
-                        Files.copy(artifactFile.toPath(), dest.toPath());
+                        if( !skipCopyingDependencies ){
+                            Files.copy(artifactFile.toPath(), dest.toPath());
+                        } else {
+                            getLog().info(String.format("Skipped copying classpath element: %s", artifactFile.getAbsolutePath()));
+                        }
                     } catch(IOException ex){
                         getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
                         getLog().debug(ex);
