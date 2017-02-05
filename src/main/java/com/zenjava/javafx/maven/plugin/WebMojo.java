@@ -179,6 +179,8 @@ public class WebMojo extends AbstractJfxToolsMojo {
     @Override
     @SuppressWarnings("deprecation")
     public void execute() throws MojoExecutionException, MojoFailureException {
+        getLog().warn("Please not that this MOJO will get removed with the next release!");
+        getLog().warn("You should upgrade to jnlp-bundler.");
 
         getLog().info("Building Web deployment bundles");
 
@@ -202,9 +204,9 @@ public class WebMojo extends AbstractJfxToolsMojo {
             deployParams.addResource(jfxAppOutputDir, jfxMainAppJarName);
 
             // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
-            File libFolder = new File(jfxAppOutputDir, "lib");
+            File libFolder = new File(jfxAppOutputDir, libFolderName);
             if( libFolder.exists() ){
-                deployParams.addResource(jfxAppOutputDir, "lib");
+                deployParams.addResource(jfxAppOutputDir, libFolderName);
             }
 
             deployParams.setAllPermissions(allPermissions);
@@ -265,9 +267,9 @@ public class WebMojo extends AbstractJfxToolsMojo {
 
                 signJarParams.addResource(webOutputDir, jfxMainAppJarName);
                 // bugfix for issue #46 "FileNotFoundException: ...\target\jfx\web\lib"
-                File webLibFolder = new File(webOutputDir, "lib");
+                File webLibFolder = new File(webOutputDir, libFolderName);
                 if( webLibFolder.exists() ){
-                    signJarParams.addResource(webOutputDir, "lib");
+                    signJarParams.addResource(webOutputDir, libFolderName);
                 }
 
                 getPackagerLib().signJar(signJarParams);

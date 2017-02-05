@@ -1020,6 +1020,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private void signJar(File jarFile) throws MojoExecutionException {
         List<String> command = new ArrayList<>();
         command.add(getEnvironmentRelativeExecutablePath() + "jarsigner");
+        Optional.ofNullable(additionalJarsignerParameters).ifPresent(jarsignerParameters -> {
+            command.addAll(jarsignerParameters);
+        });
         command.add("-strict");
         command.add("-keystore");
         command.add(keyStore.getAbsolutePath());
@@ -1029,9 +1032,6 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         command.add(keyPassword);
         command.add(jarFile.getAbsolutePath());
         command.add(keyStoreAlias);
-        Optional.ofNullable(additionalJarsignerParameters).ifPresent(jarsignerParameters -> {
-            command.addAll(jarsignerParameters);
-        });
 
         if( verbose ){
             command.add("-verbose");

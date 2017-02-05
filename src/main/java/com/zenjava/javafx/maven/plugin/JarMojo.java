@@ -25,8 +25,11 @@ import org.apache.maven.plugin.MojoFailureException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -144,7 +147,31 @@ public class JarMojo extends AbstractJfxToolsMojo {
      *
      * @parameter property="jfx.copyAdditionalAppResourcesToJar" default-value="false"
      */
-    private boolean copyAdditionalAppResourcesToJar = false;
+    protected boolean copyAdditionalAppResourcesToJar = false;
+
+    /**
+     * To skip copying all dependencies, set this to true. Please note that all dependencies will be added to the
+     * manifest-classpath as normal, only the copy-process gets skipped.
+     *
+     * @since 8.8.0
+     *
+     * @parameter property="jfx.skipCopyingDependencies"
+     */
+    protected boolean skipCopyingDependencies = false;
+
+    /**
+     * @since 8.8.0
+     *
+     * @parameter property="jfx.useLibFolderContentForManifestClasspath" default-value="false"
+     */
+    protected boolean useLibFolderContentForManifestClasspath = false;
+
+    /**
+     * @since 8.8.0
+     *
+     * @parameter property="jfx.fixedManifestClasspath" default-value=""
+     */
+    protected String fixedManifestClasspath = null;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -182,7 +209,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         createJarParams.setManifestAttrs(manifestAttributes);
 
         StringBuilder classpath = new StringBuilder();
-        File libDir = new File(jfxAppOutputDir, "lib");
+        File libDir = new File(jfxAppOutputDir, libFolderName);
         if( !libDir.exists() && !libDir.mkdirs() ){
             throw new MojoExecutionException("Unable to create app lib dir: " + libDir);
         }
@@ -206,9 +233,9 @@ public class JarMojo extends AbstractJfxToolsMojo {
         try{
             if( checkIfJavaIsHavingPackagerJar() ){
                 getLog().debug("Check if packager.jar needs to be added");
-                if( addPackagerJar ){
+                if( addPackagerJar && !skipCopyingDependencies ){
                     getLog().debug("Searching for packager.jar ...");
-                    String targetPackagerJarPath = "lib" + File.separator + "packager.jar";
+                    String targetPackagerJarPath = libFolderName + File.separator + "packager.jar";
                     for( Dependency dependency : project.getDependencies() ){
                         // check only system-scoped
                         if( "system".equalsIgnoreCase(dependency.getScope()) ){
@@ -220,7 +247,8 @@ public class JarMojo extends AbstractJfxToolsMojo {
                                 if( !dest.exists() ){
                                     Files.copy(packagerJarFile.toPath(), dest.toPath());
                                 }
-                                classpath.append("lib/").append(packagerJarFile.getName()).append(" ");
+                                // this is for INSIDE the manifes-file, so always use "/"
+                                classpath.append(libFolderName).append("/").append(packagerJarFile.getName()).append(" ");
                             }
                         }
                     }
@@ -249,14 +277,18 @@ public class JarMojo extends AbstractJfxToolsMojo {
                 File dest = new File(libDir, artifactFile.getName());
                 if( !dest.exists() ){
                     try{
-                        Files.copy(artifactFile.toPath(), dest.toPath());
+                        if( !skipCopyingDependencies ){
+                            Files.copy(artifactFile.toPath(), dest.toPath());
+                        } else {
+                            getLog().info(String.format("Skipped copying classpath element: %s", artifactFile.getAbsolutePath()));
+                        }
                     } catch(IOException ex){
                         getLog().warn(String.format("Couldn't read from file %s", artifactFile.getAbsolutePath()));
                         getLog().debug(ex);
                         brokenArtifacts.add(artifactFile.getAbsolutePath());
                     }
                 }
-                classpath.append("lib/").append(artifactFile.getName()).append(" ");
+                classpath.append(libFolderName).append("/").append(artifactFile.getName()).append(" ");
             });
             if( !brokenArtifacts.isEmpty() ){
                 throw new MojoExecutionException("Error copying dependencies for application");
@@ -264,7 +296,35 @@ public class JarMojo extends AbstractJfxToolsMojo {
         } catch(IOException e){
             throw new MojoExecutionException("Error copying dependency for application", e);
         }
-        createJarParams.setClasspath(classpath.toString());
+
+        if( useLibFolderContentForManifestClasspath ){
+            StringBuilder scannedClasspath = new StringBuilder();
+            try{
+                Files.walkFileTree(libDir.toPath(), new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        scannedClasspath.append(file.toString().replace("\\", "/")).append(" ");
+                        return super.visitFile(file, attrs);
+                    }
+                });
+            } catch(IOException ioex){
+                getLog().warn("Got problem while scanning lib-folder", ioex);
+            }
+            createJarParams.setClasspath(scannedClasspath.toString());
+        } else {
+            createJarParams.setClasspath(classpath.toString());
+        }
+
+        Optional.ofNullable(fixedManifestClasspath).ifPresent(manifestClasspath -> {
+            if( manifestClasspath.trim().isEmpty() ){
+                return;
+            }
+            createJarParams.setClasspath(manifestClasspath);
+
+            if( useLibFolderContentForManifestClasspath ){
+                getLog().warn("You specified to use the content of the lib-folder AND specified a fixed classpath. The fixed classpath will get taken.");
+            }
+        });
 
         // https://docs.oracle.com/javase/8/docs/technotes/guides/deploy/manifest.html#JSDPG896
         if( allPermissions ){
