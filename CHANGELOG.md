@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Version 8.8.1 (06-feb-2017)
+
+Bugfixes:
+* the new option `<useLibFolderContentForManifestClasspath>` did not calculate the paths correctly (issue #271)
+
+
 Version 8.8.0 (05-feb-2017)
 
 New:
