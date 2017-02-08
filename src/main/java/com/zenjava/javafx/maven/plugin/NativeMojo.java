@@ -157,7 +157,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * Normally all non-number signs and dots are removed from the value, which can be disabled
      * by setting 'skipNativeVersionNumberSanitizing' to true.
      *
-     * @parameter property="jfx.nativeReleaseVersion"
+     * @parameter property="jfx.nativeReleaseVersion" default-value="1.0"
      */
     private String nativeReleaseVersion;
 
