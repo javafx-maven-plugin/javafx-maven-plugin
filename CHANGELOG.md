@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Version 8.8.2 (09-feb-2017)
+
+Bugfixes:
+* fixed `<nativeReleaseVersion>` missing it's default-value (issue #275)
+
+
 Version 8.8.1 (06-feb-2017)
 
 Bugfixes:

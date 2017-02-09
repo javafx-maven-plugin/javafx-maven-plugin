@@ -1,7 +1,7 @@
 [![Travis Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/64700ul3m9y88agi/branch/master?svg=true)](https://ci.appveyor.com/project/FibreFoX/javafx-maven-plugin/branch/master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.1/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.1)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.2/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.2)
 
 
 
@@ -27,7 +27,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.8.1</version>
+    <version>8.8.2</version>
     <configuration>
         <mainClass>your.package.with.Launcher</mainClass>
     </configuration>
@@ -47,7 +47,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.8.1</version>
+    <version>8.8.2</version>
     <configuration>
         <vendor>YourCompany</vendor>
         <mainClass>your.package.with.Launcher</mainClass>
@@ -58,11 +58,9 @@ Add this to your pom.xml within to your build-plugin:
 To create your executable file with JavaFX-magic and some installers (please see official oracle-documentation which applications are required for this), call `mvn jfx:native`. The native launchers or installers will be placed at `target/jfx/native`.
 
 
-
-Prepared for Java 9
-===================
-
-Add repository in your `pom.xml` for snapshot-versions of this plugin:
+Using `SNAPSHOT`-versions
+=========================
+When you report a bug and this got worked around, you might be able to have access to some -SNAPSHOT-version, please adjust your `pom.xml`:
 
 ```xml
 <pluginRepositories>
@@ -76,7 +74,13 @@ Add repository in your `pom.xml` for snapshot-versions of this plugin:
 </pluginRepositories>
 ```
 
-Set version to new SNAPSHOT-version:
+
+Prepared for Java 9
+===================
+
+**This is currently heavily outdated**
+
+Add repository in your `pom.xml` for snapshot-versions of this plugin (see above) and set version to new SNAPSHOT-version:
 
 ```xml
 <plugin>
@@ -97,15 +101,15 @@ Set version to new SNAPSHOT-version:
 Last Release Notes
 ==================
 
-**Version 8.8.1 (06-feb-2017)**
+**Version 8.8.2 (09-feb-2017)**
 
 Bugfixes:
-* the new option `<useLibFolderContentForManifestClasspath>` did not calculate the paths correctly (issue #271)
+* fixed `<nativeReleaseVersion>` missing it's default-value (issue #275)
 
 
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.8.2 (???-2017)
+upcoming Version 8.8.3 (???-2017)
 
 *nothing changed yet*
