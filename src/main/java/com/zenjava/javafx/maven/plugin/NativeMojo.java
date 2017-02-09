@@ -571,7 +571,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             secondaryLauncher.put(StandardBundlerParam.USER_JVM_OPTIONS.getID(), new HashMap<>(userJvmOptions));
                         });
                         Optional.ofNullable(launcher.getLauncherArguments()).ifPresent(arguments -> {
-                            params.put(StandardBundlerParam.ARGUMENTS.getID(), new ArrayList<>(arguments));
+                            secondaryLauncher.put(StandardBundlerParam.ARGUMENTS.getID(), new ArrayList<>(arguments));
                         });
                         return secondaryLauncher;
                     }).collect(Collectors.toList()));
