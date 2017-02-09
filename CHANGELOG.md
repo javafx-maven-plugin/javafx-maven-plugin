@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Version 8.8.3 (09-feb-2017)
+
+Bugfixes:
+* fixed `<launcherArguments>` of secondary launchers not being set correctly ([reported at the javafx-gradle-plugin](https://github.com/FibreFoX/javafx-gradle-plugin/issues/55))
+
+
 Version 8.8.2 (09-feb-2017)
 
 Bugfixes:
