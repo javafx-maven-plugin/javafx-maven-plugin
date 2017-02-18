@@ -1,0 +1,38 @@
+import java.io.*;
+import java.util.jar.*;
+
+File jarFile = new File( basedir, "target/javafx-maven-plugin-test-31-updateExistingJar-1.0.jar" );
+if( !jarFile.exists() ){
+    throw new Exception( "there should be a javafx-maven-plugin-test-31-updateExistingJar-1.0.jar file!");
+}
+
+Manifest manifest = new JarFile(jarFile).getManifest();
+String classpath = manifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+String expectedClasspath = "";
+if( classpath == null || !classpath.equals(expectedClasspath) ){
+    throw new Exception( "The classpath should be set to '" + expectedClasspath + "' but was: '" + classpath + "'");
+} 
+
+String mainClass = manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS);
+String expectedMainClass = "com.zenjava.test.Main";
+if( mainClass == null || !mainClass.equals(expectedMainClass) ){
+    throw new Exception( "The mainClass should be set to '" + expectedMainClass + "' but was: '" + mainClass + "'");
+} 
+
+String permissions = manifest.getMainAttributes().getValue("Permissions");
+String expectedPermissions = "sandbox";
+if( permissions == null || !permissions.equals(expectedPermissions) ){
+    throw new Exception( "The permissions should be set to '" + permissions + "' but was: '" + expectedPermissions + "'");
+} 
+
+String javaFXVersion = manifest.getMainAttributes().getValue("JavaFX-Version");
+String expectedJavaFXVersion = "8.0";
+if( javaFXVersion == null || !javaFXVersion.equals(expectedJavaFXVersion) ){
+    throw new Exception( "The javaFXVersion should be set to '" + expectedJavaFXVersion + "' but was: '" + javaFXVersion + "'");
+} 
+
+String createdBy = manifest.getMainAttributes().getValue("Created-By");
+String expectedCreatedBy = "JavaFX Packager";*/
+if( createdBy == null || !createdBy.equals(expectedCreatedBy) ){
+    throw new Exception( "The createdBy should be set to '" + expectedCreatedBy + "' but was: '" + createdBy + "'");
+} 
