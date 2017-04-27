@@ -1,7 +1,7 @@
 [![Travis Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/64700ul3m9y88agi/branch/master?svg=true)](https://ci.appveyor.com/project/FibreFoX/javafx-maven-plugin/branch/master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.3/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.3)
+[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.2/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.2)
 
 
 
@@ -27,7 +27,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.8.3</version>
+    <version>8.8.2</version>
     <configuration>
         <mainClass>your.package.with.Launcher</mainClass>
     </configuration>
@@ -47,7 +47,7 @@ Add this to your pom.xml within to your build-plugin:
 <plugin>
     <groupId>com.zenjava</groupId>
     <artifactId>javafx-maven-plugin</artifactId>
-    <version>8.8.3</version>
+    <version>8.8.2</version>
     <configuration>
         <vendor>YourCompany</vendor>
         <mainClass>your.package.with.Launcher</mainClass>
@@ -101,15 +101,15 @@ Add repository in your `pom.xml` for snapshot-versions of this plugin (see above
 Last Release Notes
 ==================
 
-**Version 8.8.3 (09-feb-2017)**
+**Version 8.8.2 (09-feb-2017)**
 
 Bugfixes:
-* fixed `<launcherArguments>` of secondary launchers not being set correctly ([reported at the javafx-gradle-plugin](https://github.com/FibreFoX/javafx-gradle-plugin/issues/55))
+* fixed `<nativeReleaseVersion>` missing it's default-value (issue #275)
 
 
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.8.4 (???-2017)
+upcoming Version 8.8.3 (???-2017)
 
 *nothing changed yet*
