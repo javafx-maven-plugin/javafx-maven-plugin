@@ -430,6 +430,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean skipMainClassScanning = false;
 
+    /**
+     * Set this to true disables the file-existence check on the keystore.
+     *
+     * @parameter property="jfx.skipKeyStoreChecking"
+     */
+    protected boolean skipKeyStoreChecking = false;
+
     protected Workarounds workarounds = null;
 
     private static final String CFG_WORKAROUND_MARKER = "cfgWorkaroundMarker";
@@ -999,8 +1006,12 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     }
 
     private void checkSigningConfiguration() throws MojoFailureException {
-        if( !keyStore.exists() ){
-            throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
+        if( skipKeyStoreChecking ){
+            getLog().info("Skipped checking if keystore exists.");
+        } else {
+            if( !keyStore.exists() ){
+                throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
+            }
         }
 
         if( keyStoreAlias == null || keyStoreAlias.isEmpty() ){
@@ -1020,12 +1031,23 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private void signJar(File jarFile) throws MojoExecutionException {
         List<String> command = new ArrayList<>();
         command.add(getEnvironmentRelativeExecutablePath() + "jarsigner");
+
+        // check is required for non-file keystores, see #291
+        AtomicBoolean containsKeystore = new AtomicBoolean(false);
+
         Optional.ofNullable(additionalJarsignerParameters).ifPresent(jarsignerParameters -> {
+            containsKeystore.set(jarsignerParameters.stream().filter(jarsignerParameter -> "-keystore".equalsIgnoreCase(jarsignerParameter.trim())).count() > 0);
             command.addAll(jarsignerParameters);
         });
         command.add("-strict");
-        command.add("-keystore");
-        command.add(keyStore.getAbsolutePath());
+
+        if( !containsKeystore.get() ){
+            command.add("-keystore");
+            // might be null, because check might be skipped
+            if( keyStore != null ){
+                command.add(keyStore.getAbsolutePath());
+            }
+        }
         command.add("-storepass");
         command.add(keyStorePassword);
         command.add("-keypass");
