@@ -431,11 +431,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected boolean skipMainClassScanning = false;
 
     /**
-     * Set this to true disables the file-existence check on the keystore.
+     * Set this to true to disable the file-existence check on the keystore.
      *
      * @parameter property="jfx.skipKeyStoreChecking"
      */
     protected boolean skipKeyStoreChecking = false;
+
+    /**
+     * Set this to true to remove "-keypass"-part while signing via jarsigner.
+     *
+     * @parameter property="jfx.skipKeypassWhileSigning"
+     */
+    protected boolean skipKeypassWhileSigning = false;
 
     protected Workarounds workarounds = null;
 
@@ -1050,8 +1057,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         }
         command.add("-storepass");
         command.add(keyStorePassword);
-        command.add("-keypass");
-        command.add(keyPassword);
+        if( !skipKeypassWhileSigning ){
+            command.add("-keypass");
+            command.add(keyPassword);
+        }
         command.add(jarFile.getAbsolutePath());
         command.add(keyStoreAlias);
 
