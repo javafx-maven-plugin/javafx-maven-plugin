@@ -403,11 +403,21 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected boolean onlyCustomBundlers = false;
 
     /**
+     * If you don't want to create a JNLP-bundle, set this to true to avoid that ugly warning
+     * in the build-log.
+     *
      * @parameter property="jfx.skipJNLP" default-value=false
      */
     protected boolean skipJNLP = false;
 
     /**
+     * Most bundlers do not like dashes or anything than digits and dots as version number,
+     * therefor we remove all "non-digit"- and "non-dot"-chars. Most use-case is when having
+     * some "1.0.0-SNAPSHOT" as version-string. If you do know what you are doing, you can set
+     * this to true for skipping the removal of the "evil" chars.
+     *
+     * @since 8.8.0
+     *
      * @parameter property="jfx.skipNativeVersionNumberSanitizing" default-value=false
      */
     protected boolean skipNativeVersionNumberSanitizing = false;
@@ -429,6 +439,20 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter property="jfx.skipMainClassScanning"
      */
     protected boolean skipMainClassScanning = false;
+
+    /**
+     * Set this to true to disable the file-existence check on the keystore.
+     *
+     * @parameter property="jfx.skipKeyStoreChecking"
+     */
+    protected boolean skipKeyStoreChecking = false;
+
+    /**
+     * Set this to true to remove "-keypass"-part while signing via jarsigner.
+     *
+     * @parameter property="jfx.skipKeypassWhileSigning"
+     */
+    protected boolean skipKeypassWhileSigning = false;
 
     protected Workarounds workarounds = null;
 
@@ -999,8 +1023,12 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     }
 
     private void checkSigningConfiguration() throws MojoFailureException {
-        if( !keyStore.exists() ){
-            throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
+        if( skipKeyStoreChecking ){
+            getLog().info("Skipped checking if keystore exists.");
+        } else {
+            if( !keyStore.exists() ){
+                throw new MojoFailureException("Keystore does not exist, use 'jfx:generate-key-store' command to make one (expected at: " + keyStore + ")");
+            }
         }
 
         if( keyStoreAlias == null || keyStoreAlias.isEmpty() ){
@@ -1020,16 +1048,29 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     private void signJar(File jarFile) throws MojoExecutionException {
         List<String> command = new ArrayList<>();
         command.add(getEnvironmentRelativeExecutablePath() + "jarsigner");
+
+        // check is required for non-file keystores, see #291
+        AtomicBoolean containsKeystore = new AtomicBoolean(false);
+
         Optional.ofNullable(additionalJarsignerParameters).ifPresent(jarsignerParameters -> {
+            containsKeystore.set(jarsignerParameters.stream().filter(jarsignerParameter -> "-keystore".equalsIgnoreCase(jarsignerParameter.trim())).count() > 0);
             command.addAll(jarsignerParameters);
         });
         command.add("-strict");
-        command.add("-keystore");
-        command.add(keyStore.getAbsolutePath());
+
+        if( !containsKeystore.get() ){
+            command.add("-keystore");
+            // might be null, because check might be skipped
+            if( keyStore != null ){
+                command.add(keyStore.getAbsolutePath());
+            }
+        }
         command.add("-storepass");
         command.add(keyStorePassword);
-        command.add("-keypass");
-        command.add(keyPassword);
+        if( !skipKeypassWhileSigning ){
+            command.add("-keypass");
+            command.add(keyPassword);
+        }
         command.add(jarFile.getAbsolutePath());
         command.add(keyStoreAlias);
 
