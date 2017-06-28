@@ -403,11 +403,21 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected boolean onlyCustomBundlers = false;
 
     /**
+     * If you don't want to create a JNLP-bundle, set this to true to avoid that ugly warning
+     * in the build-log.
+     *
      * @parameter property="jfx.skipJNLP" default-value=false
      */
     protected boolean skipJNLP = false;
 
     /**
+     * Most bundlers do not like dashes or anything than digits and dots as version number,
+     * therefor we remove all "non-digit"- and "non-dot"-chars. Most use-case is when having
+     * some "1.0.0-SNAPSHOT" as version-string. If you do know what you are doing, you can set
+     * this to true for skipping the removal of the "evil" chars.
+     *
+     * @since 8.8.0
+     *
      * @parameter property="jfx.skipNativeVersionNumberSanitizing" default-value=false
      */
     protected boolean skipNativeVersionNumberSanitizing = false;
