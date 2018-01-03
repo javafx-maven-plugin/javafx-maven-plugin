@@ -186,7 +186,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.4</version>
+                <version>3.5</version>
             </plugin>
         </plugins>
     </reporting>
@@ -220,7 +220,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -231,7 +231,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.4</version>
+                <version>3.5</version>
                 <configuration>
                     <goalPrefix>jfx</goalPrefix>
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
@@ -255,7 +255,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.3.1</version>
+                <version>3.0.0-M1</version>
                 <executions>
                     <execution>
                         <id>enforce-versions</id>
@@ -315,24 +315,52 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>3.0</version>
+            <version>3.5.2</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>3.0</version>
+            <version>3.5.2</version>
+            <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>javafx-packager</groupId>
-            <artifactId>javafx-packager</artifactId>
-            <version>1.8.0_20</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>
-        </dependency>
-
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>java9-dependencies</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/lib/ant-javafx.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>javafx-packager</groupId>
+                    <artifactId>javafx-packager</artifactId>
+                    <version>9</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/lib/ant-javafx.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>java8-dependencies</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/ant-javafx.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>javafx-packager</groupId>
+                    <artifactId>javafx-packager</artifactId>
+                    <version>1.8</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/ant-javafx.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
         <profile>
             <id>generate-signed-files</id>
             <activation>
