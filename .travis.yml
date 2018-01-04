@@ -3,31 +3,33 @@ language: java
 matrix:
   include:
     ## https://docs.travis-ci.com/user/reference/trusty/
-    ## container-based trusty should be working
-    ## has newer Maven and JDK
+    ## has newer Maven
     - os: linux
       sudo: false
       dist: trusty
       jdk: oraclejdk8
       install: true
       env: FAILURES_ALLOWED=false
-    ## OpenJDK should work too
-    - os: linux
-      sudo: false
-      dist: trusty
-      jdk: openjdk8
-      install: true
-      env: FAILURES_ALLOWED=false
-    ## old Precise-Images do not contain proper JDK, as 1.8.0_u40 is minimum requirement
-    ## before 1.8.0_40 will fail compiling since javafx-maven-plugin 8.8.0
-    ## has older Maven and JDK
+    ## OpenJDK should work too, but TravisCI has no up2date Ubuntu-Image, makes it impossible to install OpenJFX
+
+    ## has older Maven
     - os: linux
       sudo: false
       dist: precise
       jdk: oraclejdk8
-      env: FAILURES_ALLOWED=true
+      env: FAILURES_ALLOWED=false
+    ## use different OSX versions
+    ## OS X 10.11
     - os: osx
       osx_image: xcode8
+      env: FAILURES_ALLOWED=false
+    ## OS X 10.12
+    - os: osx
+      osx_image: xcode8.3
+      env: FAILURES_ALLOWED=false
+    ## OS X 10.12
+    - os: osx
+      osx_image: xcode9.2
       env: FAILURES_ALLOWED=false
   allow_failures:
     - env: FAILURES_ALLOWED=true
