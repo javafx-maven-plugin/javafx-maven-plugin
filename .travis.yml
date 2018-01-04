@@ -11,6 +11,12 @@ matrix:
       install: true
       env: FAILURES_ALLOWED=false
     ## OpenJDK should work too, but TravisCI has no up2date Ubuntu-Image, makes it impossible to install OpenJFX
+    - os: linux
+      sudo: false
+      dist: trusty
+      jdk: oraclejdk9
+      install: true
+      env: FAILURES_ALLOWED=false
 
     ## has older Maven
     - os: linux
