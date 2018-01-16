@@ -17,7 +17,13 @@ matrix:
       jdk: oraclejdk9
       install: true
       env: FAILURES_ALLOWED=false
-
+      addons:
+        apt:
+          packages:
+          ## RPM
+            - rpmbuild
+          ## DEB
+            - fakeroot
     ## has older Maven
     - os: linux
       sudo: false
