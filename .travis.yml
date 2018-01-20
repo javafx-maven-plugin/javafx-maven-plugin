@@ -21,7 +21,7 @@ matrix:
         apt:
           packages:
           ## RPM
-            - rpmbuild
+            - rpm
           ## DEB
             - fakeroot
     ## has older Maven
