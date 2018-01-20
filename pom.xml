@@ -294,6 +294,17 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>invoker-tests_withProperties</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skipInvocation>true</skipInvocation>
+                            <projectsDirectory>src/it/with_properties</projectsDirectory>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
