@@ -10,6 +10,13 @@ matrix:
       jdk: oraclejdk8
       install: true
       env: FAILURES_ALLOWED=false
+      addons:
+        apt:
+          packages:
+          ## RPM
+            - rpm
+          ## DEB
+            - fakeroot
     ## OpenJDK should work too, but TravisCI has no up2date Ubuntu-Image, makes it impossible to install OpenJFX
     - os: linux
       sudo: false
@@ -30,6 +37,13 @@ matrix:
       dist: precise
       jdk: oraclejdk8
       env: FAILURES_ALLOWED=false
+      addons:
+        apt:
+          packages:
+          ## RPM
+            - rpm
+          ## DEB
+            - fakeroot
     ## use different OSX versions
     ## OS X 10.11
     - os: osx
