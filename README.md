@@ -8,13 +8,30 @@
 JavaFX Maven Plugin
 ===================
 
-The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (8+) from within Maven.
+The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (8+ and 9+) from within Maven.
+
+This plugin is essentially a Maven wrapper for the packaging tool that comes with JavaFX, it's called [javapackager](https://docs.oracle.com/javase/9/tools/javapackager.htm).
  
 For easy configuration please use our new website (which needs to get updated/reworked again):
 **[http://javafx-maven-plugin.github.io](http://javafx-maven-plugin.github.io)**
 
-For (outdated) documentation/examples, your can look at archived website:
-**[https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/](https://web.archive.org/web/20141009064442/http://zenjava.com/javafx/maven/)**
+
+
+Requirements
+============
+* Maven 3.5 (older versions might work too)
+* Java Developer Kit 8 with at least Update 40
+
+
+
+OS-specific requirements
+========================
+* (Windows) EXE installers: Inno Setup
+* (Windows) MSI installers: WiX (at least version 3.7)
+* (Linux) DEB installers: dpkg-deb
+* (Linux) RPM installers: rpmbuild
+* (Mac) DMG installers: hdiutil
+* (Mac) PKG installers: pkgbuild
 
 
 
@@ -75,29 +92,6 @@ When you report a bug and this got worked around, you might be able to have acce
 ```
 
 
-Prepared for Java 9
-===================
-
-**This is currently heavily outdated**
-
-Add repository in your `pom.xml` for snapshot-versions of this plugin (see above) and set version to new SNAPSHOT-version:
-
-```xml
-<plugin>
-    <groupId>com.zenjava</groupId>
-    <artifactId>javafx-maven-plugin</artifactId>
-    <version>9.0.0-SNAPSHOT</version>
-    <configuration>
-        <!-- your configuration -->
-    </configuration>
-</plugin>
-```
-
-*Some notes: as this isn't the main branch, a lot of features aren't present in that branch yet, deployment of new "-SNAPSHOT"-version are on-demand*
-**This is currently heavily outdated**
-
-
-
 Last Release Notes
 ==================
 
@@ -110,6 +104,14 @@ Bugfixes:
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.8.4 (???-2017)
+upcoming Version 8.9.0 (???-jan-2018)
 
-*nothing changed yet*
+New:
+* added a way to have PKCS11 signing by setting `<skipKeypassWhileSigning>true</skipKeypassWhileSigning>` and `<skipKeyStoreChecking>true</skipKeyStoreChecking>`, makes it possible to have hardware tokens
+
+Enhancement:
+* JDK 9 compatibility
+* TravisCI: use newer build machines
+
+Documentation:
+* clarified that this plugin is a wrapper, thanks to @TurekBot
