@@ -22,10 +22,6 @@ import com.oracle.tools.packager.ConfigException;
 import com.oracle.tools.packager.RelativeFileSet;
 import com.oracle.tools.packager.StandardBundlerParam;
 import com.oracle.tools.packager.UnsupportedPlatformException;
-import com.oracle.tools.packager.linux.LinuxDebBundler;
-import com.oracle.tools.packager.linux.LinuxRpmBundler;
-import com.oracle.tools.packager.windows.WinExeBundler;
-import com.oracle.tools.packager.windows.WinMsiBundler;
 import com.sun.javafx.tools.packager.PackagerException;
 import com.sun.javafx.tools.packager.SignJarParams;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -859,11 +855,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     // change behaviour to have more control for all bundlers being inside JDK
                     switch(currentRunningBundlerID) {
                         case "exe":
-                            File exeBundlerFolder = WinExeBundler.EXE_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            File exeBundlerFolder = ParameterMapEntries.EXE_IMAGE_DIR.fetchFrom(paramsToBundleWith);
                             targetFolder = exeBundlerFolder.toPath();
                             break;
                         case "msi":
-                            File msiBundlerFolder = WinMsiBundler.MSI_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            File msiBundlerFolder = ParameterMapEntries.MSI_IMAGE_DIR.fetchFrom(paramsToBundleWith);
                             targetFolder = msiBundlerFolder.toPath();
                             break;
                         case "mac.appStore":
@@ -888,11 +884,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                             skipCopyAdditionalBundlerResources = true;
                             break;
                         case "deb":
-                            File linuxDebBundlerFolder = LinuxDebBundler.DEB_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            File linuxDebBundlerFolder = ParameterMapEntries.DEB_IMAGE_DIR.fetchFrom(paramsToBundleWith);
                             targetFolder = linuxDebBundlerFolder.toPath();
                             break;
                         case "rpm":
-                            File linuxRpmBundlerFolder = LinuxRpmBundler.RPM_IMAGE_DIR.fetchFrom(paramsToBundleWith);
+                            File linuxRpmBundlerFolder = ParameterMapEntries.RPM_IMAGE_DIR.fetchFrom(paramsToBundleWith);
                             targetFolder = linuxRpmBundlerFolder.toPath();
                             break;
                         default:
