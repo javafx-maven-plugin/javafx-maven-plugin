@@ -139,6 +139,13 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter property="jfx.additionalAppResources"
      */
     protected File additionalAppResources;
+    
+    /**
+     * Same as additionalAppResources, but can be used when having multiple sources. All files will be copied recursively.
+     *
+     * @parameter property="jfx.additionalAppResourcesList"
+     */
+    protected List<File> additionalAppResourcesList;
 
     /**
      * It is possible to copy all files specified by additionalAppResources into the created app-folder containing
@@ -351,6 +358,18 @@ public class JarMojo extends AbstractJfxToolsMojo {
                             getLog().warn("Couldn't copy additional application resource-file(s).", e);
                         }
                     });
+            
+            Optional.ofNullable(additionalAppResourcesList).ifPresent(appResourcesList -> {
+                appResourcesList.stream().filter(File::exists).forEach(appResources -> {
+                    try{
+                        Path targetFolder = jfxAppOutputDir.toPath();
+                        Path sourceFolder = appResources.toPath();
+                        copyRecursive(sourceFolder, targetFolder);
+                    } catch(IOException e){
+                        getLog().warn(e);
+                    }
+                });
+            });
         }
 
         // cleanup
