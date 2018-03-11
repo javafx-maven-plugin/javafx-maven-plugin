@@ -364,7 +364,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
         if( JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) ){
             return true;
         }
-        if( JavaDetectionTools.IS_JAVA_9 ){ // NOSONAR
+        if( JavaDetectionTools.IS_JAVA_9_AND_BEYOND ){ // NOSONAR
             return true;
         }
         return false;
