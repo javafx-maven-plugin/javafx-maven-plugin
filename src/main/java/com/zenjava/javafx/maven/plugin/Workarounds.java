@@ -60,7 +60,7 @@ public class Workarounds {
     }
 
     public boolean isWorkaroundForBug124Needed() {
-        return JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) || JavaDetectionTools.IS_JAVA_9;
+        return JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40) || JavaDetectionTools.IS_JAVA_9_AND_BEYOND;
     }
 
     public boolean isWorkaroundForBug167Needed() {
@@ -79,7 +79,7 @@ public class Workarounds {
     }
 
     public boolean isWorkaroundForBug205Needed() {
-        return (JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40)) || JavaDetectionTools.IS_JAVA_9;
+        return (JavaDetectionTools.IS_JAVA_8 && JavaDetectionTools.isAtLeastOracleJavaUpdateVersion(40)) || JavaDetectionTools.IS_JAVA_9_AND_BEYOND;
     }
 
     protected void applyNativeLauncherWorkaround(String appName) {

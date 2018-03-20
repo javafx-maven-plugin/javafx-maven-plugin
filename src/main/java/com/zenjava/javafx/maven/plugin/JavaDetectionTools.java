@@ -21,7 +21,7 @@ package com.zenjava.javafx.maven.plugin;
 public class JavaDetectionTools {
 
     public static final boolean IS_JAVA_8 = isJavaVersion(8);
-    public static final boolean IS_JAVA_9 = !IS_JAVA_8 && isJavaVersion(9) || isJavaVersion(9, true);
+    public static final boolean IS_JAVA_9_AND_BEYOND = !IS_JAVA_8 && (isJavaVersion(9) || isJavaVersion(9, true) || isJavaVersion(10) || isJavaVersion(10, true) || isJavaVersion(11) || isJavaVersion(11, true));
 
     public static boolean isJavaVersion(int oracleJavaVersion, boolean noVersionOne) {
         String javaVersion = System.getProperty("java.version");
