@@ -211,6 +211,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter property="jfx.additionalAppResources"
      */
     protected File additionalAppResources;
+    
+    /**
+     * Same as additionalAppResources, but can be used when having multiple sources. All files will be copied recursively.
+     *
+     * @parameter property="jfx.additionalAppResourcesList"
+     */
+    protected List<File> additionalAppResourcesList;
 
     /**
      * When you need to add additional files to the base-folder of all bundlers (additional non-overriding files like
@@ -515,6 +522,18 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 } catch(IOException e){
                     getLog().warn(e);
                 }
+            });
+            
+            Optional.ofNullable(additionalAppResourcesList).ifPresent(appResourcesList -> {
+                appResourcesList.stream().filter(File::exists).forEach(appResources -> {
+                    try{
+                        Path targetFolder = jfxAppOutputDir.toPath();
+                        Path sourceFolder = appResources.toPath();
+                        copyRecursive(sourceFolder, targetFolder);
+                    } catch(IOException e){
+                        getLog().warn(e);
+                    }
+                });
             });
 
             // gather all files for our application bundle
