@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -80,10 +81,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected File nativeOutputDir;
 
     /**
-     * Specify the used bundler found by selected bundleType. May not be installed your OS and will fail in that case.
+     * Specify the used bundlers. Some may not be installed or are not installable on your OS and will fail in that case.
      *
      * <p>
-     * By default this will be set to 'ALL', depending on your installed OS following values are possible for installers:
+     * By default all available bundlers are used. Depending on your installed OS the following values are possible:
      * <p>
      * <ul>
      * <li>windows.app <i>(Creates only Windows Executable, does not bundle into Installer)</i></li>
@@ -101,9 +102,9 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * <p>
      * For a full list of available bundlers on your system, call 'mvn jfx:list-bundlers' inside your project.
      *
-     * @parameter property="jfx.bundler" default-value="ALL"
+     * @parameter property="jfx.bundlers"
      */
-    private String bundler;
+    private List<String> bundlers;
 
     /**
      * Properties passed to the Java Virtual Machine when the application is started (i.e. these properties are system
@@ -652,8 +653,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                 }
             }
 
-            Bundlers bundlers = Bundlers.createBundlersInstance(); // service discovery?
-            Collection<Bundler> loadedBundlers = bundlers.getBundlers();
+            Bundlers _bundlers = Bundlers.createBundlersInstance(); // service discovery?
+            Collection<Bundler> loadedBundlers = _bundlers.getBundlers();
 
             // makes it possible to kick out all default bundlers
             if( onlyCustomBundlers ){
@@ -681,77 +682,84 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                     if( onlyCustomBundlers ){
                         loadedBundlers.add(customBundler);
                     } else {
-                        bundlers.loadBundler(customBundler);
+                        _bundlers.loadBundler(customBundler);
                     }
                 });
             });
-
-            boolean foundBundler = false;
 
             // the new feature for only using custom bundlers made it necessary to check for empty bundlers list
             if( loadedBundlers.isEmpty() ){
                 throw new MojoExecutionException("There were no bundlers registered. Please make sure to add your custom bundlers as dependency to the plugin.");
             }
-
-            for( Bundler b : bundlers.getBundlers() ){
-                String currentRunningBundlerID = b.getID();
-                // sometimes we need to run this bundler, so do special check
-                if( !shouldBundlerRun(bundler, currentRunningBundlerID, params) ){
-                    continue;
-                }
-
-                foundBundler = true;
-                try{
-                    if( workarounds.isWorkaroundForNativeMacBundlerNeeded(additionalBundlerResources) ){
-                        if( !skipMacBundlerWorkaround ){
-                            b = workarounds.applyWorkaroundForNativeMacBundler(b, currentRunningBundlerID, params, additionalBundlerResources);
-                        } else {
-                            getLog().info("Skipping replacement of the 'mac.app'-bundler. Please make sure you know what you are doing!");
-                        }
-                    }
-
-                    Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
-
-                    if( b.validate(paramsToBundleWith) ){
-
-                        doPrepareBeforeBundling(currentRunningBundlerID, paramsToBundleWith);
-
-                        // "jnlp bundler doesn't produce jnlp file and doesn't log any error/warning"
-                        // https://github.com/FibreFoX/javafx-gradle-plugin/issues/42
-                        // the new jnlp-bundler does not work like other bundlers, you have to provide some bundleArguments-entry :(
-                        if( "jnlp".equals(currentRunningBundlerID) && !paramsToBundleWith.containsKey("jnlp.outfile") ){
-                            // do fail if JNLP-bundler has to run
-                            // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/238
-                            if( failOnError ){
-                                throw new MojoExecutionException("You missed to specify some bundleArguments-entry, please set 'jnlp.outfile', e.g. using appName.");
-                            } else {
-                                getLog().warn("You missed to specify some bundleArguments-entry, please set 'jnlp.outfile', e.g. using appName.");
-                                continue;
-                            }
-                        }
-
-                        // DO BUNDLE HERE ;) and don't get confused about all the other stuff
-                        b.execute(paramsToBundleWith, nativeOutputDir);
-
-                        applyWorkaroundsAfterBundling(currentRunningBundlerID, params);
-                    }
-                } catch(UnsupportedPlatformException e){
-                    // quietly ignored
-                } catch(ConfigException e){
-                    if( failOnError ){
-                        throw new MojoExecutionException("Skipping '" + b.getName() + "' because of configuration error '" + e.getMessage() + "'\nAdvice to fix: " + e.getAdvice());
-                    } else {
-                        getLog().info("Skipping '" + b.getName() + "' because of configuration error '" + e.getMessage() + "'\nAdvice to fix: " + e.getAdvice());
-                    }
-
-                }
+            
+            if( bundlers == null || bundlers.isEmpty() ){
+              bundlers = Collections.singletonList("ALL");
             }
-            if( !foundBundler ){
-                if( failOnError ){
-                    throw new MojoExecutionException("No bundler found for given id " + bundler + ". Please check your configuration.");
-                }
-                getLog().warn("No bundler found for given id " + bundler + ". Please check your configuration.");
+
+            for( String bundler : bundlers ){
+              boolean foundBundler = false;
+
+              for( Bundler b : _bundlers.getBundlers() ){
+                  String currentRunningBundlerID = b.getID();
+                  // sometimes we need to run this bundler, so do special check
+                  if( !shouldBundlerRun(bundler, currentRunningBundlerID, params) ){
+                      continue;
+                  }
+
+                  foundBundler = true;
+                  try{
+                      if( workarounds.isWorkaroundForNativeMacBundlerNeeded(additionalBundlerResources) ){
+                          if( !skipMacBundlerWorkaround ){
+                              b = workarounds.applyWorkaroundForNativeMacBundler(b, currentRunningBundlerID, params, additionalBundlerResources);
+                          } else {
+                              getLog().info("Skipping replacement of the 'mac.app'-bundler. Please make sure you know what you are doing!");
+                          }
+                      }
+
+                      Map<String, ? super Object> paramsToBundleWith = new HashMap<>(params);
+
+                      if( b.validate(paramsToBundleWith) ){
+
+                          doPrepareBeforeBundling(currentRunningBundlerID, paramsToBundleWith);
+
+                          // "jnlp bundler doesn't produce jnlp file and doesn't log any error/warning"
+                          // https://github.com/FibreFoX/javafx-gradle-plugin/issues/42
+                          // the new jnlp-bundler does not work like other bundlers, you have to provide some bundleArguments-entry :(
+                          if( "jnlp".equals(currentRunningBundlerID) && !paramsToBundleWith.containsKey("jnlp.outfile") ){
+                              // do fail if JNLP-bundler has to run
+                              // https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/238
+                              if( failOnError ){
+                                  throw new MojoExecutionException("You missed to specify some bundleArguments-entry, please set 'jnlp.outfile', e.g. using appName.");
+                              } else {
+                                  getLog().warn("You missed to specify some bundleArguments-entry, please set 'jnlp.outfile', e.g. using appName.");
+                                  continue;
+                              }
+                          }
+                          
+                          // DO BUNDLE HERE ;) and don't get confused about all the other stuff
+                          b.execute(paramsToBundleWith, nativeOutputDir);
+
+                          applyWorkaroundsAfterBundling(currentRunningBundlerID, params);
+                      }
+                  } catch(UnsupportedPlatformException e){
+                      // quietly ignored
+                  } catch(ConfigException e){
+                      if( failOnError ){
+                          throw new MojoExecutionException("Skipping '" + b.getName() + "' because of configuration error '" + e.getMessage() + "'\nAdvice to fix: " + e.getAdvice());
+                      } else {
+                          getLog().info("Skipping '" + b.getName() + "' because of configuration error '" + e.getMessage() + "'\nAdvice to fix: " + e.getAdvice());
+                      }
+
+                  }
+              }
+              if( !foundBundler ){
+                  if( failOnError ){
+                      throw new MojoExecutionException("No bundler found for given id " + bundler + ". Please check your configuration.");
+                  }
+                  getLog().warn("No bundler found for given id " + bundler + ". Please check your configuration.");
+              }
             }
+            
         } catch(RuntimeException e){
             throw new MojoExecutionException("An error occurred while generating native deployment bundles", e);
         } catch(PackagerException ex){
