@@ -186,6 +186,14 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter property="jfx.bundleArguments"
      */
     protected Map<String, String> bundleArguments;
+    
+    /**
+     * The list of filenames of user-defined HTML templates.
+     * If no files are specified, then the default template will be used.
+     * 
+     * @parameter property="jfx.jnlpTemplates"
+     */
+    protected List<File> jnlpTemplates;
 
     /**
      * The name of the JavaFX packaged executable to be built into the 'native/bundles' directory. By default this will
@@ -196,6 +204,20 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * @parameter property="jfx.appName" default-value="${project.build.finalName}"
      */
     protected String appName;
+    
+    /**
+     * A description used within generated JNLP-file.
+     *
+     * @parameter property="jfx.description" default-value="${project.description}"
+     */
+    protected String description;
+    
+    /**
+     * A title used within generated JNLP-file.
+     *
+     * @parameter property="jfx.title" default-value="${project.name}"
+     */
+    protected String title;
 
     /**
      * Will be set when having goal "build-native" within package-phase and calling "jfx:native" from CLI. Internal usage only.
@@ -489,6 +511,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             });
 
             params.put(StandardBundlerParam.APP_NAME.getID(), appName);
+            params.put(StandardBundlerParam.TITLE.getID(), title);
+            params.put(StandardBundlerParam.DESCRIPTION.getID(), description);
             params.put(StandardBundlerParam.VERSION.getID(), nativeReleaseVersion);
             // replace that value
             if( !skipNativeVersionNumberSanitizing && nativeReleaseVersion != null ){
@@ -728,6 +752,16 @@ public class NativeMojo extends AbstractJfxToolsMojo {
                                 getLog().warn("You missed to specify some bundleArguments-entry, please set 'jnlp.outfile', e.g. using appName.");
                                 continue;
                             }
+                        }
+                        
+                        if( "jnlp".equals(currentRunningBundlerID) ){
+                            Optional.ofNullable(jnlpTemplates).ifPresent(jnlpTemplates -> {
+                                final Map<File,File> _jnlpTemplates = new HashMap<>();
+                                for( File jnlpTemplate : jnlpTemplates ){
+                                    _jnlpTemplates.put(jnlpTemplate, new File(nativeOutputDir, jnlpTemplate.getName()));
+                                }
+                                paramsToBundleWith.put("jnlp.templates", _jnlpTemplates);
+                            });
                         }
 
                         // DO BUNDLE HERE ;) and don't get confused about all the other stuff
