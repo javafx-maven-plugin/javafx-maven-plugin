@@ -206,14 +206,14 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected String appName;
     
     /**
-     * A description used within generated JNLP-file.
+     * A description used as bundler parameter; occurs for example within generated JNLP-file.
      *
      * @parameter property="jfx.description" default-value="${project.description}"
      */
     protected String description;
     
     /**
-     * A title used within generated JNLP-file.
+     * A title used as bundler parameter; occurs for example within generated JNLP-file.
      *
      * @parameter property="jfx.title" default-value="${project.name}"
      */
