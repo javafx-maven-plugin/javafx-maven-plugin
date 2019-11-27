@@ -498,6 +498,8 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             params.put(StandardBundlerParam.SHORTCUT_HINT.getID(), needShortcut);
             params.put(StandardBundlerParam.MENU_HINT.getID(), needMenu);
             params.put(StandardBundlerParam.MAIN_CLASS.getID(), mainClass);
+            params.put(StandardBundlerParam.MAIN_JAR.getID(), mainJar);
+            params.put(StandardBundlerParam.CLASSPATH.getID(), classpath);
 
             Optional.ofNullable(jvmProperties).ifPresent(jvmProps -> {
                 params.put(StandardBundlerParam.JVM_PROPERTIES.getID(), new HashMap<>(jvmProps));

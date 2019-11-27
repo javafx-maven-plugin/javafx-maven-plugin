@@ -66,6 +66,20 @@ public abstract class AbstractJfxToolsMojo extends AbstractMojo {
     protected String mainClass;
 
     /**
+     * The main JavaFX application jar that acts as the entry point to the JavaFX application.
+     *
+     * @parameter property="jfx.mainJar"
+     */
+    protected String mainJar;
+
+    /**
+     * The main JavaFX application classpath that acts as the entry point to the JavaFX application.
+     *
+     * @parameter property="jfx.classpath"
+     */
+    protected String classpath;
+
+    /**
      * The 'app' output directory. This is where the base executable JavaFX jar is built into, along with any dependent
      * libraries (place in the 'lib' sub-directory). The resulting JAR in this directory will be ready for distribution,
      * including Pre-Loaders, signing, etc. This JAR will also be the one bundled into the other distribution bundles
