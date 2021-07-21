@@ -64,9 +64,5 @@ matrix:
 script:
   - mvn install -B
 
-branches:
-  only:
-  - master
-
 notifications:
   email: false
