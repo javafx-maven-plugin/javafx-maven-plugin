@@ -104,7 +104,7 @@ Bugfixes:
 (Not yet) Release(d) Notes
 ==========================
 
-upcoming Version 8.9.0 (???-jan-2018)
+upcoming Version 8.10.0 (???-???-2021)
 
 New:
 * added a way to have PKCS11 signing by setting `<skipKeypassWhileSigning>true</skipKeypassWhileSigning>` and `<skipKeyStoreChecking>true</skipKeyStoreChecking>`, makes it possible to have hardware tokens
