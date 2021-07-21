@@ -18,7 +18,7 @@
     <organization>
         <name>ZenJava</name>
     </organization>
-    
+
     <properties>
         <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
     </properties>

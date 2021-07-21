@@ -23,7 +23,7 @@
         <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
         <jfx.appName>SimpleApp</jfx.appName>
     </properties>
-   
+
     <build>
         <plugins>
             <plugin>

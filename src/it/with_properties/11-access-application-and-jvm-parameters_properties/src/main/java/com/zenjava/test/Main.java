@@ -28,14 +28,14 @@ public class Main extends javafx.application.Application {
 
         appendToLogFile("\n" + "System.getProperty: Argument1 > " + System.getProperty("Argument1", "nope"));
         appendToLogFile("\n" + "System.getProperty: Argument2 > " + System.getProperty("Argument2", "nope"));
-        
+
         UserJvmOptionsService ujo = UserJvmOptionsService.getUserJVMDefaults();
 
         printMap(System.getenv(), "env");
         printMap(ujo.getUserJVMOptionDefaults(), "userJVMOptionDefaults");
 
         appendToLogFile("\n" + "UserJvmOptionsService.getUserJVMOptions: Argument3 > " + ujo.getUserJVMOptions().get("Argument3"));
-        
+
         System.exit(0);
     }
 

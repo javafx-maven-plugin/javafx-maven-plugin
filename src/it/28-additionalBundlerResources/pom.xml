@@ -22,9 +22,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
+
         <!-- version-management -->
-        
+
         <version.maven-compiler-plugin>3.2</version.maven-compiler-plugin>
 
         <version.java.source>1.8</version.java.source>

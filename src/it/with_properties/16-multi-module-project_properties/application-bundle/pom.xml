@@ -24,7 +24,7 @@
         <jfx.mainClass>com.zenjava.Launcher</jfx.mainClass>
         <jfx.verbose>true</jfx.verbose>
     </properties>
-  
+
     <build>
         <finalName>someProject</finalName>
         <plugins>

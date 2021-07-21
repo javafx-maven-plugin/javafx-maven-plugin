@@ -22,9 +22,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
+
         <!-- version-management -->
-        
+
         <version.maven-compiler-plugin>3.2</version.maven-compiler-plugin>
 
         <version.java.source>1.8</version.java.source>
@@ -32,7 +32,7 @@
 
         <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
     </properties>
-    
+
     <dependencies>
         <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
         <dependency>
@@ -72,7 +72,7 @@
 
                     <jvmProperties>
                         <Argument2>world_jvmProperty</Argument2>
-                    </jvmProperties>                    
+                    </jvmProperties>
 
                     <userJvmArgs>
                         <Argument3>someValue3_userJvmArgs</Argument3>

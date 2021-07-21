@@ -23,7 +23,7 @@
         <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
         <jfx.addPackagerJar>false</jfx.addPackagerJar>
     </properties>
-    
+
     <dependencies>
         <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
         <dependency>

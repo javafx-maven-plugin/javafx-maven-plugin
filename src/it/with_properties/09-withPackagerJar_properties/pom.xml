@@ -22,7 +22,7 @@
     <properties>
         <jfx.mainClass>com.zenjava.test.Main</jfx.mainClass>
     </properties>
-    
+
     <dependencies>
         <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
         <dependency>

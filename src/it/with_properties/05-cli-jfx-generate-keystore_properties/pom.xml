@@ -27,7 +27,7 @@
         <jfx.certState>certState</jfx.certState>
         <jfx.certCountry>DE</jfx.certCountry>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>

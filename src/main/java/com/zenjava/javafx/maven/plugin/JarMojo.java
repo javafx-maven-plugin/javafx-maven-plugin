@@ -139,7 +139,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * @parameter property="jfx.additionalAppResources"
      */
     protected File additionalAppResources;
-    
+
     /**
      * Same as additionalAppResources, but can be used when having multiple sources. All files will be copied recursively.
      *
@@ -358,7 +358,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                             getLog().warn("Couldn't copy additional application resource-file(s).", e);
                         }
                     });
-            
+
             Optional.ofNullable(additionalAppResourcesList).ifPresent(appResourcesList -> {
                 appResourcesList.stream().filter(File::exists).forEach(appResources -> {
                     try{

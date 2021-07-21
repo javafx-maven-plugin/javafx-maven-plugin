@@ -19,7 +19,7 @@
     <description>
         This project bundles all developed components and binds them together. This project is packaged via javafx-maven-plugin for distribution.
     </description>
-  
+
     <build>
         <finalName>someProject</finalName>
         <plugins>
