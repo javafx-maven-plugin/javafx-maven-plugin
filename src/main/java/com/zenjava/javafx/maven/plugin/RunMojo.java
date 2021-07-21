@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.zenjava.javafx.maven.plugin;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class RunMojo extends AbstractJfxToolsMojo {
      *
      * This fixes issue #176.
      *
-     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176
+     * @see <a href="https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176">https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/176</a>
      * @parameter property="jfx.runAppParameter"
      */
     protected String runAppParameter = null;

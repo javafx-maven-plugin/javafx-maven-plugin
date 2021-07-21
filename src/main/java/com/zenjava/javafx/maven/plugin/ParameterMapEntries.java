@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.zenjava.javafx.maven.plugin;
 
 import static com.oracle.tools.packager.AbstractBundler.IMAGES_ROOT;
@@ -119,4 +120,9 @@ public class ParameterMapEntries {
                 return new File(new File(imagesRoot, "linux-deb.image"), DEB_FULL_PACKAGE_NAME.fetchFrom(params));
             },
             (s, p) -> new File(s)); // string to non-string-conversion
+
+    private ParameterMapEntries() {
+        // utility class
+    }
+
 }

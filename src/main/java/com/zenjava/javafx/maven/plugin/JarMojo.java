@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.zenjava.javafx.maven.plugin;
 
 import com.sun.javafx.tools.packager.CreateJarParams;
@@ -181,6 +182,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
     protected String fixedManifestClasspath = null;
 
     @Override
+    @SuppressWarnings("cyclomaticcomplexity")
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
             getLog().info("call from CLI - skipping creation of JavaFX JAR for application");

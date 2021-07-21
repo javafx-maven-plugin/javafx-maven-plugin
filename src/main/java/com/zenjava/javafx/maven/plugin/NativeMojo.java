@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.zenjava.javafx.maven.plugin;
 
 import com.oracle.tools.packager.AbstractBundler;
@@ -245,7 +246,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * <p>
      * Change this to "true" when you don't want this workaround.
      *
-     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124
+     * @see <a href="https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124">https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/124</a>
      *
      * @parameter property="jfx.skipNativeLauncherWorkaround124" default-value=false
      */
@@ -264,7 +265,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * <p>
      * Change this to "true" when you don't want this workaround.
      *
-     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167
+     * @see <a href="https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167">https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/167</a>
      * @parameter property="jfx.skipNativeLauncherWorkaround167" default-value=false
      */
     protected boolean skipNativeLauncherWorkaround167;
@@ -356,7 +357,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * accept that format either. For not having to call jarsigner yourself, set this to "true"
      * for having your jar-files getting signed when generating JNLP-files.
      *
-     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/190
+     * @see <a href="https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/190">https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/190</a>
      *
      * @parameter property="jfx.noBlobSigning" default-value=false
      */
@@ -381,7 +382,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      * <p>
      * Requires skipNativeLauncherWorkaround124 to be false.
      *
-     * @see https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205
+     * @see <a href="https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205">https://github.com/javafx-maven-plugin/javafx-maven-plugin/issues/205</a>
      *
      * @parameter property="jfx.skipNativeLauncherWorkaround205" default-value=false
      */
@@ -460,9 +461,11 @@ public class NativeMojo extends AbstractJfxToolsMojo {
     protected Workarounds workarounds = null;
 
     private static final String CFG_WORKAROUND_MARKER = "cfgWorkaroundMarker";
+
     private static final String CFG_WORKAROUND_DONE_MARKER = CFG_WORKAROUND_MARKER + ".done";
 
     @Override
+    @SuppressWarnings("cyclomaticcomplexity")
     public void execute() throws MojoExecutionException, MojoFailureException {
         if( jfxCallFromCLI ){
             getLog().info("call from CLI - skipping creation of Native Installers");
@@ -816,6 +819,7 @@ public class NativeMojo extends AbstractJfxToolsMojo {
         }
     }
 
+    @SuppressWarnings("cyclomaticcomplexity")
     private void doPrepareBeforeBundling(String currentRunningBundlerID, Map<String, ? super Object> paramsToBundleWith) {
         // copy all files every time a bundler runs, because they might cleanup their folders,
         // but user might have extend existing bundler using same foldername (which would end up deleted/cleaned up)
