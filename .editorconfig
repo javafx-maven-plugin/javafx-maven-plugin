@@ -6,6 +6,7 @@ root = true
 end_of_line = lf
 insert_final_newline = true
 charset = utf-8
+trim_trailing_whitespace = true
 
 # indent is spaces (4 spaces = 1 tab)
 [*.java]
