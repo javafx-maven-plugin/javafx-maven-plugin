@@ -21,3 +21,7 @@ insert_final_newline = false
 [.travis.yml]
 indent_style = space
 indent_size = 2
+
+# markdown files CAN have trailing whitespaces as newline-breaks
+[*.md]
+trim_trailing_whitespace = false
