@@ -1,14 +1,11 @@
-[![Travis Build Status](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin.svg?branch=master)](https://travis-ci.org/javafx-maven-plugin/javafx-maven-plugin)
-[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/64700ul3m9y88agi/branch/master?svg=true)](https://ci.appveyor.com/project/FibreFoX/javafx-maven-plugin/branch/master)
 [![Maven Central](https://img.shields.io/maven-central/v/com.zenjava/javafx-maven-plugin.svg)](https://maven-badges.herokuapp.com/maven-central/com.zenjava/javafx-maven-plugin)
-[![Dependency Status](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.3/badge.svg)](https://www.versioneye.com/java/com.zenjava:javafx-maven-plugin/8.8.3)
 
 
 
 JavaFX Maven Plugin
 ===================
 
-The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (8+ and 9+) from within Maven.
+The JavaFX Maven Plugin provides a way to assemble distribution bundles for JavaFX applications (8+) from within Maven.
 
 This plugin is essentially a Maven wrapper for the packaging tool that comes with JavaFX, it's called [javapackager](https://docs.oracle.com/javase/9/tools/javapackager.htm).
  
@@ -20,7 +17,7 @@ For easy configuration please use the old configurator:
 Requirements
 ============
 * Maven 3.5 (older versions might work too)
-* Java Developer Kit 8 with at least Update 40
+* Java Developer Kit 8 with at least Update 40 (does **NOT** support JKD9 or later yet)
 
 
 
