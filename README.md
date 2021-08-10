@@ -107,7 +107,7 @@ New:
 * added a way to have PKCS11 signing by setting `<skipKeypassWhileSigning>true</skipKeypassWhileSigning>` and `<skipKeyStoreChecking>true</skipKeyStoreChecking>`, makes it possible to have hardware tokens
 
 Enhancement:
-* JDK 9 compatibility
+* ~~JDK 9 compatibility~~ (got broken with Jigsaw)
 * TravisCI: use newer build machines
 
 Documentation:
