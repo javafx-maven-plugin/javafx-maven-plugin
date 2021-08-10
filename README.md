@@ -12,8 +12,8 @@ The JavaFX Maven Plugin provides a way to assemble distribution bundles for Java
 
 This plugin is essentially a Maven wrapper for the packaging tool that comes with JavaFX, it's called [javapackager](https://docs.oracle.com/javase/9/tools/javapackager.htm).
  
-For easy configuration please use our new website (which needs to get updated/reworked again):
-**[http://javafx-maven-plugin.github.io](http://javafx-maven-plugin.github.io)**
+For easy configuration please use the old configurator:
+**[https://zenjava.net/javafx-maven-plugin/](https://zenjava.net/javafx-maven-plugin/)**
 
 
 
