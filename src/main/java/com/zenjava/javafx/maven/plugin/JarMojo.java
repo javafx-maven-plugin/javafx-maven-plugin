@@ -181,6 +181,18 @@ public class JarMojo extends AbstractJfxToolsMojo {
      */
     protected String fixedManifestClasspath = null;
 
+    /**
+     * In case the used dependencies have the same maven artifactId, you can set this to true, so all files will be
+     * prefixed with their corresponding maven groupId.
+     *
+     * This defaults to false, in order to this as compatible with previous behaviour.
+     *
+     * @since 8.10.0
+     *
+     * @parameter property="jfx.prefixWithGroupIdForClasspathDependencies" default-value="false"
+     */
+    protected boolean prefixWithGroupIdForClasspathDependencies = false;
+
     @Override
     @SuppressWarnings("cyclomaticcomplexity")
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -283,7 +295,14 @@ public class JarMojo extends AbstractJfxToolsMojo {
             }).forEach(artifact -> {
                 File artifactFile = artifact.getFile();
                 getLog().debug(String.format("Including classpath element: %s", artifactFile.getAbsolutePath()));
-                File dest = new File(libDir, artifactFile.getName());
+                String artifactFileName = artifactFile.getName();
+
+                if( prefixWithGroupIdForClasspathDependencies ) {
+                    artifactFileName = artifact.getGroupId() + "." + artifactFile.getName();
+                }
+
+                File dest = new File(libDir, artifactFileName);
+
                 if( !dest.exists() ){
                     try{
                         if( !skipCopyingDependencies ){
@@ -297,7 +316,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
                         brokenArtifacts.add(artifactFile.getAbsolutePath());
                     }
                 }
-                classpath.append(libFolderName).append("/").append(artifactFile.getName()).append(" ");
+                classpath.append(libFolderName).append("/").append(artifactFileName).append(" ");
             });
             if( !brokenArtifacts.isEmpty() ){
                 throw new MojoExecutionException("Error copying dependencies for application");

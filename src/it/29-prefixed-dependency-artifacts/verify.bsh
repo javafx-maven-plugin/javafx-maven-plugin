@@ -1,0 +1,24 @@
+import java.io.*;
+
+File jfxFolder = new File( basedir, "target/jfx" );
+if( !jfxFolder.exists() ){
+    throw new Exception( "there should be a jfx-folder!");
+}
+
+File jfxAppFolder = new File( jfxFolder, "app" );
+if( !jfxAppFolder.exists() ){
+    throw new Exception( "there should be a jfx-app-folder!");
+}
+
+File libFolder = new File( jfxAppFolder, "lib" );
+if( !libFolder.exists() ){
+    throw new Exception( "there should be a lib folder!");
+}
+
+// check for prefixed files
+File dependencyOne = new File( libFolder, "org.apache.logging.log4j.log4j-api-2.14.1.jar" );
+File dependencyTwo = new File( libFolder, "org.apache.logging.log4j.log4j-core-2.14.1.jar" );
+
+if( !dependencyOne.exists() || !dependencyTwo.exists() ){
+    throw new Exception( "there should be two prefixed dependency files!");
+}

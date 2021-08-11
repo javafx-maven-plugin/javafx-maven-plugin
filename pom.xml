@@ -363,23 +363,6 @@
 
     <profiles>
         <profile>
-            <id>java9-dependencies</id>
-            <activation>
-                <file>
-                    <exists>${java.home}/lib/ant-javafx.jar</exists>
-                </file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>javafx-packager</groupId>
-                    <artifactId>javafx-packager</artifactId>
-                    <version>9</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/lib/ant-javafx.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
             <id>java8-dependencies</id>
             <activation>
                 <file>
