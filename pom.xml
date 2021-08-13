@@ -502,6 +502,61 @@
             </build>
         </profile>
         <profile>
+            <id>test-with-other-jvms-using-docker</id>
+            <activation>
+                <property>
+                    <name>testWithDocker</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- test against several JVMs using docker -->
+                    <!-- requires to have Docker installed of course -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>jvm-tests</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- https://maven.apache.org/plugins/maven-antrun-plugin/index.html -->
+                                    <!-- "It is not the intention of this plugin to provide a means of polluting the POM" ... i know ... but there is no good foreach/matrix feature -->
+                                    <target>
+                                        <!-- reminder: do NOT mount generated files, as it would OVERWRITE the generated files ... -->
+                                        <!-- copy files including dotfiles using shopt (https://superuser.com/a/265222) -->
+                                        <property name="preparebuild" value="shopt -s dotglob; mkdir /source; cp -a /copysource/* /source/; cd /source; chmod +x ./mvnw;" />
+                                        <property name="buildcommand" value="./mvnw clean install --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN;" />
+
+                                        <property name="commandinsidedocker.includedjdk" value="bash -c 'set -ex; ${preparebuild} ${buildcommand}'"/>
+                                        <property name="commandinsidedocker.rawimage.debian" value="bash -c 'set -ex; export DEBIAN_FRONTEND=noninteractive; apt-get update; apt-get install -y --no-install-recommends -y openjdk-8-jdk openjfx rpm fakeroot; ${preparebuild} ${buildcommand}'"/>
+
+                                        <!-- direct images where the JDK already is present -->
+                                        <!--
+                                        FIX THIS, as openjdk does not include openjfx/packager.jar ?!?
+                                        <exec executable="docker" failonerror="true">
+                                            <arg line="run -v ${basedir}:/copysource openjdk:8u302-jdk-oracle ${commandinsidedocker.direct}"/>
+                                        </exec>
+                                        -->
+
+                                        <!-- raw images where the JDK has to be installed -->
+                                        <exec executable="docker" failonerror="true">
+                                            <arg line="run --rm -v ${basedir}:/copysource debian:stretch ${commandinsidedocker.rawimage.debian}"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>release-to-ossrh</id>
             <activation>
                 <property>
