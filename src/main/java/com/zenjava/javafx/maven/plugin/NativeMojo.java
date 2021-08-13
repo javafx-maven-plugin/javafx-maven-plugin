@@ -458,6 +458,13 @@ public class NativeMojo extends AbstractJfxToolsMojo {
      */
     protected boolean skipKeypassWhileSigning = false;
 
+    /**
+     * Set this to false to remove "-strict" while signing via jarsigner.
+     * 
+     * @parameter property="jfx.strictSigning"
+     */
+    protected boolean strictSigning = true;
+
     protected Workarounds workarounds = null;
 
     private static final String CFG_WORKAROUND_MARKER = "cfgWorkaroundMarker";
@@ -1075,7 +1082,10 @@ public class NativeMojo extends AbstractJfxToolsMojo {
             containsKeystore.set(jarsignerParameters.stream().filter(jarsignerParameter -> "-keystore".equalsIgnoreCase(jarsignerParameter.trim())).count() > 0);
             command.addAll(jarsignerParameters);
         });
-        command.add("-strict");
+
+        if (strictSigning) {
+            command.add("-strict");
+        }
 
         if( !containsKeystore.get() ){
             command.add("-keystore");
