@@ -185,7 +185,7 @@ public class JarMojo extends AbstractJfxToolsMojo {
      * In case the used dependencies have the same maven artifactId, you can set this to true, so all files will be
      * prefixed with their corresponding maven groupId.
      *
-     * This defaults to false, in order to this as compatible with previous behaviour.
+     * This defaults to false, in order to make this compatible with previous behaviour.
      *
      * @since 8.10.0
      *
