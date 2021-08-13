@@ -31,17 +31,6 @@
         <version.java.target>1.8</version.java.target>
     </properties>
 
-    <dependencies>
-        <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
-        <dependency>
-            <groupId>javafx-packager</groupId>
-            <artifactId>packager-jar</artifactId>
-            <version>1.8.0_45</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/../lib/packager.jar</systemPath>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -96,4 +85,44 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>packager-from-oraclejdk-bundled-javafx</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../lib/packager.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
+                <dependency>
+                    <groupId>javafx-packager</groupId>
+                    <artifactId>packager-jar</artifactId>
+                    <version>1.8.0_45</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/packager.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <!-- sadly this dependency is NOT in the same location or gets symlinked (like the other jfx-files) -->
+            <id>packager-from-openjdk-with-openjfx</id>
+            <activation>
+                <file>
+                    <exists>${java.home}/../../../../share/java/openjfx/lib/packager.jar</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <!-- having THIS dependency will result in copied packager.jar within generated lib-folder -->
+                <dependency>
+                    <groupId>javafx-packager</groupId>
+                    <artifactId>packager-jar</artifactId>
+                    <version>1.8.0_45</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../../../../share/java/openjfx/lib/packager.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
