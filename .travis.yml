@@ -1,6 +1,7 @@
 language: java
 
 matrix:
+  fast_finish: true
   include:
     ## https://docs.travis-ci.com/user/reference/trusty/
     ## has newer Maven
@@ -66,3 +67,7 @@ script:
 
 notifications:
   email: false
+
+cache:
+  directories:
+  - $HOME/.m2
